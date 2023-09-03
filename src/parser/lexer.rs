@@ -13,7 +13,8 @@ pub enum Token<'a> {
 #[derive(Debug, Default)]
 pub struct Line<'a> {
     pub tokens : Vec<Token<'a>>,
-    pub indent_count : usize
+    pub indent_count : usize,
+    pub row : usize
 }
 
 pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, ParserError> {
@@ -27,6 +28,8 @@ pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, ParserError> {
         let mut is_indent_scanned = false;
         let mut string_char = '\0';
         let mut slice_start = 0usize;
+
+        line_result.row = i;
 
         for (j, current_char) in line.chars().into_iter().enumerate() {
             // Collect indentation count.
@@ -46,9 +49,8 @@ pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, ParserError> {
                 } else {
                     is_indent_scanned = true;
                     slice_start = j;
-                    if indent_factor == 0 {
-                        indent_factor = line_result.indent_count;
-                    } else {
+                    if indent_factor == 0 { indent_factor = line_result.indent_count; }
+                    if indent_factor != 0 { // We are not using else to consider the value change.
                         if line_result.indent_count % indent_factor != 0 {
                             return Err(
                                 ParserError {
@@ -57,6 +59,7 @@ pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, ParserError> {
                                 }
                             );
                         }
+                        line_result.indent_count /= indent_factor
                     }
                 }
             }

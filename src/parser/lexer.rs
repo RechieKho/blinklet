@@ -5,9 +5,9 @@ use super::error::ParserError;
 
 #[derive(Debug, PartialEq)]
 pub enum Token<'a> {
-    IDENTIFIER(&'a str),
-    STRING(&'a str),
-    NUMBER(f64)
+    IDENTIFIER(&'a str, (usize, usize)),
+    STRING(&'a str, (usize, usize)),
+    NUMBER(f64, (usize, usize))
 }
 
 #[derive(Debug, Default)]
@@ -64,7 +64,7 @@ pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, ParserError> {
             // Check if it is in string literal
             if string_char != '\0' {
                 if current_char == string_char {
-                    line_result.tokens.push(Token::STRING(&line[slice_start..j]));
+                    line_result.tokens.push(Token::STRING(&line[slice_start..j], (i, j)));
                     slice_start = j + 1;
                     string_char = '\0';
                 }
@@ -77,8 +77,8 @@ pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, ParserError> {
                 if slice_start != j { 
                     let slice = &line[slice_start..j];
                     let parse_result = slice.parse::<f64>();
-                    if parse_result.is_ok() { line_result.tokens.push(Token::NUMBER(parse_result.unwrap())); } 
-                    else { line_result.tokens.push(Token::IDENTIFIER(slice)); }
+                    if parse_result.is_ok() { line_result.tokens.push(Token::NUMBER(parse_result.unwrap(), (i, j))); } 
+                    else { line_result.tokens.push(Token::IDENTIFIER(slice, (i, j))); }
                 }
                 slice_start = j + 1;
                 continue;
@@ -89,8 +89,8 @@ pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, ParserError> {
                 if slice_start != j { 
                     let slice = &line[slice_start..j];
                     let parse_result = slice.parse::<f64>();
-                    if parse_result.is_ok() { line_result.tokens.push(Token::NUMBER(parse_result.unwrap())); } 
-                    else { line_result.tokens.push(Token::IDENTIFIER(slice)); }
+                    if parse_result.is_ok() { line_result.tokens.push(Token::NUMBER(parse_result.unwrap(), (i, j))); } 
+                    else { line_result.tokens.push(Token::IDENTIFIER(slice, (i, j))); }
                 }
                 slice_start = j + 1;
                 continue;
@@ -127,8 +127,8 @@ pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, ParserError> {
         if slice_start != line_length { 
             let slice = &line[slice_start..line_length];
             let parse_result = slice.parse::<f64>();
-            if parse_result.is_ok() { line_result.tokens.push(Token::NUMBER(parse_result.unwrap())); } 
-            else { line_result.tokens.push(Token::IDENTIFIER(slice)); }
+            if parse_result.is_ok() { line_result.tokens.push(Token::NUMBER(parse_result.unwrap(), (i, slice_start))); } 
+            else { line_result.tokens.push(Token::IDENTIFIER(slice, (i, slice_start))); }
         }
 
         // Push `Line`.

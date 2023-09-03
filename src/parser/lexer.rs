@@ -1,6 +1,7 @@
 use std::vec::Vec;
 use std::string::String;
 use std::result::Result;
+use super::error::ParserError;
 
 #[derive(Debug, PartialEq)]
 pub enum Token<'a> {
@@ -15,13 +16,7 @@ pub struct Line<'a> {
     pub indent_count : usize
 }
 
-#[derive(Debug)]
-pub struct LexError {
-    pub message: &'static str,
-    pub position : (usize, usize) // Row (line) and column.
-}
-
-pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, LexError> {
+pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, ParserError> {
     let mut result : Vec<Line<'a>> = Vec::new();
     let mut indent_char = '\0';
     let mut indent_factor = 0usize;
@@ -40,7 +35,7 @@ pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, LexError> {
                     if indent_char == '\0' { indent_char = current_char; }
                     if current_char != indent_char {
                         return Err(
-                            LexError {
+                            ParserError {
                                 message: "Inconsistent indentation character.",
                                 position: (i, j)
                             }
@@ -56,7 +51,7 @@ pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, LexError> {
                     } else {
                         if line_result.indent_count % indent_factor != 0 {
                             return Err(
-                                LexError {
+                                ParserError {
                                     message: "Inconsistent indentation factor.",
                                     position: (i, j)
                                 }
@@ -108,7 +103,7 @@ pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, LexError> {
                 current_char == '_'
                 ) {
                 return Err(
-                    LexError { 
+                    ParserError { 
                         message: "Invalid character",
                         position: (i, j)
                     }
@@ -121,7 +116,7 @@ pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, LexError> {
         // Check if unterminated string literal.
         if string_char != '\0' {
             return Err(
-                LexError { 
+                ParserError { 
                     message: "unterminated string.",
                     position: (i, line_length - 1)
                 }

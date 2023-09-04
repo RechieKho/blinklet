@@ -2,33 +2,18 @@ use super::error::ParserError;
 use super::lexer::Line;
 use super::lexer::Token;
 
-const KEYWORDS : &[&'static str]= &[
-    "let",
-    "if",
-    "elif",
-    "else",
-    "while",
-    "for",
-    "break",
-    "continue",
-    "fn",
-    "struct",
-    "ensuing",
-];
-
 pub type Command<'a> = Vec<Atom<'a>>;
 
 #[derive(Debug)]
 pub enum Atom<'a> {
-    KEYWORD(&'a str, (usize, usize)),
-    IDENTIFIER(&'a str, (usize, usize)),
+    WORD(&'a str, (usize, usize)),
     STRING(&'a str, (usize, usize)),
     NUMBER(f64, (usize, usize)),
     COMMAND(Command<'a>)
 }
 
 
-pub fn make_tree<'a>(lot: &Vec<Line<'a>>) -> Result<Vec<Command<'a>>, ParserError> {
+pub fn generate_commands<'a>(lot: &Vec<Line<'a>>) -> Result<Vec<Command<'a>>, ParserError> {
     let mut result : Vec<Command<'a>> = Vec::new();
     let mut current_indent_count = 0usize;
 
@@ -54,9 +39,7 @@ pub fn make_tree<'a>(lot: &Vec<Line<'a>>) -> Result<Vec<Command<'a>>, ParserErro
         for token in line.tokens.iter() {
             // Collect atoms.
             let new_atom : Atom<'a> = match token {
-                Token::WORD(d, p) => if KEYWORDS.contains(d) { 
-                    Atom::KEYWORD(d, *p)
-                } else { Atom::IDENTIFIER(d, *p)},
+                Token::WORD(d, p) => Atom::WORD(*d, *p),
                 Token::STRING(d, p) => Atom::STRING(d, *p),
                 Token::NUMBER(d, p) => Atom::NUMBER(*d, *p)
             };
@@ -80,14 +63,28 @@ pub fn make_tree<'a>(lot: &Vec<Line<'a>>) -> Result<Vec<Command<'a>>, ParserErro
             continue;
         }
 
+
         // There is indentation, get the parent command and push the subcommand.
         let parent_command = get_subcommand_mut(result.last_mut().unwrap(), line.indent_count - 1).unwrap();
-        if let Atom::KEYWORD(slice, _) = atoms.first().unwrap() {
-            if slice == &"ensuing" {
-                parent_command.append(&mut atoms); 
-                current_indent_count = line.indent_count; 
-                continue;
+        match atoms.first().unwrap() {
+            Atom::WORD(d, _) => if *d == "ensuing" {
+                    parent_command.append(&mut atoms); 
+                    current_indent_count = line.indent_count; 
+                    continue;
             }
+            Atom::STRING(_, p) => return Err(
+                ParserError { 
+                    message: "String as the head of a command is forbidden.", 
+                    position: *p
+                }
+            ),
+            Atom::NUMBER(_, p) => return Err(
+                ParserError { 
+                    message: "Number as the head of a command is forbidden.", 
+                    position: *p
+                }
+            ),
+            _ => unreachable!("Commandas the head of a command should be unreachable.")
         }
         parent_command.push(Atom::COMMAND(atoms));
         current_indent_count = line.indent_count; 

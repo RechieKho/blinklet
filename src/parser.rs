@@ -1,3 +1,3 @@
 pub mod error;
 pub mod lexer;
-pub mod tree;
+pub mod command;

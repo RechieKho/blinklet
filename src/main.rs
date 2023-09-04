@@ -1,13 +1,12 @@
 mod parser;
+mod interpreter;
+
+use interpreter::evaluator::EvaluationContext;
 
 fn main() {
     let code = String::from(
-"
-fn something argument
-    func_one 
-    func_two
-    func_three 3_arg 3arg 
-    ensuing argument 4th 5th 6th"
-    );
-    println!("{:#?}", parser::tree::make_tree(&parser::lexer::lex(&code).unwrap()).unwrap());
+"greet"
+        );
+    let mut context = EvaluationContext::default();
+    context.run_code(&code);
 }

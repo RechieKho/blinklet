@@ -1,9 +1,13 @@
+use super::{
+    function::{Function, NativeFunction, NativeFunctionHandler},
+    standard::greet,
+    value::Register,
+};
 use std::{collections::HashMap, sync::Arc};
-use super::{value::Value, function::{Function, NativeFunction, NativeFunctionHandler}, standard::greet};
 
 #[derive(Clone)]
 pub struct Object<'code> {
-    pub content : HashMap<String, Value<'code>>
+    pub content: HashMap<String, Register<'code>>,
 }
 
 impl<'code> ToString for Object<'code> {
@@ -14,9 +18,12 @@ impl<'code> ToString for Object<'code> {
 
 impl<'code> Default for Object<'code> {
     fn default() -> Object<'code> {
-        let mut object = Object { content: HashMap::default() };
-        object.content.insert(String::from("greet"), NativeFunction::wrap(greet));
+        let mut object = Object {
+            content: HashMap::default(),
+        };
+        object
+            .content
+            .insert(String::from("greet"), NativeFunction::wrap(greet));
         object
     }
-
 }

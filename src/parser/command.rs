@@ -4,7 +4,7 @@ use super::lexer::Token;
 
 pub type Command<'code> = Vec<Atom<'code>>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Atom<'code> {
     WORD(&'code str, (usize, usize)),
     STRING(&'code str, (usize, usize)),

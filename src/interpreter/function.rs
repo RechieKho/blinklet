@@ -11,7 +11,7 @@ pub trait Function<'code>: ToString + Send + Sync {
 }
 
 pub struct ScriptFunction<'code> {
-    pub command: &'code [Atom<'code>],
+    pub command: Vec<Atom<'code>>,
 }
 
 pub type NativeFunctionHandler<'code> =
@@ -35,9 +35,11 @@ impl<'code> Function<'code> for ScriptFunction<'code> {
 }
 
 impl<'code> ScriptFunction<'code> {
-    pub fn wrap(command: &'code [Atom<'code>]) -> Register<'code> {
+    pub fn wrap(command: &[Atom<'code>]) -> Register<'code> {
         let mut register = Register::default();
-        let function: Arc<dyn Function<'code> + 'code> = Arc::new(ScriptFunction { command });
+        let function: Arc<dyn Function<'code> + 'code> = Arc::new(ScriptFunction {
+            command: command.to_vec(),
+        });
         register.is_constant = true;
         register.value = Value::FUNCTION(function);
         register

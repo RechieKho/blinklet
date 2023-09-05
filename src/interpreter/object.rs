@@ -13,17 +13,10 @@ impl<'code> ToString for Object<'code> {
 }
 
 impl<'code> Default for Object<'code> {
-    fn default() -> Self {
+    fn default() -> Object<'code> {
         let mut object = Object { content: HashMap::default() };
-        object.set_native_function(String::from("greet"), greet);
+        object.content.insert(String::from("greet"), NativeFunction::wrap(greet));
         object
     }
 
-}
-
-impl<'code> Object<'code> {
-    pub fn set_native_function(&mut self, name : String, handler : NativeFunctionHandler<'code>) -> Option<Value<'code>>{
-        let native_fn : Arc<dyn Function<'code> + 'code> = Arc::new(NativeFunction{ handler });
-        self.content.insert(name, Value::FUNCTION(native_fn))
-    }
 }

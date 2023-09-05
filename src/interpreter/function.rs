@@ -1,41 +1,41 @@
 use crate::parser::command::{Command, Atom};
 use super::{value::Value, evaluator::EvaluationContext};
 
-pub trait Function : ToString {
-    fn call(&self, context: &mut EvaluationContext, body: &[Atom]) -> Value;
+pub trait Function<'code> : ToString {
+    fn call(&self, context: &mut EvaluationContext<'code>, body: &[Atom<'code>]) -> Value<'code>;
 }
 
-pub struct ScriptFunction<'a> {
-    pub name : String,
-    pub command : Command<'a>
+pub struct ScriptFunction<'code> {
+    pub command : Command<'code>
 }
 
-pub struct NativeFunction {
-    pub name : String,
-    pub handler : fn(context: &mut EvaluationContext, body: &[Atom]) -> Value
+pub type NativeFunctionHandler<'code> = fn(context: &mut EvaluationContext<'code>, body: &[Atom<'code>]) -> Value<'code>;
+
+pub struct NativeFunction<'code> {
+    pub handler : NativeFunctionHandler<'code>
 }
 
-impl<'a> ToString for ScriptFunction<'a> {
+impl<'code> ToString for ScriptFunction<'code> {
     fn to_string(&self) -> String {
-        format!("<Function '{}'>", self.name)
+        format!("<Script function>")
     }
 }
 
-impl<'a> Function for ScriptFunction<'a> {
-    fn call(&self, _context: &mut EvaluationContext, _body: &[Atom]) -> Value {
+impl<'code> Function<'code> for ScriptFunction<'code> {
+    fn call(&self, _context: &mut EvaluationContext<'code>, _body: &[Atom<'code>]) -> Value<'code> {
         // TODO: Implement this.
         Value::NULL
     }
 }
 
-impl ToString for NativeFunction {
+impl<'code> ToString for NativeFunction<'code> {
     fn to_string(&self) -> String {
-        format!("<Function '{}'>", self.name)
+        format!("<Native function at {:p}>", self)
     }
 }
 
-impl Function for NativeFunction {
-    fn call(&self, context: &mut EvaluationContext, body: &[Atom]) -> Value {
+impl<'code> Function<'code> for NativeFunction<'code> {
+    fn call(&self, context: &mut EvaluationContext<'code>, body: &[Atom<'code>]) -> Value<'code> {
         (self.handler)(context, body)
     }
 }

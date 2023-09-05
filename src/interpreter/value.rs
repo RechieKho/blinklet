@@ -1,18 +1,16 @@
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 use super::{object::Object, function::Function};
 
 #[derive(Clone)]
-pub enum Value {
+pub enum Value<'code> {
     NULL,
     NUMBER(f64),
     STRING(String),
-    OBJECT(Object),
-    FUNCTION(Arc<dyn Function>)
+    OBJECT(Object<'code>),
+    FUNCTION(Arc<dyn Function<'code> + 'code>)
 }
 
-pub type ValueMap = HashMap<String, Value>;
-
-impl ToString for Value {
+impl<'code> ToString for Value<'code> {
     fn to_string(&self) -> String {
         match self {
             Value::NULL => String::from("NULL"),
@@ -24,7 +22,7 @@ impl ToString for Value {
     }
 }
 
-impl Default for Value {
+impl<'code> Default for Value<'code> {
     fn default() -> Self {
         Value::NULL
     }

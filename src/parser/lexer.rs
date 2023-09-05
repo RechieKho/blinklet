@@ -4,27 +4,27 @@ use std::result::Result;
 use super::error::ParserError;
 
 #[derive(Debug, PartialEq)]
-pub enum Token<'a> {
-    WORD(&'a str, (usize, usize)),
-    STRING(&'a str, (usize, usize)),
+pub enum Token<'code> {
+    WORD(&'code str, (usize, usize)),
+    STRING(&'code str, (usize, usize)),
     NUMBER(f64, (usize, usize))
 }
 
 #[derive(Debug, Default)]
-pub struct Line<'a> {
-    pub tokens : Vec<Token<'a>>,
+pub struct Line<'code> {
+    pub tokens : Vec<Token<'code>>,
     pub indent_count : usize,
     pub row : usize
 }
 
-pub fn lex<'a>(code: &'a String) -> Result<Vec<Line<'a>>, ParserError> {
-    let mut result : Vec<Line<'a>> = Vec::new();
+pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, ParserError> {
+    let mut result : Vec<Line<'code>> = Vec::new();
     let mut indent_char = '\0';
     let mut indent_factor = 0usize;
     for (i, line) in code.lines().enumerate() {
         if line.len() == 0 {continue;}
 
-        let mut line_result : Line<'a> = Line::default();
+        let mut line_result : Line<'code> = Line::default();
         let mut is_indent_scanned = false;
         let mut string_char = '\0';
         let mut slice_start = 0usize;

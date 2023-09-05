@@ -1,45 +1,29 @@
-use std::sync::Arc;
-use super::{value::{ValueMap, Value}, function::NativeFunction, standard::greet};
+use std::{collections::HashMap, sync::Arc};
+use super::{value::Value, function::{Function, NativeFunction, NativeFunctionHandler}, standard::greet};
 
 #[derive(Clone)]
-pub struct Object {
-    pub name : String,
-    pub values : ValueMap,
-    pub prototypes : Vec<Arc<Object>>,
+pub struct Object<'code> {
+    pub content : HashMap<String, Value<'code>>
 }
 
-impl ToString for Object {
+impl<'code> ToString for Object<'code> {
     fn to_string(&self) -> String {
         format!("<Object at {:p}>", self)
     }
 }
 
-impl Default for Object {
+impl<'code> Default for Object<'code> {
     fn default() -> Self {
-        let mut object = Object { name: String::from("Object"), values: ValueMap::default(), prototypes: Vec::new() };
-        
-        {
-            let print_fn_name = String::from("greet");
-            let native_fn = NativeFunction { name: print_fn_name.clone(), handler: greet };
-            object.values.insert(print_fn_name, Value::FUNCTION(Arc::new(native_fn)));
-        }
-
+        let mut object = Object { content: HashMap::default() };
+        object.set_native_function(String::from("greet"), greet);
         object
     }
+
 }
 
-impl Object {
-    pub fn freeze(&self) -> Arc<Object> {
-        Arc::new(self.clone())
-    }
-
-    pub fn get(&self, k : &String) -> Option<&Value> {
-        let optional_value = self.values.get(k);
-        if optional_value.is_some() { return optional_value; }
-        for prototype in self.prototypes.iter().rev() {
-            let optional_value = prototype.values.get(k);
-            if optional_value.is_some() { return optional_value; }
-        }
-        None
+impl<'code> Object<'code> {
+    pub fn set_native_function(&mut self, name : String, handler : NativeFunctionHandler<'code>) -> Option<Value<'code>>{
+        let native_fn : Arc<dyn Function<'code> + 'code> = Arc::new(NativeFunction{ handler });
+        self.content.insert(name, Value::FUNCTION(native_fn))
     }
 }

@@ -2,22 +2,22 @@ use super::error::ParserError;
 use super::lexer::Line;
 use super::lexer::Token;
 
-pub type Command<'a> = Vec<Atom<'a>>;
+pub type Command<'code> = Vec<Atom<'code>>;
 
 #[derive(Debug)]
-pub enum Atom<'a> {
-    WORD(&'a str, (usize, usize)),
-    STRING(&'a str, (usize, usize)),
+pub enum Atom<'code> {
+    WORD(&'code str, (usize, usize)),
+    STRING(&'code str, (usize, usize)),
     NUMBER(f64, (usize, usize)),
-    COMMAND(Command<'a>)
+    COMMAND(Command<'code>)
 }
 
 
-pub fn generate_commands<'a>(lot: &Vec<Line<'a>>) -> Result<Vec<Command<'a>>, ParserError> {
-    let mut result : Vec<Command<'a>> = Vec::new();
+pub fn generate_commands<'code>(lot: &Vec<Line<'code>>) -> Result<Vec<Command<'code>>, ParserError> {
+    let mut result : Vec<Command<'code>> = Vec::new();
     let mut current_indent_count = 0usize;
 
-    fn get_subcommand_mut<'a, 'b>(command: &'a mut Command<'b>, nesting: usize) -> Option<&'a mut Command<'b>> {
+    fn get_subcommand_mut<'code, 'b>(command: &'code mut Command<'b>, nesting: usize) -> Option<&'code mut Command<'b>> {
         let mut subcommand = command;
         for _ in 0..nesting {
             let last = subcommand.last_mut();
@@ -35,10 +35,10 @@ pub fn generate_commands<'a>(lot: &Vec<Line<'a>>) -> Result<Vec<Command<'a>>, Pa
             return Err(ParserError { message: "Excessive indentation.", position: (line.row, 0) })
         }
 
-        let mut atoms : Vec<Atom<'a>> = Vec::default();
+        let mut atoms : Vec<Atom<'code>> = Vec::default();
         for token in line.tokens.iter() {
             // Collect atoms.
-            let new_atom : Atom<'a> = match token {
+            let new_atom : Atom<'code> = match token {
                 Token::WORD(d, p) => Atom::WORD(*d, *p),
                 Token::STRING(d, p) => Atom::STRING(d, *p),
                 Token::NUMBER(d, p) => Atom::NUMBER(*d, *p)

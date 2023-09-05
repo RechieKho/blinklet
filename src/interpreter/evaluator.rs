@@ -1,4 +1,7 @@
-use super::{object::Object, value::Value};
+use super::{
+    object::Object,
+    value::{Register, Value},
+};
 use crate::parser::{
     command::{generate_commands, Atom},
     lexer::lex,
@@ -11,6 +14,16 @@ pub struct EvaluationContext<'code> {
 }
 
 impl<'code> EvaluationContext<'code> {
+    pub fn get(&self, k: &String) -> Option<&Register<'code>> {
+        for scope in self.scopes.iter() {
+            let register = scope.content.get(k);
+            if register.is_some() {
+                return register;
+            }
+        }
+        None
+    }
+
     pub fn run_command(&mut self, command: &[Atom<'code>]) {
         if command.is_empty() {
             return;

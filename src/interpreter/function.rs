@@ -6,7 +6,7 @@ use super::{
 };
 use crate::parser::command::Atom;
 
-pub trait Function<'code>: ToString + Send + Sync {
+pub trait Function<'code>: ToString {
     fn call(&self, context: &mut EvaluationContext<'code>, body: &[Atom<'code>]) -> Value<'code>;
 }
 

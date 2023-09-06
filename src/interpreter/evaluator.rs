@@ -33,37 +33,36 @@ impl<'code> EvaluationContext<'code> {
         if self.scopes.is_empty() {
             self.scopes.push(Object::default());
         }
-        let count = self.scopes.len();
         match head {
             Atom::WORD(d, _) => {
                 let word = String::from(*d);
                 for scope in self.scopes.clone().iter_mut().rev() {
                     let optional_value = scope.content.remove(&word);
                     if optional_value.is_none() {
-                        panic!("Undefined identifier as the head of a command. ");
+                        continue;
                     }
                     match optional_value.unwrap().value {
                         Value::FUNCTION(function) => {
                             self.slots.clear();
                             let value = function.call(self, body);
                             self.slots.push(value);
+                            return;
                         }
                         Value::OBJECT(object) => {
                             self.scopes.push(object);
                             self.run_command(body);
                             self.slots.clear();
                             self.slots.push(Value::OBJECT(self.scopes.pop().unwrap()));
+                            return;
                         }
                         _ => {
                             panic!("Unexpected value as the head of a command.");
                         }
                     }
                 }
+                panic!("Undefined identifier as the head of a command. ");
             }
             _ => unreachable!("Non-word as the head of a command should be unreachable."),
-        }
-        if self.scopes.len() != count {
-            unreachable!("Unequal scope count after evaluation with custom object as scope should be unreachable.");
         }
     }
 

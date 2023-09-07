@@ -27,27 +27,3 @@ impl<'code> Default for Value<'code> {
         Value::NULL
     }
 }
-
-#[derive(Clone)]
-pub struct Register<'code> {
-    pub value: Value<'code>,
-    pub is_constant: bool,
-}
-
-impl<'code> Default for Register<'code> {
-    fn default() -> Self {
-        Register {
-            value: Value::NULL,
-            is_constant: false,
-        }
-    }
-}
-
-impl<'code> From<Value<'code>> for Register<'code> {
-    fn from(value: Value<'code>) -> Self {
-        Register {
-            value,
-            is_constant: false,
-        }
-    }
-}

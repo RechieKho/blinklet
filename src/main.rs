@@ -1,10 +1,10 @@
 mod interpreter;
 mod parser;
 
-use interpreter::evaluator::EvaluationContext;
+use interpreter::object::Object;
 
 fn main() {
     let code = String::from("greet");
-    let mut context = EvaluationContext::default();
+    let mut context = Object::default();
     context.run_code(&code);
 }

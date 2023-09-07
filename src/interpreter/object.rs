@@ -56,7 +56,7 @@ impl<'code> Object<'code> {
         let head = command.first().unwrap();
         let body = &command[1..];
         match head {
-            Atom::WORD(d, _) => {
+            Atom::IDENTIFIER(d, _) => {
                 let k = String::from(*d);
                 let optional_value = self.content.get(&k);
                 if optional_value.is_none() {

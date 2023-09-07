@@ -2,11 +2,17 @@ use super::error::ParserError;
 use super::lexer::Line;
 use super::lexer::Token;
 
+const NULL_STR: &'static str = "null";
+const TRUE_STR: &'static str = "true";
+const FALSE_STR: &'static str = "false";
+
 pub type Command<'code> = Vec<Atom<'code>>;
 
 #[derive(Debug, Clone)]
 pub enum Atom<'code> {
-    WORD(&'code str, (usize, usize)),
+    IDENTIFIER(&'code str, (usize, usize)),
+    NULL((usize, usize)),
+    BOOL(bool, (usize, usize)),
     STRING(&'code str, (usize, usize)),
     NUMBER(f64, (usize, usize)),
     COMMAND(Command<'code>),
@@ -51,7 +57,17 @@ pub fn generate_commands<'code>(
         for token in line.tokens.iter() {
             // Collect atoms.
             let new_atom: Atom<'code> = match token {
-                Token::WORD(d, p) => Atom::WORD(*d, *p),
+                Token::WORD(d, p) => {
+                    if *d == NULL_STR {
+                        Atom::NULL(*p)
+                    } else if *d == TRUE_STR {
+                        Atom::BOOL(true, *p)
+                    } else if *d == FALSE_STR {
+                        Atom::BOOL(false, *p)
+                    } else {
+                        Atom::IDENTIFIER(*d, *p)
+                    }
+                }
                 Token::STRING(d, p) => Atom::STRING(d, *p),
                 Token::NUMBER(d, p) => Atom::NUMBER(*d, *p),
             };
@@ -82,7 +98,7 @@ pub fn generate_commands<'code>(
         let parent_command =
             get_subcommand_mut(result.last_mut().unwrap(), line.indent_count - 1).unwrap();
         match atoms.first().unwrap() {
-            Atom::WORD(d, _) => {
+            Atom::IDENTIFIER(d, _) => {
                 if *d == "ensuing" {
                     parent_command.append(&mut atoms);
                     current_indent_count = line.indent_count;
@@ -93,15 +109,29 @@ pub fn generate_commands<'code>(
                 return Err(ParserError {
                     message: "String as the head of a command is forbidden.",
                     position: *p,
-                })
+                });
             }
             Atom::NUMBER(_, p) => {
                 return Err(ParserError {
                     message: "Number as the head of a command is forbidden.",
                     position: *p,
-                })
+                });
             }
-            _ => unreachable!("Commandas the head of a command should be unreachable."),
+            Atom::BOOL(_, p) => {
+                return Err(ParserError {
+                    message: "Bool as the head of a command is forbidden.",
+                    position: *p,
+                });
+            }
+            Atom::NULL(p) => {
+                return Err(ParserError {
+                    message: "Null as the head of a command is forbidden.",
+                    position: *p,
+                });
+            }
+            Atom::COMMAND(_) => {
+                unreachable!("Command as the head of a command should be unreachable.");
+            }
         }
         parent_command.push(Atom::COMMAND(atoms));
         current_indent_count = line.indent_count;

@@ -54,7 +54,6 @@ impl<'code> Object<'code> {
             return;
         }
         let head = command.first().unwrap();
-        let body = &command[1..];
         match head {
             Atom::IDENTIFIER(d, _) => {
                 let k = String::from(*d);
@@ -72,13 +71,13 @@ impl<'code> Object<'code> {
                 match optional_value.unwrap().clone() {
                     Value::FUNCTION(function) => {
                         self.push(Object::default());
-                        let v = function.call(self, body);
+                        let v = function.call(self, command);
                         self.pop();
                         self.content.insert(String::from(RETURN_KEY), v);
                     }
                     Value::OBJECT(object) => {
                         self.push(object);
-                        self.run_command(body);
+                        self.run_command(command);
                         let object = self.pop().unwrap();
                         self.content
                             .insert(String::from(RETURN_KEY), Value::OBJECT(object));

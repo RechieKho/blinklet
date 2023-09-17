@@ -1,6 +1,6 @@
+use std::sync::Arc;
 use super::function::Function;
 use super::object::Object;
-use std::sync::Arc;
 
 #[derive(Clone)]
 pub enum Value<'code> {
@@ -8,6 +8,7 @@ pub enum Value<'code> {
     BOOL(bool),
     NUMBER(f64),
     STRING(String),
+    LIST(Vec<Value<'code>>),
     OBJECT(Object<'code>),
     FUNCTION(Arc<dyn Function<'code> + 'code>),
 }
@@ -21,6 +22,7 @@ impl<'code> ToString for Value<'code> {
             Value::STRING(d) => d.clone(),
             Value::OBJECT(d) => d.to_string(),
             Value::FUNCTION(d) => d.to_string(),
+            Value::LIST(d) => format!("[{}]", d.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(", "))
         }
     }
 }

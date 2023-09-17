@@ -1,9 +1,9 @@
+use crate::error::Error;
+use crate::mark::Mark;
+use std::ops::Range;
 use std::result::Result;
 use std::string::String;
 use std::vec::Vec;
-use std::ops::Range;
-use crate::error::Error;
-use crate::mark::Mark;
 
 #[derive(Debug, PartialEq)]
 pub enum TokenValue<'code> {
@@ -15,28 +15,33 @@ pub enum TokenValue<'code> {
 #[derive(Debug)]
 pub struct Token<'code> {
     pub value: TokenValue<'code>,
-    pub mark: Mark<'code>
+    pub mark: Mark<'code>,
 }
 
 impl<'code> Token<'code> {
     pub fn new_word(word: &'code str, row: usize, column: Range<usize>, line: &'code str) -> Self {
         Token {
             value: TokenValue::WORD(word),
-            mark: Mark { row, column, line }
+            mark: Mark { row, column, line },
         }
     }
 
-    pub fn new_string(string: &'code str, row: usize, column: Range<usize>, line: &'code str) -> Self {
+    pub fn new_string(
+        string: &'code str,
+        row: usize,
+        column: Range<usize>,
+        line: &'code str,
+    ) -> Self {
         Token {
             value: TokenValue::STRING(string),
-            mark: Mark { row, column, line }
+            mark: Mark { row, column, line },
         }
     }
 
     pub fn new_number(number: f64, row: usize, column: Range<usize>, line: &'code str) -> Self {
         Token {
             value: TokenValue::NUMBER(number),
-            mark: Mark { row, column, line }
+            mark: Mark { row, column, line },
         }
     }
 }
@@ -79,8 +84,8 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                             mark: Mark {
                                 row: i,
                                 column: 0..j,
-                                line
-                            }
+                                line,
+                            },
                         });
                     }
                     line_result.indent_count += 1;
@@ -99,8 +104,8 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                                 mark: Mark {
                                     row: i,
                                     column: 0..j,
-                                    line
-                                }
+                                    line,
+                                },
                             });
                         }
                         line_result.indent_count /= indent_factor
@@ -111,9 +116,12 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
             // Check if it is in string literal
             if string_char != '\0' {
                 if current_char == string_char {
-                    line_result
-                        .tokens
-                        .push(Token::new_string(&line[slice_start..j], i, slice_start..j, line));
+                    line_result.tokens.push(Token::new_string(
+                        &line[slice_start..j],
+                        i,
+                        slice_start..j,
+                        line,
+                    ));
                     slice_start = j + 1;
                     string_char = '\0';
                 }
@@ -127,11 +135,16 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                     let slice = &line[slice_start..j];
                     let parse_result = slice.parse::<f64>();
                     if parse_result.is_ok() {
+                        line_result.tokens.push(Token::new_number(
+                            parse_result.unwrap(),
+                            i,
+                            slice_start..j,
+                            line,
+                        ));
+                    } else {
                         line_result
                             .tokens
-                            .push(Token::new_number(parse_result.unwrap(), i, slice_start..j, line));
-                    } else {
-                        line_result.tokens.push(Token::new_word(slice, i, slice_start..j, line));
+                            .push(Token::new_word(slice, i, slice_start..j, line));
                     }
                 }
                 slice_start = j + 1;
@@ -144,11 +157,16 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                     let slice = &line[slice_start..j];
                     let parse_result = slice.parse::<f64>();
                     if parse_result.is_ok() {
+                        line_result.tokens.push(Token::new_number(
+                            parse_result.unwrap(),
+                            i,
+                            slice_start..j,
+                            line,
+                        ));
+                    } else {
                         line_result
                             .tokens
-                            .push(Token::new_number(parse_result.unwrap(), i, slice_start..j, line));
-                    } else {
-                        line_result.tokens.push(Token::new_word(slice, i, slice_start..j, line));
+                            .push(Token::new_word(slice, i, slice_start..j, line));
                     }
                 }
                 slice_start = j + 1;
@@ -162,8 +180,8 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                     mark: Mark {
                         row: i,
                         column: j..j,
-                        line
-                    }
+                        line,
+                    },
                 });
             }
         }
@@ -177,8 +195,8 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                 mark: Mark {
                     row: i,
                     column: slice_start..(line_length - 1),
-                    line
-                }
+                    line,
+                },
             });
         }
 
@@ -187,11 +205,16 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
             let slice = &line[slice_start..line_length];
             let parse_result = slice.parse::<f64>();
             if parse_result.is_ok() {
+                line_result.tokens.push(Token::new_number(
+                    parse_result.unwrap(),
+                    i,
+                    slice_start..line_length,
+                    line,
+                ));
+            } else {
                 line_result
                     .tokens
-                    .push(Token::new_number(parse_result.unwrap(), i, slice_start..line_length, line));
-            } else {
-                line_result.tokens.push(Token::new_word(slice, i, slice_start..line_length, line));
+                    .push(Token::new_word(slice, i, slice_start..line_length, line));
             }
         }
 

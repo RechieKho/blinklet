@@ -1,18 +1,17 @@
-use std::sync::Arc;
-use crate::parser::command::Atom;
 use super::object::Object;
 use super::value::Value;
+use crate::parser::command::Atom;
+use std::sync::Arc;
 
 pub trait Function<'code>: ToString {
-    fn call(&self, context: &mut Object<'code>, body: &[Atom<'code>]) -> Value<'code>;
+    fn call(&self, context: &mut Object<'code>, body: &[Atom<'code>]);
 }
 
 pub struct ScriptFunction<'code> {
     pub command: Vec<Atom<'code>>,
 }
 
-pub type NativeFunctionHandler<'code> =
-    fn(context: &mut Object<'code>, body: &[Atom<'code>]) -> Value<'code>;
+pub type NativeFunctionHandler<'code> = fn(context: &mut Object<'code>, body: &[Atom<'code>]);
 
 pub struct NativeFunction<'code> {
     pub handler: NativeFunctionHandler<'code>,
@@ -25,9 +24,8 @@ impl<'code> ToString for ScriptFunction<'code> {
 }
 
 impl<'code> Function<'code> for ScriptFunction<'code> {
-    fn call(&self, _context: &mut Object<'code>, _body: &[Atom<'code>]) -> Value<'code> {
+    fn call(&self, _context: &mut Object<'code>, _body: &[Atom<'code>]) {
         // TODO: Implement this.
-        Value::default()
     }
 }
 
@@ -47,7 +45,7 @@ impl<'code> ToString for NativeFunction<'code> {
 }
 
 impl<'code> Function<'code> for NativeFunction<'code> {
-    fn call(&self, context: &mut Object<'code>, body: &[Atom<'code>]) -> Value<'code> {
+    fn call(&self, context: &mut Object<'code>, body: &[Atom<'code>]) {
         (self.handler)(context, body)
     }
 }

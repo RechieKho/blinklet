@@ -1,16 +1,17 @@
-use std::collections::HashMap;
-use std::mem;
-use crate::error::Error;
-use crate::parser::lexer::lex;
-use crate::parser::command::Atom;
-use crate::parser::command::AtomValue;
-use crate::parser::command::generate_commands;
 use super::function::NativeFunction;
 use super::standard::greet;
 use super::value::Value;
+use crate::error::Error;
+use crate::parser::command::generate_commands;
+use crate::parser::command::Atom;
+use crate::parser::command::AtomValue;
+use crate::parser::lexer::lex;
+use std::collections::HashMap;
+use std::mem;
 
 const PARENT_KEY: &'static str = "parent";
 const RETURN_KEY: &'static str = "return";
+const RESULT_KEY: &'static str = "result";
 
 #[derive(Clone)]
 pub struct Object<'code> {
@@ -75,16 +76,27 @@ impl<'code> Object<'code> {
                 match optional_value.unwrap().clone() {
                     Value::FUNCTION(function) => {
                         self.push(Object::default());
-                        let v = function.call(self, command);
-                        self.pop();
-                        self.content.insert(String::from(RETURN_KEY), v);
+                        function.call(self, command);
+                        let mut object = self.pop().unwrap();
+                        if object.content.contains_key(RETURN_KEY) {
+                            let value = object.content.remove(RETURN_KEY).unwrap();
+                            self.content.insert(String::from(RESULT_KEY), value);
+                        } else {
+                            self.content
+                                .insert(String::from(RESULT_KEY), Value::OBJECT(object));
+                        }
                     }
                     Value::OBJECT(object) => {
                         self.push(object);
                         self.run_command(command);
-                        let object = self.pop().unwrap();
-                        self.content
-                            .insert(String::from(RETURN_KEY), Value::OBJECT(object));
+                        let mut object = self.pop().unwrap();
+                        if object.content.contains_key(RETURN_KEY) {
+                            let value = object.content.remove(RETURN_KEY).unwrap();
+                            self.content.insert(String::from(RESULT_KEY), value);
+                        } else {
+                            self.content
+                                .insert(String::from(RESULT_KEY), Value::OBJECT(object));
+                        }
                     }
                     _ => panic!("Unexpected value as the head of a command."),
                 }
@@ -95,9 +107,13 @@ impl<'code> Object<'code> {
 
     pub fn run_code(&mut self, code: &'code String) -> Result<(), Error<'code>> {
         let result = lex(code);
-        if result.is_err() { return Err(result.unwrap_err()); }
+        if result.is_err() {
+            return Err(result.unwrap_err());
+        }
         let result = generate_commands(&result.unwrap());
-        if result.is_err() { return Err(result.unwrap_err()); }
+        if result.is_err() {
+            return Err(result.unwrap_err());
+        }
         for command in result.unwrap().iter() {
             self.run_command(command);
         }

@@ -4,5 +4,5 @@ use std::ops::Range;
 pub struct Mark<'code> {
     pub row: usize,
     pub column: Range<usize>,
-    pub line: &'code str
+    pub line: &'code str,
 }

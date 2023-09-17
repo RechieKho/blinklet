@@ -1,10 +1,14 @@
+use super::object::Object;
 use crate::parser::command::Atom;
-
-use super::{object::Object, value::Value};
 
 macro_rules! assert_argument {
     ($argument:expr; is $type:pat) => {
-        if !matches!($argument, $type) { panic!("The argument doesn't match the type '{}'.", stringify!($type)); }
+        if !matches!($argument, $type) {
+            panic!(
+                "The argument doesn't match the type '{}'.",
+                stringify!($type)
+            );
+        }
     };
 
     ($argument:expr; in $range:expr) => {
@@ -17,9 +21,8 @@ macro_rules! assert_argument {
     };
 }
 
-pub fn greet<'code>(_context: &mut Object, _body: &[Atom<'code>]) -> Value<'code> {
+pub fn greet<'code>(_context: &mut Object, _body: &[Atom<'code>]) {
     println!("Hello world");
     assert_argument!(_body; in 2..3);
     //assert_argument!(_body[1]; is AtomValue::STRING(_, _));
-    Value::NULL
 }

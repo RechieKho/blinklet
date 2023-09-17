@@ -1,9 +1,9 @@
-use std::ops::Range;
-use crate::error::Error;
-use crate::mark::Mark;
 use super::lexer::Line;
 use super::lexer::Token;
 use super::lexer::TokenValue;
+use crate::error::Error;
+use crate::mark::Mark;
+use std::ops::Range;
 
 const NULL_STR: &'static str = "null";
 const TRUE_STR: &'static str = "true";
@@ -24,56 +24,71 @@ pub enum AtomValue<'code> {
 #[derive(Debug, Clone)]
 pub struct Atom<'code> {
     pub value: AtomValue<'code>,
-    pub mark: Mark<'code>
+    pub mark: Mark<'code>,
 }
 
 impl<'code> Atom<'code> {
     pub fn new_null(row: usize, column: Range<usize>, line: &'code str) -> Self {
         Atom {
             value: AtomValue::NULL,
-            mark: Mark { row, column, line }
+            mark: Mark { row, column, line },
         }
     }
 
-    pub fn new_identifier(identifier: &'code str, row: usize, column: Range<usize>, line: &'code str) -> Self {
+    pub fn new_identifier(
+        identifier: &'code str,
+        row: usize,
+        column: Range<usize>,
+        line: &'code str,
+    ) -> Self {
         Atom {
             value: AtomValue::IDENTIFIER(identifier),
-            mark: Mark { row, column, line }
+            mark: Mark { row, column, line },
         }
     }
 
     pub fn new_bool(boolean: bool, row: usize, column: Range<usize>, line: &'code str) -> Self {
         Atom {
             value: AtomValue::BOOL(boolean),
-            mark: Mark { row, column, line }
+            mark: Mark { row, column, line },
         }
     }
 
-    pub fn new_string(string: &'code str, row: usize, column: Range<usize>, line: &'code str) -> Self {
+    pub fn new_string(
+        string: &'code str,
+        row: usize,
+        column: Range<usize>,
+        line: &'code str,
+    ) -> Self {
         Atom {
             value: AtomValue::STRING(string),
-            mark: Mark { row, column, line }
+            mark: Mark { row, column, line },
         }
     }
 
     pub fn new_number(number: f64, row: usize, column: Range<usize>, line: &'code str) -> Self {
         Atom {
             value: AtomValue::NUMBER(number),
-            mark: Mark { row, column, line }
+            mark: Mark { row, column, line },
         }
     }
 
-    pub fn new_command(command: Command<'code>, row: usize, column: Range<usize>, line: &'code str) -> Self {
+    pub fn new_command(
+        command: Command<'code>,
+        row: usize,
+        column: Range<usize>,
+        line: &'code str,
+    ) -> Self {
         Atom {
             value: AtomValue::COMMAND(command),
-            mark: Mark { row, column, line }
+            mark: Mark { row, column, line },
         }
     }
 
     pub fn from_token(token: &Token<'code>) -> Self {
         let Token { value, mark } = token;
         let Mark { row, column, line } = mark;
-        match value{
+        match value {
             TokenValue::WORD(word) => {
                 if *word == NULL_STR {
                     Atom::new_null(*row, column.clone(), *line)
@@ -84,9 +99,9 @@ impl<'code> Atom<'code> {
                 } else {
                     Atom::new_identifier(*word, *row, column.clone(), *line)
                 }
-            },
+            }
             TokenValue::STRING(string) => Atom::new_string(*string, *row, column.clone(), *line),
-            TokenValue::NUMBER(number) => Atom::new_number(*number, *row, column.clone(), *line)
+            TokenValue::NUMBER(number) => Atom::new_number(*number, *row, column.clone(), *line),
         }
     }
 }
@@ -125,8 +140,8 @@ pub fn generate_commands<'code>(
                 mark: Mark {
                     row: line.row,
                     column: 0..0,
-                    line: line.line
-                }
+                    line: line.line,
+                },
             });
         }
 
@@ -149,8 +164,8 @@ pub fn generate_commands<'code>(
                 mark: Mark {
                     row: line.row,
                     column: 0..0,
-                    line: line.line
-                }
+                    line: line.line,
+                },
             });
         }
 
@@ -166,7 +181,7 @@ pub fn generate_commands<'code>(
         {
             let first_atom = atoms.first().unwrap();
             let last_atom = atoms.last().unwrap();
-            
+
             match first_atom.value {
                 AtomValue::IDENTIFIER(identifier) => {
                     if identifier == "ensuing" {
@@ -178,34 +193,38 @@ pub fn generate_commands<'code>(
                 AtomValue::STRING(_) => {
                     return Err(Error {
                         message: "String as the head of a command is forbidden.",
-                        mark: first_atom.mark.clone()
+                        mark: first_atom.mark.clone(),
                     });
                 }
                 AtomValue::NUMBER(_) => {
                     return Err(Error {
                         message: "Number as the head of a command is forbidden.",
-                        mark: first_atom.mark.clone()
+                        mark: first_atom.mark.clone(),
                     });
                 }
                 AtomValue::BOOL(_) => {
                     return Err(Error {
                         message: "Bool as the head of a command is forbidden.",
-                        mark: first_atom.mark.clone()
+                        mark: first_atom.mark.clone(),
                     });
                 }
                 AtomValue::NULL => {
                     return Err(Error {
                         message: "Null as the head of a command is forbidden.",
-                        mark: first_atom.mark.clone()
+                        mark: first_atom.mark.clone(),
                     });
                 }
                 AtomValue::COMMAND(_) => {
                     unreachable!("Command as the head of a command should be unreachable.");
                 }
             }
-
         }
-        parent_command.push(Atom::new_command(atoms, line.row, 0..line.line.len(), line.line));
+        parent_command.push(Atom::new_command(
+            atoms,
+            line.row,
+            0..line.line.len(),
+            line.line,
+        ));
         current_indent_count = line.indent_count;
     }
 

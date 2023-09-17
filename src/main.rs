@@ -1,6 +1,6 @@
-mod mark;
 mod error;
 mod interpreter;
+mod mark;
 mod parser;
 
 use interpreter::object::Object;

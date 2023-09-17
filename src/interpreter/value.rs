@@ -1,5 +1,6 @@
-use super::{function::Function, object::Object};
 use std::sync::Arc;
+use super::function::Function;
+use super::object::Object;
 
 #[derive(Clone)]
 pub enum Value<'code> {

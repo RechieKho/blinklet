@@ -1,3 +1,5 @@
+mod mark;
+mod error;
 mod interpreter;
 mod parser;
 

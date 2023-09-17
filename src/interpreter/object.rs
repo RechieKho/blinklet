@@ -1,9 +1,13 @@
-use super::{function::NativeFunction, standard::greet, value::Value};
-use crate::parser::{
-    command::{generate_commands, Atom},
-    lexer::lex,
-};
-use std::{collections::HashMap, mem};
+use std::collections::HashMap;
+use std::mem;
+use crate::error::Error;
+use crate::parser::lexer::lex;
+use crate::parser::command::Atom;
+use crate::parser::command::AtomValue;
+use crate::parser::command::generate_commands;
+use super::function::NativeFunction;
+use super::standard::greet;
+use super::value::Value;
 
 const PARENT_KEY: &'static str = "parent";
 const RETURN_KEY: &'static str = "return";
@@ -54,9 +58,9 @@ impl<'code> Object<'code> {
             return;
         }
         let head = command.first().unwrap();
-        match head {
-            Atom::IDENTIFIER(d, _) => {
-                let k = String::from(*d);
+        match head.value {
+            AtomValue::IDENTIFIER(identifier) => {
+                let k = String::from(identifier);
                 let optional_value = self.content.get(&k);
                 if optional_value.is_none() {
                     let optional_parent = self.content.get_mut(&String::from(PARENT_KEY));
@@ -89,25 +93,14 @@ impl<'code> Object<'code> {
         }
     }
 
-    pub fn run_code(&mut self, code: &'code String) {
+    pub fn run_code(&mut self, code: &'code String) -> Result<(), Error<'code>> {
         let result = lex(code);
-        if result.is_err() {
-            let error = result.unwrap_err();
-            panic!(
-                "Lexical analysis error: {} [line {}, column {}]",
-                error.message, error.position.0, error.position.1
-            );
-        }
+        if result.is_err() { return Err(result.unwrap_err()); }
         let result = generate_commands(&result.unwrap());
-        if result.is_err() {
-            let error = result.unwrap_err();
-            panic!(
-                "Command generation error: {} [line {}, column {}]",
-                error.message, error.position.0, error.position.1
-            );
-        }
+        if result.is_err() { return Err(result.unwrap_err()); }
         for command in result.unwrap().iter() {
             self.run_command(command);
         }
+        return Ok(());
     }
 }

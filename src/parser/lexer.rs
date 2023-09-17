@@ -1,13 +1,44 @@
-use super::error::ParserError;
 use std::result::Result;
 use std::string::String;
 use std::vec::Vec;
+use std::ops::Range;
+use crate::error::Error;
+use crate::mark::Mark;
 
 #[derive(Debug, PartialEq)]
-pub enum Token<'code> {
-    WORD(&'code str, (usize, usize)),
-    STRING(&'code str, (usize, usize)),
-    NUMBER(f64, (usize, usize)),
+pub enum TokenValue<'code> {
+    WORD(&'code str),
+    STRING(&'code str),
+    NUMBER(f64),
+}
+
+#[derive(Debug)]
+pub struct Token<'code> {
+    pub value: TokenValue<'code>,
+    pub mark: Mark<'code>
+}
+
+impl<'code> Token<'code> {
+    pub fn new_word(word: &'code str, row: usize, column: Range<usize>, line: &'code str) -> Self {
+        Token {
+            value: TokenValue::WORD(word),
+            mark: Mark { row, column, line }
+        }
+    }
+
+    pub fn new_string(string: &'code str, row: usize, column: Range<usize>, line: &'code str) -> Self {
+        Token {
+            value: TokenValue::STRING(string),
+            mark: Mark { row, column, line }
+        }
+    }
+
+    pub fn new_number(number: f64, row: usize, column: Range<usize>, line: &'code str) -> Self {
+        Token {
+            value: TokenValue::NUMBER(number),
+            mark: Mark { row, column, line }
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -15,9 +46,10 @@ pub struct Line<'code> {
     pub tokens: Vec<Token<'code>>,
     pub indent_count: usize,
     pub row: usize,
+    pub line: &'code str,
 }
 
-pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, ParserError> {
+pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>> {
     let mut result: Vec<Line<'code>> = Vec::new();
     let mut indent_char = '\0';
     let mut indent_factor = 0usize;
@@ -32,6 +64,7 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, ParserError> 
         let mut slice_start = 0usize;
 
         line_result.row = i;
+        line_result.line = line;
 
         for (j, current_char) in line.chars().into_iter().enumerate() {
             // Collect indentation count.
@@ -41,9 +74,13 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, ParserError> 
                         indent_char = current_char;
                     }
                     if current_char != indent_char {
-                        return Err(ParserError {
+                        return Err(Error {
                             message: "Inconsistent indentation character.",
-                            position: (i, j),
+                            mark: Mark {
+                                row: i,
+                                column: 0..j,
+                                line
+                            }
                         });
                     }
                     line_result.indent_count += 1;
@@ -57,9 +94,13 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, ParserError> 
                     if indent_factor != 0 {
                         // We are not using else to consider the value change.
                         if line_result.indent_count % indent_factor != 0 {
-                            return Err(ParserError {
+                            return Err(Error {
                                 message: "Inconsistent indentation factor.",
-                                position: (i, j),
+                                mark: Mark {
+                                    row: i,
+                                    column: 0..j,
+                                    line
+                                }
                             });
                         }
                         line_result.indent_count /= indent_factor
@@ -72,7 +113,7 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, ParserError> 
                 if current_char == string_char {
                     line_result
                         .tokens
-                        .push(Token::STRING(&line[slice_start..j], (i, j)));
+                        .push(Token::new_string(&line[slice_start..j], i, slice_start..j, line));
                     slice_start = j + 1;
                     string_char = '\0';
                 }
@@ -88,9 +129,9 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, ParserError> 
                     if parse_result.is_ok() {
                         line_result
                             .tokens
-                            .push(Token::NUMBER(parse_result.unwrap(), (i, j)));
+                            .push(Token::new_number(parse_result.unwrap(), i, slice_start..j, line));
                     } else {
-                        line_result.tokens.push(Token::WORD(slice, (i, j)));
+                        line_result.tokens.push(Token::new_word(slice, i, slice_start..j, line));
                     }
                 }
                 slice_start = j + 1;
@@ -105,9 +146,9 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, ParserError> 
                     if parse_result.is_ok() {
                         line_result
                             .tokens
-                            .push(Token::NUMBER(parse_result.unwrap(), (i, j)));
+                            .push(Token::new_number(parse_result.unwrap(), i, slice_start..j, line));
                     } else {
-                        line_result.tokens.push(Token::WORD(slice, (i, j)));
+                        line_result.tokens.push(Token::new_word(slice, i, slice_start..j, line));
                     }
                 }
                 slice_start = j + 1;
@@ -116,9 +157,13 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, ParserError> 
 
             // Check if characters are valid.
             if !(current_char.is_alphanumeric() || current_char == '.' || current_char == '_') {
-                return Err(ParserError {
+                return Err(Error {
                     message: "Invalid character",
-                    position: (i, j),
+                    mark: Mark {
+                        row: i,
+                        column: j..j,
+                        line
+                    }
                 });
             }
         }
@@ -127,9 +172,13 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, ParserError> 
 
         // Check if unterminated string literal.
         if string_char != '\0' {
-            return Err(ParserError {
+            return Err(Error {
                 message: "unterminated string.",
-                position: (i, line_length - 1),
+                mark: Mark {
+                    row: i,
+                    column: slice_start..(line_length - 1),
+                    line
+                }
             });
         }
 
@@ -140,11 +189,9 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, ParserError> 
             if parse_result.is_ok() {
                 line_result
                     .tokens
-                    .push(Token::NUMBER(parse_result.unwrap(), (i, slice_start)));
+                    .push(Token::new_number(parse_result.unwrap(), i, slice_start..line_length, line));
             } else {
-                line_result
-                    .tokens
-                    .push(Token::WORD(slice, (i, slice_start)));
+                line_result.tokens.push(Token::new_word(slice, i, slice_start..line_length, line));
             }
         }
 

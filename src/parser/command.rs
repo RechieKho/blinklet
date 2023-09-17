@@ -1,6 +1,9 @@
-use super::error::ParserError;
+use std::ops::Range;
+use crate::error::Error;
+use crate::mark::Mark;
 use super::lexer::Line;
 use super::lexer::Token;
+use super::lexer::TokenValue;
 
 const NULL_STR: &'static str = "null";
 const TRUE_STR: &'static str = "true";
@@ -9,18 +12,88 @@ const FALSE_STR: &'static str = "false";
 pub type Command<'code> = Vec<Atom<'code>>;
 
 #[derive(Debug, Clone)]
-pub enum Atom<'code> {
-    IDENTIFIER(&'code str, (usize, usize)),
-    NULL((usize, usize)),
-    BOOL(bool, (usize, usize)),
-    STRING(&'code str, (usize, usize)),
-    NUMBER(f64, (usize, usize)),
+pub enum AtomValue<'code> {
+    NULL,
+    IDENTIFIER(&'code str),
+    BOOL(bool),
+    STRING(&'code str),
+    NUMBER(f64),
     COMMAND(Command<'code>),
+}
+
+#[derive(Debug, Clone)]
+pub struct Atom<'code> {
+    pub value: AtomValue<'code>,
+    pub mark: Mark<'code>
+}
+
+impl<'code> Atom<'code> {
+    pub fn new_null(row: usize, column: Range<usize>, line: &'code str) -> Self {
+        Atom {
+            value: AtomValue::NULL,
+            mark: Mark { row, column, line }
+        }
+    }
+
+    pub fn new_identifier(identifier: &'code str, row: usize, column: Range<usize>, line: &'code str) -> Self {
+        Atom {
+            value: AtomValue::IDENTIFIER(identifier),
+            mark: Mark { row, column, line }
+        }
+    }
+
+    pub fn new_bool(boolean: bool, row: usize, column: Range<usize>, line: &'code str) -> Self {
+        Atom {
+            value: AtomValue::BOOL(boolean),
+            mark: Mark { row, column, line }
+        }
+    }
+
+    pub fn new_string(string: &'code str, row: usize, column: Range<usize>, line: &'code str) -> Self {
+        Atom {
+            value: AtomValue::STRING(string),
+            mark: Mark { row, column, line }
+        }
+    }
+
+    pub fn new_number(number: f64, row: usize, column: Range<usize>, line: &'code str) -> Self {
+        Atom {
+            value: AtomValue::NUMBER(number),
+            mark: Mark { row, column, line }
+        }
+    }
+
+    pub fn new_command(command: Command<'code>, row: usize, column: Range<usize>, line: &'code str) -> Self {
+        Atom {
+            value: AtomValue::COMMAND(command),
+            mark: Mark { row, column, line }
+        }
+    }
+
+    pub fn from_token(token: &Token<'code>) -> Self {
+        let Token { value, mark } = token;
+        let Mark { row, column, line } = mark;
+        match value{
+            TokenValue::WORD(word) => {
+                if *word == NULL_STR {
+                    Atom::new_null(*row, column.clone(), *line)
+                } else if *word == TRUE_STR {
+                    Atom::new_bool(true, *row, column.clone(), *line)
+                } else if *word == FALSE_STR {
+                    Atom::new_bool(false, *row, column.clone(), *line)
+                } else {
+                    Atom::new_identifier(*word, *row, column.clone(), *line)
+                }
+            },
+            TokenValue::STRING(string) => Atom::new_string(*string, *row, column.clone(), *line),
+            TokenValue::NUMBER(number) => Atom::new_number(*number, *row, column.clone(), *line)
+        }
+    }
 }
 
 pub fn generate_commands<'code>(
     lot: &Vec<Line<'code>>,
-) -> Result<Vec<Command<'code>>, ParserError> {
+) -> Result<Vec<Command<'code>>, Error<'code>> {
     let mut result: Vec<Command<'code>> = Vec::new();
     let mut current_indent_count = 0usize;
 
@@ -35,7 +108,7 @@ pub fn generate_commands<'code>(
                 return None;
             }
             let atom = last.unwrap();
-            if let Atom::COMMAND(c) = atom {
+            if let AtomValue::COMMAND(ref mut c) = atom.value {
                 subcommand = c;
             } else {
                 return None;
@@ -47,30 +120,20 @@ pub fn generate_commands<'code>(
     for line in lot.iter() {
         let indent_displacement = line.indent_count as isize - current_indent_count as isize;
         if indent_displacement > 1 {
-            return Err(ParserError {
+            return Err(Error {
                 message: "Excessive indentation.",
-                position: (line.row, 0),
+                mark: Mark {
+                    row: line.row,
+                    column: 0..0,
+                    line: line.line
+                }
             });
         }
 
         let mut atoms: Vec<Atom<'code>> = Vec::default();
         for token in line.tokens.iter() {
             // Collect atoms.
-            let new_atom: Atom<'code> = match token {
-                Token::WORD(d, p) => {
-                    if *d == NULL_STR {
-                        Atom::NULL(*p)
-                    } else if *d == TRUE_STR {
-                        Atom::BOOL(true, *p)
-                    } else if *d == FALSE_STR {
-                        Atom::BOOL(false, *p)
-                    } else {
-                        Atom::IDENTIFIER(*d, *p)
-                    }
-                }
-                Token::STRING(d, p) => Atom::STRING(d, *p),
-                Token::NUMBER(d, p) => Atom::NUMBER(*d, *p),
-            };
+            let new_atom: Atom<'code> = Atom::from_token(token);
             atoms.push(new_atom);
         }
 
@@ -81,9 +144,13 @@ pub fn generate_commands<'code>(
 
         // Indentation at the very first command, this is a sin.
         if result.len() == 0 && line.indent_count != 0 {
-            return Err(ParserError {
+            return Err(Error {
                 message: "Unexpected indentation.",
-                position: (line.row, 0),
+                mark: Mark {
+                    row: line.row,
+                    column: 0..0,
+                    line: line.line
+                }
             });
         }
 
@@ -93,47 +160,52 @@ pub fn generate_commands<'code>(
             current_indent_count = line.indent_count;
             continue;
         }
-
         // There is indentation, get the parent command and push the subcommand.
         let parent_command =
             get_subcommand_mut(result.last_mut().unwrap(), line.indent_count - 1).unwrap();
-        match atoms.first().unwrap() {
-            Atom::IDENTIFIER(d, _) => {
-                if *d == "ensuing" {
-                    parent_command.append(&mut atoms);
-                    current_indent_count = line.indent_count;
-                    continue;
+        {
+            let first_atom = atoms.first().unwrap();
+            let last_atom = atoms.last().unwrap();
+            
+            match first_atom.value {
+                AtomValue::IDENTIFIER(identifier) => {
+                    if identifier == "ensuing" {
+                        parent_command.append(&mut atoms);
+                        current_indent_count = line.indent_count;
+                        continue;
+                    }
+                }
+                AtomValue::STRING(_) => {
+                    return Err(Error {
+                        message: "String as the head of a command is forbidden.",
+                        mark: first_atom.mark.clone()
+                    });
+                }
+                AtomValue::NUMBER(_) => {
+                    return Err(Error {
+                        message: "Number as the head of a command is forbidden.",
+                        mark: first_atom.mark.clone()
+                    });
+                }
+                AtomValue::BOOL(_) => {
+                    return Err(Error {
+                        message: "Bool as the head of a command is forbidden.",
+                        mark: first_atom.mark.clone()
+                    });
+                }
+                AtomValue::NULL => {
+                    return Err(Error {
+                        message: "Null as the head of a command is forbidden.",
+                        mark: first_atom.mark.clone()
+                    });
+                }
+                AtomValue::COMMAND(_) => {
+                    unreachable!("Command as the head of a command should be unreachable.");
                 }
             }
-            Atom::STRING(_, p) => {
-                return Err(ParserError {
-                    message: "String as the head of a command is forbidden.",
-                    position: *p,
-                });
-            }
-            Atom::NUMBER(_, p) => {
-                return Err(ParserError {
-                    message: "Number as the head of a command is forbidden.",
-                    position: *p,
-                });
-            }
-            Atom::BOOL(_, p) => {
-                return Err(ParserError {
-                    message: "Bool as the head of a command is forbidden.",
-                    position: *p,
-                });
-            }
-            Atom::NULL(p) => {
-                return Err(ParserError {
-                    message: "Null as the head of a command is forbidden.",
-                    position: *p,
-                });
-            }
-            Atom::COMMAND(_) => {
-                unreachable!("Command as the head of a command should be unreachable.");
-            }
+
         }
-        parent_command.push(Atom::COMMAND(atoms));
+        parent_command.push(Atom::new_command(atoms, line.row, 0..line.line.len(), line.line));
         current_indent_count = line.indent_count;
     }
 

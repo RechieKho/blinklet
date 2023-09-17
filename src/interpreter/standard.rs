@@ -20,6 +20,6 @@ macro_rules! assert_argument {
 pub fn greet<'code>(_context: &mut Object, _body: &[Atom<'code>]) -> Value<'code> {
     println!("Hello world");
     assert_argument!(_body; in 2..3);
-    //assert_argument!(_body[1]; is Atom::STRING(_, _));
+    //assert_argument!(_body[1]; is AtomValue::STRING(_, _));
     Value::NULL
 }

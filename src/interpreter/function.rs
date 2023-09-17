@@ -1,7 +1,7 @@
 use std::sync::Arc;
-
-use super::{object::Object, value::Value};
 use crate::parser::command::Atom;
+use super::object::Object;
+use super::value::Value;
 
 pub trait Function<'code>: ToString {
     fn call(&self, context: &mut Object<'code>, body: &[Atom<'code>]) -> Value<'code>;

@@ -54,9 +54,9 @@ impl<'code> Object<'code> {
         return None;
     }
 
-    pub fn run_command(&mut self, command: &[Atom<'code>]) {
+    pub fn run_command(&mut self, command: &[Atom<'code>]) -> Result<(), Error<'code>> {
         if command.is_empty() {
-            return;
+            return Ok(());
         }
         let head = command.first().unwrap();
         match head.value {
@@ -67,10 +67,13 @@ impl<'code> Object<'code> {
                     let optional_parent = self.content.get_mut(&String::from(PARENT_KEY));
                     if optional_parent.is_some() {
                         if let Value::OBJECT(ref mut object) = optional_parent.unwrap() {
-                            object.run_command(command);
+                            return object.run_command(command);
                         }
                     }
-                    return;
+                    return Err(Error {
+                        message: "Undefined identifier as the head of a command.",
+                        mark: head.mark.clone()
+                    });
                 }
 
                 match optional_value.unwrap().clone() {
@@ -88,7 +91,7 @@ impl<'code> Object<'code> {
                     }
                     Value::OBJECT(object) => {
                         self.push(object);
-                        self.run_command(command);
+                        let _ = self.run_command(command)?;
                         let mut object = self.pop().unwrap();
                         if object.content.contains_key(RETURN_KEY) {
                             let value = object.content.remove(RETURN_KEY).unwrap();
@@ -98,25 +101,25 @@ impl<'code> Object<'code> {
                                 .insert(String::from(RESULT_KEY), Value::OBJECT(object));
                         }
                     }
-                    _ => panic!("Unexpected value as the head of a command."),
+                    _ => {
+                        return Err(Error { 
+                            message: "Unexpected value as the head of a comand.",
+                            mark: head.mark.clone()
+                        });
+                    }
                 }
             }
             _ => unreachable!("Non-word as the head of a command should be unreachable."),
         }
+        Ok(())
     }
 
     pub fn run_code(&mut self, code: &'code String) -> Result<(), Error<'code>> {
-        let result = lex(code);
-        if result.is_err() {
-            return Err(result.unwrap_err());
+        let result = lex(code)?;
+        let result = generate_commands(&result)?;
+        for command in result.iter() {
+            let _ = self.run_command(command)?;
         }
-        let result = generate_commands(&result.unwrap());
-        if result.is_err() {
-            return Err(result.unwrap_err());
-        }
-        for command in result.unwrap().iter() {
-            self.run_command(command);
-        }
-        return Ok(());
+        Ok(())
     }
 }

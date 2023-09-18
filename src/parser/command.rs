@@ -136,7 +136,7 @@ pub fn generate_commands<'code>(
         let indent_displacement = line.indent_count as isize - current_indent_count as isize;
         if indent_displacement > 1 {
             return Err(Error {
-                message: "Excessive indentation.",
+                message: format!("Excessive indentation."),
                 mark: Mark {
                     row: line.row,
                     column: 0..0,
@@ -160,7 +160,7 @@ pub fn generate_commands<'code>(
         // Indentation at the very first command, this is a sin.
         if result.len() == 0 && line.indent_count != 0 {
             return Err(Error {
-                message: "Unexpected indentation.",
+                message: format!("Unexpected indentation."),
                 mark: Mark {
                     row: line.row,
                     column: 0..0,
@@ -192,25 +192,25 @@ pub fn generate_commands<'code>(
                 }
                 AtomValue::STRING(_) => {
                     return Err(Error {
-                        message: "String as the head of a command is forbidden.",
+                        message: format!("String as the head of a command is forbidden."),
                         mark: first_atom.mark.clone(),
                     });
                 }
                 AtomValue::NUMBER(_) => {
                     return Err(Error {
-                        message: "Number as the head of a command is forbidden.",
+                        message: format!("Number as the head of a command is forbidden."),
                         mark: first_atom.mark.clone(),
                     });
                 }
                 AtomValue::BOOL(_) => {
                     return Err(Error {
-                        message: "Bool as the head of a command is forbidden.",
+                        message: format!("Bool as the head of a command is forbidden."),
                         mark: first_atom.mark.clone(),
                     });
                 }
                 AtomValue::NULL => {
                     return Err(Error {
-                        message: "Null as the head of a command is forbidden.",
+                        message: format!("Null as the head of a command is forbidden."),
                         mark: first_atom.mark.clone(),
                     });
                 }

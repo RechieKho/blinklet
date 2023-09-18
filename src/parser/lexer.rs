@@ -80,7 +80,7 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                     }
                     if current_char != indent_char {
                         return Err(Error {
-                            message: "Inconsistent indentation character.",
+                            message: format!("Inconsistent indentation character."),
                             mark: Mark {
                                 row: i,
                                 column: 0..j,
@@ -100,7 +100,7 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                         // We are not using else to consider the value change.
                         if line_result.indent_count % indent_factor != 0 {
                             return Err(Error {
-                                message: "Inconsistent indentation factor.",
+                                message: format!("Inconsistent indentation factor."),
                                 mark: Mark {
                                     row: i,
                                     column: 0..j,
@@ -179,7 +179,7 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
         // Check if unterminated string literal.
         if string_char != '\0' {
             return Err(Error {
-                message: "unterminated string.",
+                message: format!("unterminated string."),
                 mark: Mark {
                     row: i,
                     column: slice_start..(line_length - 1),

@@ -172,18 +172,6 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                 slice_start = j + 1;
                 continue;
             }
-
-            // Check if characters are valid.
-            if !(current_char.is_alphanumeric() || current_char == '.' || current_char == '_') {
-                return Err(Error {
-                    message: "Invalid character",
-                    mark: Mark {
-                        row: i,
-                        column: j..j,
-                        line,
-                    },
-                });
-            }
         }
 
         let line_length = line.len();
@@ -200,7 +188,7 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
             });
         }
 
-        //
+        // Check if there is unhandled token.
         if slice_start != line_length {
             let slice = &line[slice_start..line_length];
             let parse_result = slice.parse::<f64>();

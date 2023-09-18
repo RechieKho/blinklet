@@ -72,7 +72,7 @@ impl<'code> Object<'code> {
                     }
                     return Err(Error {
                         message: "Undefined identifier as the head of a command.",
-                        mark: head.mark.clone()
+                        mark: head.mark.clone(),
                     });
                 }
 
@@ -102,9 +102,9 @@ impl<'code> Object<'code> {
                         }
                     }
                     _ => {
-                        return Err(Error { 
+                        return Err(Error {
                             message: "Unexpected value as the head of a comand.",
-                            mark: head.mark.clone()
+                            mark: head.mark.clone(),
                         });
                     }
                 }

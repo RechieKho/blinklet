@@ -1,4 +1,6 @@
 use super::function::NativeFunction;
+use super::function::RESULT_KEY;
+use super::function::RETURN_KEY;
 use super::standard::greet;
 use super::value::Value;
 use crate::error::Error;
@@ -9,9 +11,7 @@ use crate::parser::lexer::lex;
 use std::collections::HashMap;
 use std::mem;
 
-const PARENT_KEY: &'static str = "parent";
-const RETURN_KEY: &'static str = "return";
-const RESULT_KEY: &'static str = "result";
+pub const PARENT_KEY: &'static str = "parent";
 
 #[derive(Clone)]
 pub struct Object<'code> {
@@ -103,7 +103,7 @@ impl<'code> Object<'code> {
                     }
                     _ => {
                         return Err(Error {
-                            message: "Unexpected value as the head of a comand.",
+                            message: "Unexpected value as the head of a command.",
                             mark: head.mark.clone(),
                         });
                     }

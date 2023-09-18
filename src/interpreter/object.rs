@@ -79,7 +79,7 @@ impl<'code> Object<'code> {
                 match optional_value.unwrap().clone() {
                     Value::FUNCTION(function) => {
                         self.push(Object::default());
-                        function.call(self, command);
+                        function.call(self, command)?;
                         let mut object = self.pop().unwrap();
                         if object.content.contains_key(RETURN_KEY) {
                             let value = object.content.remove(RETURN_KEY).unwrap();
@@ -91,7 +91,7 @@ impl<'code> Object<'code> {
                     }
                     Value::OBJECT(object) => {
                         self.push(object);
-                        let _ = self.run_command(command)?;
+                        self.run_command(command)?;
                         let mut object = self.pop().unwrap();
                         if object.content.contains_key(RETURN_KEY) {
                             let value = object.content.remove(RETURN_KEY).unwrap();
@@ -118,7 +118,7 @@ impl<'code> Object<'code> {
         let result = lex(code)?;
         let result = generate_commands(&result)?;
         for command in result.iter() {
-            let _ = self.run_command(command)?;
+            self.run_command(command)?;
         }
         Ok(())
     }

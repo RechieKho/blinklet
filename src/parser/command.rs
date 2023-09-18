@@ -180,7 +180,6 @@ pub fn generate_commands<'code>(
             get_subcommand_mut(result.last_mut().unwrap(), line.indent_count - 1).unwrap();
         {
             let first_atom = atoms.first().unwrap();
-            let last_atom = atoms.last().unwrap();
 
             match first_atom.value {
                 AtomValue::IDENTIFIER(identifier) => {

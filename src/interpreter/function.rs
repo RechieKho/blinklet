@@ -1,5 +1,6 @@
 use super::object::Object;
 use super::value::Value;
+use crate::error::Error;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
 use std::sync::Arc;
@@ -9,14 +10,15 @@ pub const RESULT_KEY: &'static str = "result";
 pub const ERROR_KEY: &'static str = "error";
 
 pub trait Function<'code>: ToString {
-    fn call(&self, context: &mut Object<'code>, body: &[Atom<'code>]);
+    fn call(&self, context: &mut Object<'code>, body: &[Atom<'code>]) -> Result<(), Error<'code>>;
 }
 
 pub struct ScriptFunction<'code> {
     pub command: Vec<Atom<'code>>,
 }
 
-pub type NativeFunctionHandler<'code> = fn(context: &mut Object<'code>, body: &[Atom<'code>]);
+pub type NativeFunctionHandler<'code> =
+    fn(context: &mut Object<'code>, body: &[Atom<'code>]) -> Result<(), Error<'code>>;
 
 pub struct NativeFunction<'code> {
     pub handler: NativeFunctionHandler<'code>,
@@ -29,7 +31,7 @@ impl<'code> ToString for ScriptFunction<'code> {
 }
 
 impl<'code> Function<'code> for ScriptFunction<'code> {
-    fn call(&self, context: &mut Object<'code>, body: &[Atom<'code>]) {
+    fn call(&self, context: &mut Object<'code>, body: &[Atom<'code>]) -> Result<(), Error<'code>> {
         let mut argument_index = 1usize;
         for atom in self.command.iter() {
             match atom.value {
@@ -49,18 +51,9 @@ impl<'code> Function<'code> for ScriptFunction<'code> {
                         AtomValue::STRING(string) => Value::STRING(String::from(string)),
                         AtomValue::NUMBER(number) => Value::NUMBER(number),
                         AtomValue::COMMAND(ref command) => {
-                            context.push(Object::default());
-                            let result = context.run_command(command.as_slice());
-                            let mut object = context.pop().unwrap();
-                            if result.is_err() {
-                                context.content.insert(
-                                    String::from(ERROR_KEY),
-                                    Value::STRING(String::from(result.unwrap_err().message)),
-                                );
-                                return;
-                            }
-                            if object.content.contains_key(RESULT_KEY) {
-                                object.content.remove(RESULT_KEY).unwrap_or(Value::NULL)
+                            context.run_command(command.as_slice())?;
+                            if context.content.contains_key(RESULT_KEY) {
+                                context.content.remove(RESULT_KEY).unwrap_or(Value::NULL)
                             } else {
                                 Value::NULL
                             }
@@ -73,16 +66,15 @@ impl<'code> Function<'code> for ScriptFunction<'code> {
                 }
 
                 AtomValue::COMMAND(ref command) => {
-                    let result = context.run_command(command);
-                    if result.is_err() {
-                        context.content.insert(
-                            String::from(ERROR_KEY),
-                            Value::STRING(String::from(result.unwrap_err().message)),
-                        );
-                        return;
-                    }
+                    context.run_command(command)?;
                     if context.content.contains_key(RETURN_KEY) {
-                        return;
+                        return Ok(());
+                    } else if context.content.contains_key(ERROR_KEY) {
+                        let error = context.content.get(ERROR_KEY).unwrap();
+                        return Err(Error {
+                            message: error.to_string(),
+                            mark: body.first().unwrap().mark.clone(),
+                        });
                     }
                 }
 
@@ -91,10 +83,14 @@ impl<'code> Function<'code> for ScriptFunction<'code> {
                         String::from(ERROR_KEY),
                         Value::STRING(String::from("Unexpected value as the head of a command.")),
                     );
-                    return;
+                    return Err(Error {
+                        message: String::from("Unexpected value as the head of a command."),
+                        mark: body.first().unwrap().mark.clone(),
+                    });
                 }
             }
         }
+        Ok(())
     }
 }
 
@@ -114,7 +110,7 @@ impl<'code> ToString for NativeFunction<'code> {
 }
 
 impl<'code> Function<'code> for NativeFunction<'code> {
-    fn call(&self, context: &mut Object<'code>, body: &[Atom<'code>]) {
+    fn call(&self, context: &mut Object<'code>, body: &[Atom<'code>]) -> Result<(), Error<'code>> {
         (self.handler)(context, body)
     }
 }

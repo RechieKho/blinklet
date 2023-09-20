@@ -2,7 +2,7 @@ use super::context::Context;
 use super::value::Value;
 use crate::error::Error;
 use crate::parser::command::Atom;
-use std::sync::Arc;
+use std::rc::Rc;
 
 pub trait Function<'code>: ToString {
     fn call(
@@ -46,7 +46,7 @@ impl<'code> Function<'code> for ScriptFunction<'code> {
 
 impl<'code> ScriptFunction<'code> {
     pub fn wrap(command: &[Atom<'code>]) -> Value<'code> {
-        let function: Arc<dyn Function<'code> + 'code> = Arc::new(ScriptFunction {
+        let function: Rc<dyn Function<'code> + 'code> = Rc::new(ScriptFunction {
             command: command.to_vec(),
         });
         Value::FUNCTION(function)
@@ -71,7 +71,7 @@ impl<'code> Function<'code> for NativeFunction<'code> {
 
 impl<'code> NativeFunction<'code> {
     pub fn wrap(handler: NativeFunctionHandler<'code>) -> Value<'code> {
-        let function: Arc<dyn Function<'code> + 'code> = Arc::new(NativeFunction { handler });
+        let function: Rc<dyn Function<'code> + 'code> = Rc::new(NativeFunction { handler });
         Value::FUNCTION(function)
     }
 }

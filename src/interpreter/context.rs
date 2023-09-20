@@ -6,7 +6,7 @@ use crate::parser::command::generate_commands;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
 use crate::parser::lexer::lex;
-use std::sync::Arc;
+use std::rc::Rc;
 
 /// The runtime that runs Minky code.
 pub struct Context<'code> {
@@ -237,7 +237,7 @@ impl<'code> Context<'code> {
     pub fn resolve_function(
         &self,
         atom: &Atom<'code>,
-    ) -> Result<Arc<dyn Function<'code> + 'code>, Error<'code>> {
+    ) -> Result<Rc<dyn Function<'code> + 'code>, Error<'code>> {
         if let AtomValue::IDENTIFIER(identifier) = atom.value {
             let optional_value = self.get_value(identifier);
             if optional_value.is_none() {

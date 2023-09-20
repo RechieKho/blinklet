@@ -1,6 +1,6 @@
 use super::function::Function;
 use super::object::Object;
-use std::sync::Arc;
+use std::rc::Rc;
 
 #[derive(Clone)]
 pub enum Value<'code> {
@@ -10,7 +10,7 @@ pub enum Value<'code> {
     STRING(String),
     LIST(Vec<Value<'code>>),
     OBJECT(Object<'code>),
-    FUNCTION(Arc<dyn Function<'code> + 'code>),
+    FUNCTION(Rc<dyn Function<'code> + 'code>),
 }
 
 impl<'code> ToString for Value<'code> {

@@ -5,10 +5,10 @@ mod interpreter;
 mod mark;
 mod parser;
 
-use interpreter::object::Object;
+use interpreter::context::Context;
 
 fn main() {
     let code = String::from("greet you");
-    let mut context = Object::default();
-    context.run_code(&code);
+    let mut context = Context::default();
+    let _ = context.run_code(&code);
 }

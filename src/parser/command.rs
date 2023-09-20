@@ -24,18 +24,18 @@ pub enum AtomValue<'code> {
 #[derive(Debug, Clone)]
 pub struct Atom<'code> {
     pub value: AtomValue<'code>,
-    pub mark: Mark<'code>,
+    pub mark: Option<Mark<'code>>,
 }
 
 impl<'code> Atom<'code> {
-    pub fn new_null(row: usize, column: Range<usize>, line: &'code str) -> Self {
+    pub fn new_marked_null(row: usize, column: Range<usize>, line: &'code str) -> Self {
         Atom {
             value: AtomValue::NULL,
-            mark: Mark { row, column, line },
+            mark: Some(Mark { row, column, line }),
         }
     }
 
-    pub fn new_identifier(
+    pub fn new_marked_identifier(
         identifier: &'code str,
         row: usize,
         column: Range<usize>,
@@ -43,18 +43,23 @@ impl<'code> Atom<'code> {
     ) -> Self {
         Atom {
             value: AtomValue::IDENTIFIER(identifier),
-            mark: Mark { row, column, line },
+            mark: Some(Mark { row, column, line }),
         }
     }
 
-    pub fn new_bool(boolean: bool, row: usize, column: Range<usize>, line: &'code str) -> Self {
+    pub fn new_marked_bool(
+        boolean: bool,
+        row: usize,
+        column: Range<usize>,
+        line: &'code str,
+    ) -> Self {
         Atom {
             value: AtomValue::BOOL(boolean),
-            mark: Mark { row, column, line },
+            mark: Some(Mark { row, column, line }),
         }
     }
 
-    pub fn new_string(
+    pub fn new_marked_string(
         string: &'code str,
         row: usize,
         column: Range<usize>,
@@ -62,18 +67,23 @@ impl<'code> Atom<'code> {
     ) -> Self {
         Atom {
             value: AtomValue::STRING(string),
-            mark: Mark { row, column, line },
+            mark: Some(Mark { row, column, line }),
         }
     }
 
-    pub fn new_number(number: f64, row: usize, column: Range<usize>, line: &'code str) -> Self {
+    pub fn new_marked_number(
+        number: f64,
+        row: usize,
+        column: Range<usize>,
+        line: &'code str,
+    ) -> Self {
         Atom {
             value: AtomValue::NUMBER(number),
-            mark: Mark { row, column, line },
+            mark: Some(Mark { row, column, line }),
         }
     }
 
-    pub fn new_command(
+    pub fn new_marked_command(
         command: Command<'code>,
         row: usize,
         column: Range<usize>,
@@ -81,7 +91,7 @@ impl<'code> Atom<'code> {
     ) -> Self {
         Atom {
             value: AtomValue::COMMAND(command),
-            mark: Mark { row, column, line },
+            mark: Some(Mark { row, column, line }),
         }
     }
 
@@ -91,17 +101,21 @@ impl<'code> Atom<'code> {
         match value {
             TokenValue::WORD(word) => {
                 if *word == NULL_STR {
-                    Atom::new_null(*row, column.clone(), *line)
+                    Atom::new_marked_null(*row, column.clone(), *line)
                 } else if *word == TRUE_STR {
-                    Atom::new_bool(true, *row, column.clone(), *line)
+                    Atom::new_marked_bool(true, *row, column.clone(), *line)
                 } else if *word == FALSE_STR {
-                    Atom::new_bool(false, *row, column.clone(), *line)
+                    Atom::new_marked_bool(false, *row, column.clone(), *line)
                 } else {
-                    Atom::new_identifier(*word, *row, column.clone(), *line)
+                    Atom::new_marked_identifier(*word, *row, column.clone(), *line)
                 }
             }
-            TokenValue::STRING(string) => Atom::new_string(*string, *row, column.clone(), *line),
-            TokenValue::NUMBER(number) => Atom::new_number(*number, *row, column.clone(), *line),
+            TokenValue::STRING(string) => {
+                Atom::new_marked_string(*string, *row, column.clone(), *line)
+            }
+            TokenValue::NUMBER(number) => {
+                Atom::new_marked_number(*number, *row, column.clone(), *line)
+            }
         }
     }
 }
@@ -137,19 +151,19 @@ pub fn generate_commands<'code>(
         if indent_displacement > 1 {
             return Err(Error {
                 message: format!("Excessive indentation."),
-                mark: Mark {
+                mark: Some(Mark {
                     row: line.row,
                     column: 0..0,
                     line: line.line,
-                },
+                }),
             });
         }
 
         let mut atoms: Vec<Atom<'code>> = Vec::default();
         for token in line.tokens.iter() {
             // Collect atoms.
-            let new_atom: Atom<'code> = Atom::from_token(token);
-            atoms.push(new_atom);
+            let new_marked_atom: Atom<'code> = Atom::from_token(token);
+            atoms.push(new_marked_atom);
         }
 
         if atoms.len() == 0 {
@@ -161,11 +175,11 @@ pub fn generate_commands<'code>(
         if result.len() == 0 && line.indent_count != 0 {
             return Err(Error {
                 message: format!("Unexpected indentation."),
-                mark: Mark {
+                mark: Some(Mark {
                     row: line.row,
                     column: 0..0,
                     line: line.line,
-                },
+                }),
             });
         }
 
@@ -218,7 +232,7 @@ pub fn generate_commands<'code>(
                 }
             }
         }
-        parent_command.push(Atom::new_command(
+        parent_command.push(Atom::new_marked_command(
             atoms,
             line.row,
             0..line.line.len(),

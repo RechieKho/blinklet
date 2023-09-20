@@ -64,7 +64,7 @@ impl<'code> Object<'code> {
                 let k = String::from(identifier);
                 let optional_value = self.content.get(&k);
                 if optional_value.is_none() {
-                    let optional_parent = self.content.get_mut(&String::from(PARENT_KEY));
+                    let optional_parent = self.content.get_mut(PARENT_KEY);
                     if optional_parent.is_some() {
                         if let Value::OBJECT(ref mut object) = optional_parent.unwrap() {
                             return object.run_command(command);

@@ -81,11 +81,11 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                     if current_char != indent_char {
                         return Err(Error {
                             message: format!("Inconsistent indentation character."),
-                            mark: Mark {
+                            mark: Some(Mark {
                                 row: i,
                                 column: 0..j,
                                 line,
-                            },
+                            }),
                         });
                     }
                     line_result.indent_count += 1;
@@ -101,11 +101,11 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                         if line_result.indent_count % indent_factor != 0 {
                             return Err(Error {
                                 message: format!("Inconsistent indentation factor."),
-                                mark: Mark {
+                                mark: Some(Mark {
                                     row: i,
                                     column: 0..j,
                                     line,
-                                },
+                                }),
                             });
                         }
                         line_result.indent_count /= indent_factor
@@ -180,11 +180,11 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
         if string_char != '\0' {
             return Err(Error {
                 message: format!("unterminated string."),
-                mark: Mark {
+                mark: Some(Mark {
                     row: i,
                     column: slice_start..(line_length - 1),
                     line,
-                },
+                }),
             });
         }
 

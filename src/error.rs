@@ -1,7 +1,7 @@
 use super::mark::Mark;
 
 #[derive(Debug, Clone)]
-pub struct Error<'code> {
+pub struct Error<'name, 'code> {
     pub message: String,
-    pub mark: Option<Mark<'code>>,
+    pub mark: Option<Mark<'name, 'code>>,
 }

@@ -1,6 +1,6 @@
 use super::value::Value;
 
-pub enum Signal<'code> {
-    COMPLETE(Value<'code>),
-    RETURN(Value<'code>),
+pub enum Signal<'name, 'code> {
+    COMPLETE(Value<'name, 'code>),
+    RETURN(Value<'name, 'code>),
 }

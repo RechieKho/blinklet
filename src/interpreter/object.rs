@@ -4,17 +4,20 @@ use super::value::Value;
 use std::collections::HashMap;
 
 #[derive(Clone)]
-pub struct Object<'code> {
-    pub content: HashMap<String, Value<'code>>,
+pub struct Object<'name, 'code> {
+    pub content: HashMap<String, Value<'name, 'code>>,
 }
 
-impl<'code> ToString for Object<'code> {
+impl<'name, 'code> ToString for Object<'name, 'code> {
     fn to_string(&self) -> String {
         format!("<Object at {:p}>", self)
     }
 }
 
-impl<'code> Default for Object<'code> {
+impl<'name, 'code> Default for Object<'name, 'code>
+where
+    'name: 'code,
+{
     fn default() -> Self {
         let mut object = Object {
             content: HashMap::default(),

@@ -13,20 +13,32 @@ pub enum TokenValue<'code> {
 }
 
 #[derive(Debug)]
-pub struct Token<'code> {
+pub struct Token<'name, 'code> {
     pub value: TokenValue<'code>,
-    pub mark: Mark<'code>,
+    pub mark: Mark<'name, 'code>,
 }
 
-impl<'code> Token<'code> {
-    pub fn new_word(word: &'code str, row: usize, column: Range<usize>, line: &'code str) -> Self {
+impl<'name, 'code> Token<'name, 'code> {
+    pub fn new_word(
+        name: &'name String,
+        word: &'code str,
+        row: usize,
+        column: Range<usize>,
+        line: &'code str,
+    ) -> Self {
         Token {
             value: TokenValue::WORD(word),
-            mark: Mark { row, column, line },
+            mark: Mark {
+                name,
+                row,
+                column,
+                line,
+            },
         }
     }
 
     pub fn new_string(
+        name: &'name String,
         string: &'code str,
         row: usize,
         column: Range<usize>,
@@ -34,28 +46,48 @@ impl<'code> Token<'code> {
     ) -> Self {
         Token {
             value: TokenValue::STRING(string),
-            mark: Mark { row, column, line },
+            mark: Mark {
+                name,
+                row,
+                column,
+                line,
+            },
         }
     }
 
-    pub fn new_number(number: f64, row: usize, column: Range<usize>, line: &'code str) -> Self {
+    pub fn new_number(
+        name: &'name String,
+        number: f64,
+        row: usize,
+        column: Range<usize>,
+        line: &'code str,
+    ) -> Self {
         Token {
             value: TokenValue::NUMBER(number),
-            mark: Mark { row, column, line },
+            mark: Mark {
+                name,
+                row,
+                column,
+                line,
+            },
         }
     }
 }
 
-#[derive(Debug, Default)]
-pub struct Line<'code> {
-    pub tokens: Vec<Token<'code>>,
+#[derive(Debug)]
+pub struct Line<'name, 'code> {
+    pub name: &'name String,
+    pub tokens: Vec<Token<'name, 'code>>,
     pub indent_count: usize,
     pub row: usize,
     pub line: &'code str,
 }
 
-pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>> {
-    let mut result: Vec<Line<'code>> = Vec::new();
+pub fn lex<'name, 'code>(
+    name: &'name String,
+    code: &'code String,
+) -> Result<Vec<Line<'name, 'code>>, Error<'name, 'code>> {
+    let mut result: Vec<Line<'name, 'code>> = Vec::new();
     let mut indent_char = '\0';
     let mut indent_factor = 0usize;
     for (i, line) in code.lines().enumerate() {
@@ -63,13 +95,20 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
             continue;
         }
 
-        let mut line_result: Line<'code> = Line::default();
+        let mut line_result: Line<'name, 'code> = Line {
+            name,
+            tokens: Vec::new(),
+            indent_count: 0,
+            row: 0,
+            line,
+        };
         let mut is_indent_scanned = false;
         let mut string_char = '\0';
         let mut slice_start = 0usize;
 
         line_result.row = i;
         line_result.line = line;
+        line_result.name = name;
 
         for (j, current_char) in line.chars().into_iter().enumerate() {
             // Collect indentation count.
@@ -82,6 +121,7 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                         return Err(Error {
                             message: format!("Inconsistent indentation character."),
                             mark: Some(Mark {
+                                name,
                                 row: i,
                                 column: 0..j,
                                 line,
@@ -102,6 +142,7 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                             return Err(Error {
                                 message: format!("Inconsistent indentation factor."),
                                 mark: Some(Mark {
+                                    name,
                                     row: i,
                                     column: 0..j,
                                     line,
@@ -117,6 +158,7 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
             if string_char != '\0' {
                 if current_char == string_char {
                     line_result.tokens.push(Token::new_string(
+                        name,
                         &line[slice_start..j],
                         i,
                         slice_start..j,
@@ -136,15 +178,20 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                     let parse_result = slice.parse::<f64>();
                     if parse_result.is_ok() {
                         line_result.tokens.push(Token::new_number(
+                            name,
                             parse_result.unwrap(),
                             i,
                             slice_start..j,
                             line,
                         ));
                     } else {
-                        line_result
-                            .tokens
-                            .push(Token::new_word(slice, i, slice_start..j, line));
+                        line_result.tokens.push(Token::new_word(
+                            name,
+                            slice,
+                            i,
+                            slice_start..j,
+                            line,
+                        ));
                     }
                 }
                 slice_start = j + 1;
@@ -158,15 +205,20 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
                     let parse_result = slice.parse::<f64>();
                     if parse_result.is_ok() {
                         line_result.tokens.push(Token::new_number(
+                            name,
                             parse_result.unwrap(),
                             i,
                             slice_start..j,
                             line,
                         ));
                     } else {
-                        line_result
-                            .tokens
-                            .push(Token::new_word(slice, i, slice_start..j, line));
+                        line_result.tokens.push(Token::new_word(
+                            name,
+                            slice,
+                            i,
+                            slice_start..j,
+                            line,
+                        ));
                     }
                 }
                 slice_start = j + 1;
@@ -181,6 +233,7 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
             return Err(Error {
                 message: format!("unterminated string."),
                 mark: Some(Mark {
+                    name,
                     row: i,
                     column: slice_start..(line_length - 1),
                     line,
@@ -194,15 +247,20 @@ pub fn lex<'code>(code: &'code String) -> Result<Vec<Line<'code>>, Error<'code>>
             let parse_result = slice.parse::<f64>();
             if parse_result.is_ok() {
                 line_result.tokens.push(Token::new_number(
+                    name,
                     parse_result.unwrap(),
                     i,
                     slice_start..line_length,
                     line,
                 ));
             } else {
-                line_result
-                    .tokens
-                    .push(Token::new_word(slice, i, slice_start..line_length, line));
+                line_result.tokens.push(Token::new_word(
+                    name,
+                    slice,
+                    i,
+                    slice_start..line_length,
+                    line,
+                ));
             }
         }
 

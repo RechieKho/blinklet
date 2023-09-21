@@ -3,6 +3,7 @@ use super::object::Object;
 use super::signal::Signal;
 use super::value::Value;
 use crate::error::Error;
+use crate::mark::Mark;
 use crate::parser::command::generate_commands;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
@@ -10,30 +11,42 @@ use crate::parser::lexer::lex;
 use std::rc::Rc;
 
 /// The runtime that runs Minky code.
-pub struct Context<'code> {
-    pub scopes: Vec<Object<'code>>,
-    pub slots: Vec<Value<'code>>,
+pub struct Context<'name, 'code> {
+    pub scopes: Vec<Object<'name, 'code>>,
+    pub slots: Vec<Value<'name, 'code>>,
+    pub trace: Vec<Mark<'name, 'code>>,
 }
 
-impl<'code> Default for Context<'code> {
+impl<'name, 'code> Default for Context<'name, 'code>
+where
+    'name: 'code,
+{
     fn default() -> Self {
         Context {
             scopes: vec![Object::default()],
             slots: Vec::new(),
+            trace: Vec::new(),
         }
     }
 }
 
-impl<'code> Context<'code> {
-    pub fn declare(&mut self, identifier: String, value: Value<'code>) -> Option<Value<'code>> {
+impl<'name, 'code> Context<'name, 'code>
+where
+    'name: 'code,
+{
+    pub fn declare(
+        &mut self,
+        identifier: String,
+        value: Value<'name, 'code>,
+    ) -> Option<Value<'name, 'code>> {
         self.scopes.last_mut()?.content.insert(identifier, value)
     }
 
     pub fn set(
         &mut self,
         identifier: String,
-        value: Value<'code>,
-    ) -> Result<Value<'code>, Error<'code>> {
+        value: Value<'name, 'code>,
+    ) -> Result<Value<'name, 'code>, Error<'name, 'code>> {
         let scopes_count = self.scopes.len();
         if scopes_count == 0 {
             return Err(Error {
@@ -58,7 +71,10 @@ impl<'code> Context<'code> {
         })
     }
 
-    pub fn get_value<'context>(&'context self, identifier: &str) -> Option<&'context Value<'code>> {
+    pub fn get_value<'context>(
+        &'context self,
+        identifier: &str,
+    ) -> Option<&'context Value<'name, 'code>> {
         let scopes_count = self.scopes.len();
         if scopes_count == 0 {
             return None;
@@ -81,7 +97,10 @@ impl<'code> Context<'code> {
         None
     }
 
-    pub fn resolve_value(&mut self, atom: &Atom<'code>) -> Result<Value<'code>, Error<'code>> {
+    pub fn resolve_value(
+        &mut self,
+        atom: &Atom<'name, 'code>,
+    ) -> Result<Value<'name, 'code>, Error<'name, 'code>> {
         match atom.value {
             AtomValue::COMMAND(ref command) => {
                 let signal = self.run_command(command.as_slice())?;
@@ -108,7 +127,7 @@ impl<'code> Context<'code> {
         }
     }
 
-    pub fn resolve_bool(&self, atom: &Atom<'code>) -> Result<bool, Error<'code>> {
+    pub fn resolve_bool(&self, atom: &Atom<'name, 'code>) -> Result<bool, Error<'name, 'code>> {
         match atom.value {
             AtomValue::BOOL(boolean) => Ok(boolean),
             AtomValue::IDENTIFIER(identifier) => {
@@ -135,7 +154,7 @@ impl<'code> Context<'code> {
         }
     }
 
-    pub fn resolve_number(&self, atom: &Atom<'code>) -> Result<f64, Error<'code>> {
+    pub fn resolve_number(&self, atom: &Atom<'name, 'code>) -> Result<f64, Error<'name, 'code>> {
         match atom.value {
             AtomValue::NUMBER(number) => Ok(number),
             AtomValue::IDENTIFIER(identifier) => {
@@ -162,7 +181,7 @@ impl<'code> Context<'code> {
         }
     }
 
-    pub fn resolve_string(&self, atom: &Atom<'code>) -> Result<String, Error<'code>> {
+    pub fn resolve_string(&self, atom: &Atom<'name, 'code>) -> Result<String, Error<'name, 'code>> {
         match atom.value {
             AtomValue::STRING(string) => Ok(String::from(string)),
             AtomValue::IDENTIFIER(identifier) => {
@@ -189,7 +208,10 @@ impl<'code> Context<'code> {
         }
     }
 
-    pub fn resolve_list(&self, atom: &Atom<'code>) -> Result<Vec<Value<'code>>, Error<'code>> {
+    pub fn resolve_list(
+        &self,
+        atom: &Atom<'name, 'code>,
+    ) -> Result<Vec<Value<'name, 'code>>, Error<'name, 'code>> {
         match atom.value {
             AtomValue::IDENTIFIER(identifier) => {
                 let optional_value = self.get_value(identifier);
@@ -215,7 +237,10 @@ impl<'code> Context<'code> {
         }
     }
 
-    pub fn resolve_object(&self, atom: &Atom<'code>) -> Result<Object<'code>, Error<'code>> {
+    pub fn resolve_object(
+        &self,
+        atom: &Atom<'name, 'code>,
+    ) -> Result<Object<'name, 'code>, Error<'name, 'code>> {
         match atom.value {
             AtomValue::IDENTIFIER(identifier) => {
                 let optional_value = self.get_value(identifier);
@@ -243,8 +268,8 @@ impl<'code> Context<'code> {
 
     pub fn resolve_function(
         &self,
-        atom: &Atom<'code>,
-    ) -> Result<Rc<dyn Function<'code> + 'code>, Error<'code>> {
+        atom: &Atom<'name, 'code>,
+    ) -> Result<Rc<dyn Function<'name, 'code> + 'code>, Error<'name, 'code>> {
         if let AtomValue::IDENTIFIER(identifier) = atom.value {
             let optional_value = self.get_value(identifier);
             if optional_value.is_none() {
@@ -268,7 +293,10 @@ impl<'code> Context<'code> {
         }
     }
 
-    pub fn run_command(&mut self, command: &[Atom<'code>]) -> Result<Signal<'code>, Error<'code>> {
+    pub fn run_command(
+        &mut self,
+        command: &[Atom<'name, 'code>],
+    ) -> Result<Signal<'name, 'code>, Error<'name, 'code>> {
         if command.is_empty() {
             return Ok(Signal::COMPLETE(Value::NULL));
         }
@@ -311,9 +339,13 @@ impl<'code> Context<'code> {
         })
     }
 
-    pub fn run_code(&mut self, code: &'code String) -> Result<(), Error<'code>> {
-        let result = lex(code)?;
-        let result = generate_commands(&result)?;
+    pub fn run_code(
+        &mut self,
+        name: &'name String,
+        code: &'code String,
+    ) -> Result<(), Error<'name, 'code>> {
+        let result = lex(name, code)?;
+        let result = generate_commands(result)?;
         for command in result.iter() {
             self.run_command(command)?;
         }

@@ -9,127 +9,168 @@ const NULL_STR: &'static str = "null";
 const TRUE_STR: &'static str = "true";
 const FALSE_STR: &'static str = "false";
 
-pub type Command<'code> = Vec<Atom<'code>>;
+pub type Command<'name, 'code> = Vec<Atom<'name, 'code>>;
 
 #[derive(Debug, Clone)]
-pub enum AtomValue<'code> {
+pub enum AtomValue<'name, 'code> {
     NULL,
     IDENTIFIER(&'code str),
     BOOL(bool),
     STRING(&'code str),
     NUMBER(f64),
-    COMMAND(Command<'code>),
+    COMMAND(Command<'name, 'code>),
 }
 
 #[derive(Debug, Clone)]
-pub struct Atom<'code> {
-    pub value: AtomValue<'code>,
-    pub mark: Option<Mark<'code>>,
+pub struct Atom<'name, 'code> {
+    pub value: AtomValue<'name, 'code>,
+    pub mark: Option<Mark<'name, 'code>>,
 }
 
-impl<'code> Atom<'code> {
-    pub fn new_marked_null(row: usize, column: Range<usize>, line: &'code str) -> Self {
+impl<'name, 'code> Atom<'name, 'code> {
+    pub fn new_marked_null(
+        name: &'name String,
+        row: usize,
+        column: Range<usize>,
+        line: &'code str,
+    ) -> Self {
         Atom {
             value: AtomValue::NULL,
-            mark: Some(Mark { row, column, line }),
+            mark: Some(Mark {
+                name,
+                row,
+                column,
+                line,
+            }),
         }
     }
 
     pub fn new_marked_identifier(
         identifier: &'code str,
+        name: &'name String,
         row: usize,
         column: Range<usize>,
         line: &'code str,
     ) -> Self {
         Atom {
             value: AtomValue::IDENTIFIER(identifier),
-            mark: Some(Mark { row, column, line }),
+            mark: Some(Mark {
+                name,
+                row,
+                column,
+                line,
+            }),
         }
     }
 
     pub fn new_marked_bool(
         boolean: bool,
+        name: &'name String,
         row: usize,
         column: Range<usize>,
         line: &'code str,
     ) -> Self {
         Atom {
             value: AtomValue::BOOL(boolean),
-            mark: Some(Mark { row, column, line }),
+            mark: Some(Mark {
+                name,
+                row,
+                column,
+                line,
+            }),
         }
     }
 
     pub fn new_marked_string(
         string: &'code str,
+        name: &'name String,
         row: usize,
         column: Range<usize>,
         line: &'code str,
     ) -> Self {
         Atom {
             value: AtomValue::STRING(string),
-            mark: Some(Mark { row, column, line }),
+            mark: Some(Mark {
+                name,
+                row,
+                column,
+                line,
+            }),
         }
     }
 
     pub fn new_marked_number(
         number: f64,
+        name: &'name String,
         row: usize,
         column: Range<usize>,
         line: &'code str,
     ) -> Self {
         Atom {
             value: AtomValue::NUMBER(number),
-            mark: Some(Mark { row, column, line }),
+            mark: Some(Mark {
+                name,
+                row,
+                column,
+                line,
+            }),
         }
     }
 
     pub fn new_marked_command(
-        command: Command<'code>,
+        command: Command<'name, 'code>,
+        name: &'name String,
         row: usize,
         column: Range<usize>,
         line: &'code str,
     ) -> Self {
         Atom {
             value: AtomValue::COMMAND(command),
-            mark: Some(Mark { row, column, line }),
+            mark: Some(Mark {
+                name,
+                row,
+                column,
+                line,
+            }),
         }
     }
 
-    pub fn from_token(token: &Token<'code>) -> Self {
+    pub fn from_token(token: Token<'name, 'code>) -> Self {
         let Token { value, mark } = token;
-        let Mark { row, column, line } = mark;
+        let Mark {
+            name,
+            row,
+            column,
+            line,
+        } = mark;
         match value {
             TokenValue::WORD(word) => {
-                if *word == NULL_STR {
-                    Atom::new_marked_null(*row, column.clone(), *line)
-                } else if *word == TRUE_STR {
-                    Atom::new_marked_bool(true, *row, column.clone(), *line)
-                } else if *word == FALSE_STR {
-                    Atom::new_marked_bool(false, *row, column.clone(), *line)
+                if word == NULL_STR {
+                    Atom::new_marked_null(name, row, column, line)
+                } else if word == TRUE_STR {
+                    Atom::new_marked_bool(true, name, row, column, line)
+                } else if word == FALSE_STR {
+                    Atom::new_marked_bool(false, name, row, column, line)
                 } else {
-                    Atom::new_marked_identifier(*word, *row, column.clone(), *line)
+                    Atom::new_marked_identifier(word, name, row, column, line)
                 }
             }
-            TokenValue::STRING(string) => {
-                Atom::new_marked_string(*string, *row, column.clone(), *line)
-            }
-            TokenValue::NUMBER(number) => {
-                Atom::new_marked_number(*number, *row, column.clone(), *line)
-            }
+            TokenValue::STRING(string) => Atom::new_marked_string(string, name, row, column, line),
+            TokenValue::NUMBER(number) => Atom::new_marked_number(number, name, row, column, line),
         }
     }
 }
 
-pub fn generate_commands<'code>(
-    lot: &Vec<Line<'code>>,
-) -> Result<Vec<Command<'code>>, Error<'code>> {
-    let mut result: Vec<Command<'code>> = Vec::new();
+pub fn generate_commands<'name, 'code>(
+    mut lot: Vec<Line<'name, 'code>>,
+) -> Result<Vec<Command<'name, 'code>>, Error<'name, 'code>> {
+    let mut result: Vec<Command<'name, 'code>> = Vec::new();
     let mut current_indent_count = 0usize;
 
-    fn get_subcommand_mut<'code, 'b>(
-        command: &'code mut Command<'b>,
+    fn get_subcommand_mut<'command, 'name, 'code>(
+        command: &'command mut Command<'name, 'code>,
         nesting: usize,
-    ) -> Option<&'code mut Command<'b>> {
+    ) -> Option<&'command mut Command<'name, 'code>> {
         let mut subcommand = command;
         for _ in 0..nesting {
             let last = subcommand.last_mut();
@@ -146,12 +187,13 @@ pub fn generate_commands<'code>(
         Some(subcommand)
     }
 
-    for line in lot.iter() {
+    for mut line in lot.drain(..) {
         let indent_displacement = line.indent_count as isize - current_indent_count as isize;
         if indent_displacement > 1 {
             return Err(Error {
                 message: format!("Excessive indentation."),
                 mark: Some(Mark {
+                    name: line.name,
                     row: line.row,
                     column: 0..0,
                     line: line.line,
@@ -159,10 +201,10 @@ pub fn generate_commands<'code>(
             });
         }
 
-        let mut atoms: Vec<Atom<'code>> = Vec::default();
-        for token in line.tokens.iter() {
+        let mut atoms: Vec<Atom<'name, 'code>> = Vec::default();
+        for token in line.tokens.drain(..) {
             // Collect atoms.
-            let new_marked_atom: Atom<'code> = Atom::from_token(token);
+            let new_marked_atom: Atom<'name, 'code> = Atom::from_token(token);
             atoms.push(new_marked_atom);
         }
 
@@ -176,6 +218,7 @@ pub fn generate_commands<'code>(
             return Err(Error {
                 message: format!("Unexpected indentation."),
                 mark: Some(Mark {
+                    name: line.name,
                     row: line.row,
                     column: 0..0,
                     line: line.line,
@@ -234,6 +277,7 @@ pub fn generate_commands<'code>(
         }
         parent_command.push(Atom::new_marked_command(
             atoms,
+            line.name,
             line.row,
             0..line.line.len(),
             line.line,

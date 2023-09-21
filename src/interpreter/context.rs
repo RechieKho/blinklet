@@ -1,5 +1,6 @@
 use super::function::Function;
 use super::object::Object;
+use super::signal::Signal;
 use super::value::Value;
 use crate::error::Error;
 use crate::parser::command::generate_commands;
@@ -82,7 +83,13 @@ impl<'code> Context<'code> {
 
     pub fn resolve_value(&mut self, atom: &Atom<'code>) -> Result<Value<'code>, Error<'code>> {
         match atom.value {
-            AtomValue::COMMAND(ref command) => self.run_command(command.as_slice()),
+            AtomValue::COMMAND(ref command) => {
+                let signal = self.run_command(command.as_slice())?;
+                match signal {
+                    Signal::RETURN(value) => Ok(value),
+                    Signal::COMPLETE(value) => Ok(value),
+                }
+            }
             AtomValue::BOOL(boolean) => Ok(Value::BOOL(boolean)),
             AtomValue::NULL => Ok(Value::NULL),
             AtomValue::STRING(string) => Ok(Value::STRING(String::from(string))),
@@ -261,9 +268,9 @@ impl<'code> Context<'code> {
         }
     }
 
-    pub fn run_command(&mut self, command: &[Atom<'code>]) -> Result<Value<'code>, Error<'code>> {
+    pub fn run_command(&mut self, command: &[Atom<'code>]) -> Result<Signal<'code>, Error<'code>> {
         if command.is_empty() {
-            return Ok(Value::NULL);
+            return Ok(Signal::COMPLETE(Value::NULL));
         }
         if self.scopes.len() == 0 {
             self.scopes.push(Object::default())
@@ -273,24 +280,29 @@ impl<'code> Context<'code> {
         if function.is_ok() {
             let function = function.unwrap();
             self.scopes.push(Object::default());
-            let result = function.call(self, &command[1..])?;
+            let result = function.call(self, &command[1..]);
             self.scopes.pop();
-            return Ok(result);
+            return result;
         }
 
         let object = self.resolve_object(head);
         if object.is_ok() {
             let object = object.unwrap();
             self.scopes.push(object);
-            self.run_command(&command[1..])?;
+            let signal = self.run_command(&command[1..]);
             let object = self.scopes.pop().unwrap();
-            return Ok(Value::OBJECT(object));
+            let signal = signal?;
+            if let Signal::RETURN(_) = signal {
+                return Ok(signal);
+            } else {
+                return Ok(Signal::COMPLETE(Value::OBJECT(object)));
+            }
         }
 
         if let AtomValue::IDENTIFIER(identifier) = head.value {
             let value = self.slots.pop().unwrap_or(Value::NULL);
             self.declare(String::from(identifier), value);
-            return Ok(Value::NULL);
+            return Ok(Signal::COMPLETE(Value::NULL));
         }
 
         Err(Error {

@@ -1,4 +1,5 @@
 use super::context::Context;
+use super::signal::Signal;
 use super::value::Value;
 use crate::error::Error;
 use crate::parser::command::Atom;
@@ -9,7 +10,7 @@ pub trait Function<'code>: ToString {
         &self,
         context: &mut Context<'code>,
         body: &[Atom<'code>],
-    ) -> Result<Value<'code>, Error<'code>>;
+    ) -> Result<Signal<'code>, Error<'code>>;
 }
 
 pub struct ScriptFunction<'code> {
@@ -17,7 +18,7 @@ pub struct ScriptFunction<'code> {
 }
 
 pub type NativeFunctionHandler<'code> =
-    fn(context: &mut Context<'code>, body: &[Atom<'code>]) -> Result<Value<'code>, Error<'code>>;
+    fn(context: &mut Context<'code>, body: &[Atom<'code>]) -> Result<Signal<'code>, Error<'code>>;
 
 pub struct NativeFunction<'code> {
     pub handler: NativeFunctionHandler<'code>,
@@ -34,7 +35,7 @@ impl<'code> Function<'code> for ScriptFunction<'code> {
         &self,
         context: &mut Context<'code>,
         body: &[Atom<'code>],
-    ) -> Result<Value<'code>, Error<'code>> {
+    ) -> Result<Signal<'code>, Error<'code>> {
         for atom in body.iter() {
             let value = context.resolve_value(atom)?;
             context.slots.push(value);
@@ -64,7 +65,7 @@ impl<'code> Function<'code> for NativeFunction<'code> {
         &self,
         context: &mut Context<'code>,
         body: &[Atom<'code>],
-    ) -> Result<Value<'code>, Error<'code>> {
+    ) -> Result<Signal<'code>, Error<'code>> {
         (self.handler)(context, body)
     }
 }

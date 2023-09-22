@@ -293,9 +293,7 @@ impl Context {
         let function = self.resolve_function(head);
         if function.is_ok() {
             let function = function.unwrap();
-            self.scopes.push(Object::default());
             let result = function.call(self, command);
-            self.scopes.pop();
             return result;
         }
 
@@ -311,12 +309,6 @@ impl Context {
             } else {
                 return Ok(Signal::COMPLETE(Value::OBJECT(object)));
             }
-        }
-
-        if let AtomValue::IDENTIFIER(ref identifier) = head.value {
-            let value = self.slots.pop().unwrap_or(Value::NULL);
-            self.declare(identifier.clone(), value);
-            return Ok(Signal::COMPLETE(Value::NULL));
         }
 
         Err(Backtrace::new(Error {

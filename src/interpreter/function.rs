@@ -1,5 +1,6 @@
 use super::backtrace::Backtrace;
 use super::context::Context;
+use super::object::Object;
 use super::signal::Signal;
 use super::value::Value;
 use crate::parser::command::Atom;
@@ -36,12 +37,15 @@ impl Debug for ScriptFunction {
 impl Function for ScriptFunction {
     fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         let mark = &body.first().unwrap().mark;
+        context.slots.clear();
         for atom in body.iter().skip(1) {
             let value = Backtrace::trace(context.resolve_value(atom), mark)?;
             context.slots.push(value);
         }
-
-        Backtrace::trace(context.run_command(&self.command), mark)
+        context.scopes.push(Object::default());
+        let result = Backtrace::trace(context.run_command(&self.command), mark);
+        context.scopes.pop();
+        result
     }
 }
 

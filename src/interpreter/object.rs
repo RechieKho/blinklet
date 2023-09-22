@@ -1,5 +1,6 @@
 use super::function::NativeFunction;
 use super::standard::greet;
+use super::standard::error;
 use super::value::Value;
 use std::collections::HashMap;
 
@@ -22,6 +23,10 @@ impl Default for Object {
         object
             .content
             .insert(String::from("greet"), NativeFunction::wrap(greet));
+
+        object
+            .content
+            .insert(String::from("error"), NativeFunction::wrap(error));
         object
     }
 }

@@ -1,20 +1,21 @@
+use super::backtrace::Backtrace;
 use super::context::Context;
 use super::signal::Signal;
 use super::value::Value;
-use crate::error::Error;
 use crate::parser::command::Atom;
 use std::fmt::Debug;
 use std::rc::Rc;
 
 pub trait Function: ToString + Debug {
-    fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Error>;
+    fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace>;
 }
 
 pub struct ScriptFunction {
     pub command: Vec<Atom>,
 }
 
-pub type NativeFunctionHandler = fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Error>;
+pub type NativeFunctionHandler =
+    fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace>;
 
 pub struct NativeFunction {
     pub handler: NativeFunctionHandler,
@@ -33,13 +34,14 @@ impl Debug for ScriptFunction {
 }
 
 impl Function for ScriptFunction {
-    fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Error> {
-        for atom in body.iter() {
-            let value = context.resolve_value(atom)?;
+    fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
+        let mark = &body.first().unwrap().mark;
+        for atom in body.iter().skip(1) {
+            let value = Backtrace::trace(context.resolve_value(atom), mark)?;
             context.slots.push(value);
         }
 
-        context.run_command(&self.command)
+        Backtrace::trace(context.run_command(&self.command), mark)
     }
 }
 
@@ -65,7 +67,7 @@ impl Debug for NativeFunction {
 }
 
 impl Function for NativeFunction {
-    fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Error> {
+    fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         (self.handler)(context, body)
     }
 }

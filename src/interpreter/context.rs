@@ -1,3 +1,4 @@
+use super::backtrace::Backtrace;
 use super::function::Function;
 use super::object::Object;
 use super::signal::Signal;
@@ -97,7 +98,7 @@ impl Context {
         None
     }
 
-    pub fn resolve_value(&mut self, atom: &Atom) -> Result<Value, Error> {
+    pub fn resolve_value(&mut self, atom: &Atom) -> Result<Value, Backtrace> {
         match atom.value {
             AtomValue::COMMAND(ref command) => {
                 let signal = self.run_command(command.as_slice())?;
@@ -113,10 +114,10 @@ impl Context {
             AtomValue::IDENTIFIER(ref identifier) => {
                 let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
-                    Err(Error {
+                    Err(Backtrace::new(Error {
                         message: format!("Identifier '{}' is not defined.", identifier),
                         mark: atom.mark.clone(),
-                    })
+                    }))
                 } else {
                     Ok(optional_value.unwrap().clone())
                 }
@@ -281,7 +282,7 @@ impl Context {
         }
     }
 
-    pub fn run_command(&mut self, command: &[Atom]) -> Result<Signal, Error> {
+    pub fn run_command(&mut self, command: &[Atom]) -> Result<Signal, Backtrace> {
         if command.is_empty() {
             return Ok(Signal::COMPLETE(Value::NULL));
         }
@@ -293,7 +294,7 @@ impl Context {
         if function.is_ok() {
             let function = function.unwrap();
             self.scopes.push(Object::default());
-            let result = function.call(self, &command[1..]);
+            let result = function.call(self, command);
             self.scopes.pop();
             return result;
         }
@@ -302,9 +303,9 @@ impl Context {
         if object.is_ok() {
             let object = object.unwrap();
             self.scopes.push(object);
-            let signal = self.run_command(&command[1..]);
+            let result = self.run_command(&command[1..]);
             let object = self.scopes.pop().unwrap();
-            let signal = signal?;
+            let signal = Backtrace::trace(result, &head.mark)?;
             if let Signal::RETURN(_) = signal {
                 return Ok(signal);
             } else {
@@ -318,16 +319,31 @@ impl Context {
             return Ok(Signal::COMPLETE(Value::NULL));
         }
 
-        Err(Error {
+        Err(Backtrace::new(Error {
             message: format!("Unexpected value as the head of a command."),
             mark: head.mark.clone(),
-        })
+        }))
     }
 
-    pub fn run_code(&mut self, name: String) -> Result<Value, Error> {
-        let code = (self.code_request_handler)(&name)?;
-        let result = lex(name, code)?;
-        let mut result = generate_commands(result)?;
+    pub fn run_code(&mut self, name: String) -> Result<Value, Backtrace> {
+        let code = (self.code_request_handler)(&name);
+        if code.is_err() {
+            return Err(Backtrace::new(code.unwrap_err()));
+        }
+        let code = code.unwrap();
+
+        let result = lex(name, code);
+        if result.is_err() {
+            return Err(Backtrace::new(result.unwrap_err()));
+        }
+        let result = result.unwrap();
+
+        let mut result = generate_commands(result);
+        if result.is_err() {
+            return Err(Backtrace::new(result.unwrap_err()));
+        }
+        let mut result = result.unwrap();
+
         for command in result.drain(..) {
             let signal = self.run_command(command.as_slice())?;
             if let Signal::RETURN(value) = signal {

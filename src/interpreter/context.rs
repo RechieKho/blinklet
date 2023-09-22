@@ -36,7 +36,7 @@ pub struct Context {
 impl Default for Context {
     fn default() -> Self {
         Context {
-            scopes: vec![Object::default()],
+            scopes: Vec::new(),
             slots: Vec::new(),
             trace: Vec::new(),
             code_request_handler: default_code_request_handler,
@@ -324,13 +324,17 @@ impl Context {
         })
     }
 
-    pub fn run_code(&mut self, name: String) -> Result<(), Error> {
+    pub fn run_code(&mut self, name: String) -> Result<Value, Error> {
         let code = (self.code_request_handler)(&name)?;
         let result = lex(name, code)?;
         let mut result = generate_commands(result)?;
         for command in result.drain(..) {
-            self.run_command(command.as_slice())?;
+            let signal = self.run_command(command.as_slice())?;
+            if let Signal::RETURN(value) = signal {
+                return Ok(value);
+            }
         }
-        Ok(())
+        let object = self.scopes.pop().unwrap();
+        Ok(Value::OBJECT(object))
     }
 }

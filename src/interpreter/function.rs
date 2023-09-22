@@ -3,9 +3,10 @@ use super::signal::Signal;
 use super::value::Value;
 use crate::error::Error;
 use crate::parser::command::Atom;
+use std::fmt::Debug;
 use std::rc::Rc;
 
-pub trait Function: ToString {
+pub trait Function: ToString + Debug {
     fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Error>;
 }
 
@@ -22,6 +23,12 @@ pub struct NativeFunction {
 impl ToString for ScriptFunction {
     fn to_string(&self) -> String {
         format!("<Script function>")
+    }
+}
+
+impl Debug for ScriptFunction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.to_string().as_str())
     }
 }
 
@@ -48,6 +55,12 @@ impl ScriptFunction {
 impl ToString for NativeFunction {
     fn to_string(&self) -> String {
         format!("<Native function at {:p}>", self)
+    }
+}
+
+impl Debug for NativeFunction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(self.to_string().as_str())
     }
 }
 

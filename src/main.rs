@@ -30,6 +30,7 @@ fn main() {
 
     let result = context.run_code(String::from(path));
     if result.is_err() {
-        println!("{}", result.unwrap_err().message);
+        let error = result.unwrap_err();
+        println!("{}", error.message);
     }
 }

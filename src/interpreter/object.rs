@@ -3,7 +3,7 @@ use super::standard::greet;
 use super::value::Value;
 use std::collections::HashMap;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Object {
     pub content: HashMap<String, Value>,
 }

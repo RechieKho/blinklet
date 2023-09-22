@@ -2,7 +2,7 @@ use super::function::Function;
 use super::object::Object;
 use std::rc::Rc;
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Value {
     NULL,
     BOOL(bool),

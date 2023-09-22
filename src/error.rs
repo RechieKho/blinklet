@@ -1,7 +1,8 @@
 use super::mark::Mark;
+use std::rc::Rc;
 
 #[derive(Debug, Clone)]
-pub struct Error<'name, 'code> {
+pub struct Error {
     pub message: String,
-    pub mark: Option<Mark<'name, 'code>>,
+    pub mark: Option<Rc<Mark>>,
 }

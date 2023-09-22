@@ -8,45 +8,48 @@ use crate::parser::command::generate_commands;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
 use crate::parser::lexer::lex;
+use std::fs;
 use std::rc::Rc;
 
-/// The runtime that runs Minky code.
-pub struct Context<'name, 'code> {
-    pub scopes: Vec<Object<'name, 'code>>,
-    pub slots: Vec<Value<'name, 'code>>,
-    pub trace: Vec<Mark<'name, 'code>>,
+pub type CodeRequestHandler = fn(name: &String) -> Result<String, Error>;
+
+fn default_code_request_handler(name: &String) -> Result<String, Error> {
+    let result = fs::read_to_string(name);
+    if result.is_err() {
+        Err(Error {
+            message: format!("Unable to fetch code '{}'.", name),
+            mark: None,
+        })
+    } else {
+        Ok(result.unwrap())
+    }
 }
 
-impl<'name, 'code> Default for Context<'name, 'code>
-where
-    'name: 'code,
-{
+/// The runtime that runs Minky code.
+pub struct Context {
+    pub scopes: Vec<Object>,
+    pub slots: Vec<Value>,
+    pub trace: Vec<Mark>,
+    pub code_request_handler: CodeRequestHandler,
+}
+
+impl Default for Context {
     fn default() -> Self {
         Context {
             scopes: vec![Object::default()],
             slots: Vec::new(),
             trace: Vec::new(),
+            code_request_handler: default_code_request_handler,
         }
     }
 }
 
-impl<'name, 'code> Context<'name, 'code>
-where
-    'name: 'code,
-{
-    pub fn declare(
-        &mut self,
-        identifier: String,
-        value: Value<'name, 'code>,
-    ) -> Option<Value<'name, 'code>> {
+impl Context {
+    pub fn declare(&mut self, identifier: String, value: Value) -> Option<Value> {
         self.scopes.last_mut()?.content.insert(identifier, value)
     }
 
-    pub fn set(
-        &mut self,
-        identifier: String,
-        value: Value<'name, 'code>,
-    ) -> Result<Value<'name, 'code>, Error<'name, 'code>> {
+    pub fn set(&mut self, identifier: String, value: Value) -> Result<Value, Error> {
         let scopes_count = self.scopes.len();
         if scopes_count == 0 {
             return Err(Error {
@@ -71,10 +74,7 @@ where
         })
     }
 
-    pub fn get_value<'context>(
-        &'context self,
-        identifier: &str,
-    ) -> Option<&'context Value<'name, 'code>> {
+    pub fn get_value<'context>(&'context self, identifier: &str) -> Option<&'context Value> {
         let scopes_count = self.scopes.len();
         if scopes_count == 0 {
             return None;
@@ -97,10 +97,7 @@ where
         None
     }
 
-    pub fn resolve_value(
-        &mut self,
-        atom: &Atom<'name, 'code>,
-    ) -> Result<Value<'name, 'code>, Error<'name, 'code>> {
+    pub fn resolve_value(&mut self, atom: &Atom) -> Result<Value, Error> {
         match atom.value {
             AtomValue::COMMAND(ref command) => {
                 let signal = self.run_command(command.as_slice())?;
@@ -111,10 +108,10 @@ where
             }
             AtomValue::BOOL(boolean) => Ok(Value::BOOL(boolean)),
             AtomValue::NULL => Ok(Value::NULL),
-            AtomValue::STRING(string) => Ok(Value::STRING(String::from(string))),
+            AtomValue::STRING(ref string) => Ok(Value::STRING(string.clone())),
             AtomValue::NUMBER(number) => Ok(Value::NUMBER(number)),
-            AtomValue::IDENTIFIER(identifier) => {
-                let optional_value = self.get_value(identifier);
+            AtomValue::IDENTIFIER(ref identifier) => {
+                let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
                     Err(Error {
                         message: format!("Identifier '{}' is not defined.", identifier),
@@ -127,11 +124,11 @@ where
         }
     }
 
-    pub fn resolve_bool(&self, atom: &Atom<'name, 'code>) -> Result<bool, Error<'name, 'code>> {
+    pub fn resolve_bool(&self, atom: &Atom) -> Result<bool, Error> {
         match atom.value {
             AtomValue::BOOL(boolean) => Ok(boolean),
-            AtomValue::IDENTIFIER(identifier) => {
-                let optional_value = self.get_value(identifier);
+            AtomValue::IDENTIFIER(ref identifier) => {
+                let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
                     Err(Error {
                         message: format!("Identifier '{}' is not defined.", identifier),
@@ -154,11 +151,11 @@ where
         }
     }
 
-    pub fn resolve_number(&self, atom: &Atom<'name, 'code>) -> Result<f64, Error<'name, 'code>> {
+    pub fn resolve_number(&self, atom: &Atom) -> Result<f64, Error> {
         match atom.value {
             AtomValue::NUMBER(number) => Ok(number),
-            AtomValue::IDENTIFIER(identifier) => {
-                let optional_value = self.get_value(identifier);
+            AtomValue::IDENTIFIER(ref identifier) => {
+                let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
                     Err(Error {
                         message: format!("Identifier '{}' is not defined.", identifier),
@@ -181,11 +178,11 @@ where
         }
     }
 
-    pub fn resolve_string(&self, atom: &Atom<'name, 'code>) -> Result<String, Error<'name, 'code>> {
+    pub fn resolve_string(&self, atom: &Atom) -> Result<String, Error> {
         match atom.value {
-            AtomValue::STRING(string) => Ok(String::from(string)),
-            AtomValue::IDENTIFIER(identifier) => {
-                let optional_value = self.get_value(identifier);
+            AtomValue::STRING(ref string) => Ok(string.clone()),
+            AtomValue::IDENTIFIER(ref identifier) => {
+                let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
                     Err(Error {
                         message: format!("Identifier '{}' is not defined.", identifier),
@@ -208,13 +205,10 @@ where
         }
     }
 
-    pub fn resolve_list(
-        &self,
-        atom: &Atom<'name, 'code>,
-    ) -> Result<Vec<Value<'name, 'code>>, Error<'name, 'code>> {
+    pub fn resolve_list(&self, atom: &Atom) -> Result<Vec<Value>, Error> {
         match atom.value {
-            AtomValue::IDENTIFIER(identifier) => {
-                let optional_value = self.get_value(identifier);
+            AtomValue::IDENTIFIER(ref identifier) => {
+                let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
                     Err(Error {
                         message: format!("Identifier '{}' is not defined.", identifier),
@@ -237,13 +231,10 @@ where
         }
     }
 
-    pub fn resolve_object(
-        &self,
-        atom: &Atom<'name, 'code>,
-    ) -> Result<Object<'name, 'code>, Error<'name, 'code>> {
+    pub fn resolve_object(&self, atom: &Atom) -> Result<Object, Error> {
         match atom.value {
-            AtomValue::IDENTIFIER(identifier) => {
-                let optional_value = self.get_value(identifier);
+            AtomValue::IDENTIFIER(ref identifier) => {
+                let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
                     Err(Error {
                         message: format!("Identifier '{}' is not defined.", identifier),
@@ -266,12 +257,9 @@ where
         }
     }
 
-    pub fn resolve_function(
-        &self,
-        atom: &Atom<'name, 'code>,
-    ) -> Result<Rc<dyn Function<'name, 'code> + 'code>, Error<'name, 'code>> {
-        if let AtomValue::IDENTIFIER(identifier) = atom.value {
-            let optional_value = self.get_value(identifier);
+    pub fn resolve_function(&self, atom: &Atom) -> Result<Rc<dyn Function>, Error> {
+        if let AtomValue::IDENTIFIER(ref identifier) = atom.value {
+            let optional_value = self.get_value(identifier.as_str());
             if optional_value.is_none() {
                 Err(Error {
                     message: format!("Identifier '{}' is not defined.", identifier),
@@ -293,10 +281,7 @@ where
         }
     }
 
-    pub fn run_command(
-        &mut self,
-        command: &[Atom<'name, 'code>],
-    ) -> Result<Signal<'name, 'code>, Error<'name, 'code>> {
+    pub fn run_command(&mut self, command: &[Atom]) -> Result<Signal, Error> {
         if command.is_empty() {
             return Ok(Signal::COMPLETE(Value::NULL));
         }
@@ -327,9 +312,9 @@ where
             }
         }
 
-        if let AtomValue::IDENTIFIER(identifier) = head.value {
+        if let AtomValue::IDENTIFIER(ref identifier) = head.value {
             let value = self.slots.pop().unwrap_or(Value::NULL);
-            self.declare(String::from(identifier), value);
+            self.declare(identifier.clone(), value);
             return Ok(Signal::COMPLETE(Value::NULL));
         }
 
@@ -339,15 +324,12 @@ where
         })
     }
 
-    pub fn run_code(
-        &mut self,
-        name: &'name String,
-        code: &'code String,
-    ) -> Result<(), Error<'name, 'code>> {
+    pub fn run_code(&mut self, name: String) -> Result<(), Error> {
+        let code = (self.code_request_handler)(&name)?;
         let result = lex(name, code)?;
-        let result = generate_commands(result)?;
-        for command in result.iter() {
-            self.run_command(command)?;
+        let mut result = generate_commands(result)?;
+        for command in result.drain(..) {
+            self.run_command(command.as_slice())?;
         }
         Ok(())
     }

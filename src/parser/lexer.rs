@@ -1,93 +1,57 @@
 use crate::error::Error;
-use crate::mark::Mark;
+use crate::mark::{Mark, MarkLine};
 use std::ops::Range;
+use std::rc::Rc;
 use std::result::Result;
 use std::string::String;
 use std::vec::Vec;
 
 #[derive(Debug, PartialEq)]
-pub enum TokenValue<'code> {
-    WORD(&'code str),
-    STRING(&'code str),
+pub enum TokenValue {
+    WORD(String),
+    STRING(String),
     NUMBER(f64),
 }
 
 #[derive(Debug)]
-pub struct Token<'name, 'code> {
-    pub value: TokenValue<'code>,
-    pub mark: Mark<'name, 'code>,
+pub struct Token {
+    pub value: TokenValue,
+    pub mark: Rc<Mark>,
 }
 
-impl<'name, 'code> Token<'name, 'code> {
-    pub fn new_word(
-        name: &'name String,
-        word: &'code str,
-        row: usize,
-        column: Range<usize>,
-        line: &'code str,
-    ) -> Self {
+impl Token {
+    pub fn new_word(word: String, mark_line: Rc<MarkLine>, column: Range<usize>) -> Self {
         Token {
             value: TokenValue::WORD(word),
-            mark: Mark {
-                name,
-                row,
-                column,
-                line,
-            },
+            mark: Rc::new(Mark::new(mark_line, column)),
         }
     }
 
-    pub fn new_string(
-        name: &'name String,
-        string: &'code str,
-        row: usize,
-        column: Range<usize>,
-        line: &'code str,
-    ) -> Self {
+    pub fn new_string(string: String, mark_line: Rc<MarkLine>, column: Range<usize>) -> Self {
         Token {
             value: TokenValue::STRING(string),
-            mark: Mark {
-                name,
-                row,
-                column,
-                line,
-            },
+            mark: Rc::new(Mark::new(mark_line, column)),
         }
     }
 
-    pub fn new_number(
-        name: &'name String,
-        number: f64,
-        row: usize,
-        column: Range<usize>,
-        line: &'code str,
-    ) -> Self {
+    pub fn new_number(number: f64, mark_line: Rc<MarkLine>, column: Range<usize>) -> Self {
         Token {
             value: TokenValue::NUMBER(number),
-            mark: Mark {
-                name,
-                row,
-                column,
-                line,
-            },
+            mark: Rc::new(Mark::new(mark_line, column)),
         }
     }
 }
 
 #[derive(Debug)]
-pub struct Line<'name, 'code> {
-    pub name: &'name String,
-    pub tokens: Vec<Token<'name, 'code>>,
+pub struct TokenLine {
+    pub mark_line: Rc<MarkLine>,
+    pub tokens: Vec<Token>,
     pub indent_count: usize,
-    pub row: usize,
-    pub line: &'code str,
 }
 
-pub fn lex<'name, 'code>(
-    name: &'name String,
-    code: &'code String,
-) -> Result<Vec<Line<'name, 'code>>, Error<'name, 'code>> {
-    let mut result: Vec<Line<'name, 'code>> = Vec::new();
+pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Error> {
+    let name = Rc::new(name);
+    let mut result: Vec<TokenLine> = Vec::new();
     let mut indent_char = '\0';
     let mut indent_factor = 0usize;
     for (i, line) in code.lines().enumerate() {
@@ -95,20 +59,16 @@ pub fn lex<'name, 'code>(
             continue;
         }
 
-        let mut line_result: Line<'name, 'code> = Line {
-            name,
+        let mark_line = Rc::new(MarkLine::new(name.clone(), Rc::new(String::from(line)), i));
+
+        let mut token_line: TokenLine = TokenLine {
+            mark_line: mark_line.clone(),
             tokens: Vec::new(),
             indent_count: 0,
-            row: 0,
-            line,
         };
         let mut is_indent_scanned = false;
         let mut string_char = '\0';
         let mut slice_start = 0usize;
-
-        line_result.row = i;
-        line_result.line = line;
-        line_result.name = name;
 
         for (j, current_char) in line.chars().into_iter().enumerate() {
             // Collect indentation count.
@@ -120,36 +80,26 @@ pub fn lex<'name, 'code>(
                     if current_char != indent_char {
                         return Err(Error {
                             message: format!("Inconsistent indentation character."),
-                            mark: Some(Mark {
-                                name,
-                                row: i,
-                                column: 0..j,
-                                line,
-                            }),
+                            mark: Some(Rc::new(Mark::new(mark_line, 0..j))),
                         });
                     }
-                    line_result.indent_count += 1;
+                    token_line.indent_count += 1;
                     continue;
                 } else {
                     is_indent_scanned = true;
                     slice_start = j;
                     if indent_factor == 0 {
-                        indent_factor = line_result.indent_count;
+                        indent_factor = token_line.indent_count;
                     }
                     if indent_factor != 0 {
                         // We are not using else to consider the value change.
-                        if line_result.indent_count % indent_factor != 0 {
+                        if token_line.indent_count % indent_factor != 0 {
                             return Err(Error {
                                 message: format!("Inconsistent indentation factor."),
-                                mark: Some(Mark {
-                                    name,
-                                    row: i,
-                                    column: 0..j,
-                                    line,
-                                }),
+                                mark: Some(Rc::new(Mark::new(mark_line, 0..j))),
                             });
                         }
-                        line_result.indent_count /= indent_factor
+                        token_line.indent_count /= indent_factor
                     }
                 }
             }
@@ -157,12 +107,10 @@ pub fn lex<'name, 'code>(
             // Check if it is in string literal
             if string_char != '\0' {
                 if current_char == string_char {
-                    line_result.tokens.push(Token::new_string(
-                        name,
-                        &line[slice_start..j],
-                        i,
+                    token_line.tokens.push(Token::new_string(
+                        String::from(&line[slice_start..j]),
+                        mark_line.clone(),
                         slice_start..j,
-                        line,
                     ));
                     slice_start = j + 1;
                     string_char = '\0';
@@ -177,20 +125,16 @@ pub fn lex<'name, 'code>(
                     let slice = &line[slice_start..j];
                     let parse_result = slice.parse::<f64>();
                     if parse_result.is_ok() {
-                        line_result.tokens.push(Token::new_number(
-                            name,
+                        token_line.tokens.push(Token::new_number(
                             parse_result.unwrap(),
-                            i,
+                            mark_line.clone(),
                             slice_start..j,
-                            line,
                         ));
                     } else {
-                        line_result.tokens.push(Token::new_word(
-                            name,
-                            slice,
-                            i,
+                        token_line.tokens.push(Token::new_word(
+                            String::from(slice),
+                            mark_line.clone(),
                             slice_start..j,
-                            line,
                         ));
                     }
                 }
@@ -204,20 +148,16 @@ pub fn lex<'name, 'code>(
                     let slice = &line[slice_start..j];
                     let parse_result = slice.parse::<f64>();
                     if parse_result.is_ok() {
-                        line_result.tokens.push(Token::new_number(
-                            name,
+                        token_line.tokens.push(Token::new_number(
                             parse_result.unwrap(),
-                            i,
+                            mark_line.clone(),
                             slice_start..j,
-                            line,
                         ));
                     } else {
-                        line_result.tokens.push(Token::new_word(
-                            name,
-                            slice,
-                            i,
+                        token_line.tokens.push(Token::new_word(
+                            String::from(slice),
+                            mark_line.clone(),
                             slice_start..j,
-                            line,
                         ));
                     }
                 }
@@ -232,12 +172,10 @@ pub fn lex<'name, 'code>(
         if string_char != '\0' {
             return Err(Error {
                 message: format!("unterminated string."),
-                mark: Some(Mark {
-                    name,
-                    row: i,
-                    column: slice_start..(line_length - 1),
-                    line,
-                }),
+                mark: Some(Rc::new(Mark::new(
+                    mark_line,
+                    slice_start..(line_length - 1),
+                ))),
             });
         }
 
@@ -246,26 +184,22 @@ pub fn lex<'name, 'code>(
             let slice = &line[slice_start..line_length];
             let parse_result = slice.parse::<f64>();
             if parse_result.is_ok() {
-                line_result.tokens.push(Token::new_number(
-                    name,
+                token_line.tokens.push(Token::new_number(
                     parse_result.unwrap(),
-                    i,
+                    mark_line.clone(),
                     slice_start..line_length,
-                    line,
                 ));
             } else {
-                line_result.tokens.push(Token::new_word(
-                    name,
-                    slice,
-                    i,
+                token_line.tokens.push(Token::new_word(
+                    String::from(slice),
+                    mark_line.clone(),
                     slice_start..line_length,
-                    line,
                 ));
             }
         }
 
-        // Push `Line`.
-        result.push(line_result);
+        // Push `TokenLine`.
+        result.push(token_line);
     }
 
     Ok(result)

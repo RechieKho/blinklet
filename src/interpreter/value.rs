@@ -3,17 +3,17 @@ use super::object::Object;
 use std::rc::Rc;
 
 #[derive(Clone)]
-pub enum Value<'name, 'code> {
+pub enum Value {
     NULL,
     BOOL(bool),
     NUMBER(f64),
     STRING(String),
-    LIST(Vec<Value<'name, 'code>>),
-    OBJECT(Object<'name, 'code>),
-    FUNCTION(Rc<dyn Function<'name, 'code> + 'code>),
+    LIST(Vec<Value>),
+    OBJECT(Object),
+    FUNCTION(Rc<dyn Function>),
 }
 
-impl<'name, 'code> ToString for Value<'name, 'code> {
+impl ToString for Value {
     fn to_string(&self) -> String {
         match self {
             Value::NULL => String::from("NULL"),
@@ -33,7 +33,7 @@ impl<'name, 'code> ToString for Value<'name, 'code> {
     }
 }
 
-impl<'name, 'code> Default for Value<'name, 'code> {
+impl Default for Value {
     fn default() -> Self {
         Value::NULL
     }

@@ -4,6 +4,7 @@ use super::object::Object;
 use super::signal::Signal;
 use super::value::Value;
 use crate::parser::command::Atom;
+use crate::parser::command::AtomValue;
 use std::fmt::Debug;
 use std::rc::Rc;
 
@@ -43,9 +44,24 @@ impl Function for ScriptFunction {
             context.slots.push(value);
         }
         context.scopes.push(Object::default());
-        let result = Backtrace::trace(context.run_command(&self.command), mark);
+        let mut final_result : Result<Signal, Backtrace> = Ok(Signal::COMPLETE(Value::NULL));
+        for atom in body.iter().skip(1) {
+            if let AtomValue::COMMAND(ref command) = atom.value {
+                let result = context.run_command(command.as_slice());
+                if result.is_err() {
+                    final_result = result;
+                    break;
+                }
+                let signal = result.unwrap();
+                if let Signal::RETURN(_) = signal {
+                    final_result = Ok(signal);
+                    break;
+                }
+            }
+        }
         context.scopes.pop();
-        result
+        let final_result = Backtrace::trace(final_result, mark);
+        final_result
     }
 }
 

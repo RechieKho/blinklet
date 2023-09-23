@@ -295,9 +295,23 @@ impl Context {
         if object.is_ok() {
             let object = object.unwrap();
             self.scopes.push(object);
-            let result = self.run_command(&command[1..]);
+            let mut final_result : Result<Signal, Backtrace> = Ok(Signal::COMPLETE(Value::NULL));
+            for atom in command.iter().skip(1) {
+                if let AtomValue::COMMAND(ref command) = atom.value {
+                    let result = self.run_command(command.as_slice());
+                    if result.is_err() {
+                        final_result = result;
+                        break;
+                    }
+                    let signal = result.unwrap();
+                    if let Signal::RETURN(_) = signal {
+                        final_result = Ok(signal);
+                        break;
+                    }
+                }
+            }
             let object = self.scopes.pop().unwrap();
-            let signal = Backtrace::trace(result, &head.mark)?;
+            let signal = Backtrace::trace(final_result, &head.mark)?;
             if let Signal::RETURN(_) = signal {
                 return Ok(signal);
             } else {
@@ -324,7 +338,7 @@ impl Context {
         }
         let result = result.unwrap();
 
-        let mut result = generate_commands(result);
+        let result = generate_commands(result);
         if result.is_err() {
             return Err(Backtrace::new(result.unwrap_err()));
         }

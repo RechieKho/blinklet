@@ -3,6 +3,12 @@ use super::standard::var::var;
 use super::value::Value;
 use std::collections::HashMap;
 
+macro_rules! object_register_native_function {
+    ($object:expr, $function:expr) => {
+        $object.content.insert(String::from(stringify!($function)), NativeFunction::wrap($function))
+    };
+}
+
 #[derive(Debug, Clone)]
 pub struct Object {
     pub content: HashMap<String, Value>,
@@ -19,10 +25,7 @@ impl Default for Object {
         let mut object = Object {
             content: HashMap::default(),
         };
-        object
-            .content
-            .insert(String::from("var"), NativeFunction::wrap(var));
-
+        object_register_native_function!(object, var);
         object
     }
 }

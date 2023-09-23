@@ -24,11 +24,11 @@ impl Display for Log {
             LogMessage::ERROR(ref error) => format!("⛔ Error: {}\n", error.clone()),
         };
         if self.mark.is_none() {
-            f.pad(&header)
+            f.write_str(&header)
         } else {
             let mark = self.mark.clone().unwrap();
             let rendering = format!("{header}\n{}\n", mark);
-            f.pad(&rendering)
+            f.write_str(&rendering)
         }
     }
 }

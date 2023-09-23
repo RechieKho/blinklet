@@ -7,6 +7,7 @@ pub enum LogMessage {
     INFO(String),
     WARNING(String),
     ERROR(String),
+    BUG(String),
 }
 
 #[derive(Debug, Clone)]
@@ -22,6 +23,7 @@ impl Display for Log {
             LogMessage::INFO(ref info) => format!("🗨 Info: {}\n", info.clone()),
             LogMessage::WARNING(ref warning) => format!("⚠️  Warning: {}\n", warning.clone()),
             LogMessage::ERROR(ref error) => format!("⛔ Error: {}\n", error.clone()),
+            LogMessage::BUG(ref bug) => format!("🐞 Internal Bug: {} (You should report this to the developers...)\n", bug.clone()),
         };
         if self.mark.is_none() {
             f.write_str(&header)
@@ -58,6 +60,13 @@ impl Log {
     pub fn error(message: String, mark: Option<Rc<Mark>>) -> Log {
         Log {
             message: LogMessage::ERROR(message),
+            mark,
+        }
+    }
+
+    pub fn bug(message: String, mark: Option<Rc<Mark>>) -> Log {
+        Log {
+            message: LogMessage::BUG(message),
             mark,
         }
     }

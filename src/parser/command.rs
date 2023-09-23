@@ -188,7 +188,7 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Log> {
                     ));
                 }
                 AtomValue::COMMAND(_) => {
-                    unreachable!("Command as the head of a command should be unreachable.");
+                    return Err(Log::bug(format!("Command as the head of a command should be unreachable."), first_atom.mark.clone()));
                 }
             }
         }

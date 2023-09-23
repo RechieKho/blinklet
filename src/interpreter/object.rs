@@ -5,7 +5,10 @@ use std::collections::HashMap;
 
 macro_rules! object_register_native_function {
     ($object:expr, $function:expr) => {
-        $object.content.insert(String::from(stringify!($function)), NativeFunction::wrap($function))
+        $object.content.insert(
+            String::from(stringify!($function)),
+            NativeFunction::wrap($function),
+        )
     };
 }
 

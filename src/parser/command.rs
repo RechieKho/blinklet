@@ -88,11 +88,6 @@ impl Atom {
             TokenValue::NUMBER(number) => Atom::new_number(number, Some(mark)),
         }
     }
-
-    pub fn get_name(&self) -> Option<Rc<String>> {
-        let mark = self.mark.clone()?;
-        Some(mark.line.name.clone())
-    }
 }
 
 pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Log> {

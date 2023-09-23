@@ -4,6 +4,13 @@ use std::{
     rc::Rc,
 };
 
+#[macro_export]
+macro_rules! raise_backtrace_error {
+    ($mark:expr, $($message:expr),*) => {
+        return Err(Backtrace::new(Log::error(format!($($message),*), $mark)));
+    };
+}
+
 #[derive(Debug, Clone)]
 pub struct Backtrace(Vec<Log>);
 

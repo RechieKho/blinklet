@@ -15,7 +15,7 @@ pub trait Function: ToString + Debug {
 
 pub struct ScriptFunction {
     pub command: Vec<Atom>,
-    pub closure: Vec<Object>
+    pub closure: Vec<Object>,
 }
 
 pub type NativeFunctionHandler =
@@ -40,16 +40,13 @@ impl Debug for ScriptFunction {
 impl Function for ScriptFunction {
     fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         let mark = &body.first().unwrap().mark;
-        let mut closure_context = Context::new(
-            self.closure.clone(),
-            Vec::new()
-        );
+        let mut closure_context = Context::new(self.closure.clone(), Vec::new());
         for atom in body.iter().skip(1) {
             let value = Backtrace::trace(context.resolve_value(atom), mark)?;
             closure_context.slots.push(value);
         }
         closure_context.scopes.push(Object::default());
-        let mut final_result : Result<Signal, Backtrace> = Ok(Signal::COMPLETE(Value::NULL));
+        let mut final_result: Result<Signal, Backtrace> = Ok(Signal::COMPLETE(Value::NULL));
         for atom in body.iter().skip(1) {
             if let AtomValue::COMMAND(ref command) = atom.value {
                 let result = closure_context.run_command(command.as_slice());
@@ -72,10 +69,7 @@ impl Function for ScriptFunction {
 
 impl ScriptFunction {
     pub fn wrap(command: Vec<Atom>, closure: Vec<Object>) -> Value {
-        let function: Rc<dyn Function> = Rc::new(ScriptFunction {
-            command,
-            closure
-        });
+        let function: Rc<dyn Function> = Rc::new(ScriptFunction { command, closure });
         Value::FUNCTION(function)
     }
 }

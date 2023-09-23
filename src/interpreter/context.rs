@@ -30,7 +30,6 @@ fn default_code_request_handler(name: &String) -> Result<String, Log> {
 pub struct Context {
     pub scopes: Vec<Object>,
     pub slots: Vec<Value>,
-    pub trace: Vec<Mark>,
     pub code_request_handler: CodeRequestHandler,
 }
 
@@ -39,7 +38,6 @@ impl Default for Context {
         Context {
             scopes: Vec::new(),
             slots: Vec::new(),
-            trace: Vec::new(),
             code_request_handler: default_code_request_handler,
         }
     }

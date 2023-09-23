@@ -53,30 +53,7 @@ impl Context {
         }
     }
 
-    pub fn declare(&mut self, identifier: String, value: Value) -> Option<Value> {
-        self.scopes.last_mut()?.content.insert(identifier, value)
-    }
-
-    pub fn set(&mut self, identifier: String, value: Value) -> Result<Value, Log> {
-        let scopes_count = self.scopes.len();
-        if scopes_count == 0 {
-            return Err(Log::error(format!("Unable to set value."), None));
-        }
-        for i in (0..scopes_count).rev() {
-            let object = self.scopes.get_mut(i);
-            if object.is_none() {
-                continue;
-            }
-            let object = object.unwrap();
-
-            if object.content.contains_key(identifier.as_str()) {
-                return Ok(object.content.insert(identifier, value).unwrap());
-            }
-        }
-        Err(Log::error(format!("Unable to set value."), None))
-    }
-
-    pub fn get_value<'context>(&'context self, identifier: &str) -> Option<&'context Value> {
+    fn get_value<'context>(&'context self, identifier: &str) -> Option<&'context Value> {
         let scopes_count = self.scopes.len();
         if scopes_count == 0 {
             return None;

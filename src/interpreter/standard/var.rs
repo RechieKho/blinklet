@@ -11,8 +11,19 @@ use crate::raise_backtrace_error;
 
 pub fn var(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     assert_atoms_count!(body, 3..3);
+    let first_atom = body.first().unwrap();
     let identifier = atom_as_identifier!(&body[1]);
     let value = context.resolve_value(&body[2])?;
-    context.declare(identifier.clone(), value);
+    let scope = context.scopes.last_mut();
+
+    if scope.is_none() {
+        unreachable!("Empty scope should be unreachable.");
+    }
+    let scope = scope.unwrap();
+    let popped = scope.content.insert(identifier.clone(), value);
+    if popped.is_some() {
+        raise_backtrace_error!(first_atom.mark.clone(), "Redeclaration of variable '{}'.", identifier);
+    }
+
     Ok(Signal::COMPLETE(Value::NULL))
 }

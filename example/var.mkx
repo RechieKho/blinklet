@@ -1,2 +1,8 @@
 var string 'String'
 var number 1.23
+var space ' '
+print string space number
+print 'BOO HOO'
+
+set string 'Not a string'
+print string space number

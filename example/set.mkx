@@ -1,2 +1,3 @@
 var variable 123
 set variable 245
+print variable 123 'Hello world'

@@ -1,6 +1,7 @@
 use super::function::NativeFunction;
 use super::standard::var::var;
 use super::standard::set::set;
+use super::standard::print::print;
 use super::value::Value;
 use std::collections::HashMap;
 
@@ -31,6 +32,7 @@ impl Default for Object {
         };
         object_register_native_function!(object, var);
         object_register_native_function!(object, set);
+        object_register_native_function!(object, print);
         object
     }
 }

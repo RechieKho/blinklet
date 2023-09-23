@@ -1,5 +1,6 @@
 pub mod var;
 pub mod set;
+pub mod print;
 
 #[macro_export]
 macro_rules! assert_atoms_count {

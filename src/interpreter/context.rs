@@ -44,6 +44,14 @@ impl Default for Context {
 }
 
 impl Context {
+    pub fn new(scopes: Vec<Object>, slots: Vec<Value>) -> Context {
+        Context {
+            scopes,
+            slots,
+            code_request_handler: default_code_request_handler,
+        }
+    }
+
     pub fn declare(&mut self, identifier: String, value: Value) -> Option<Value> {
         self.scopes.last_mut()?.content.insert(identifier, value)
     }

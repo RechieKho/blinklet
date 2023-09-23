@@ -1,6 +1,5 @@
 use super::function::NativeFunction;
-use super::standard::greet;
-use super::standard::log;
+use super::standard::var::var;
 use super::value::Value;
 use std::collections::HashMap;
 
@@ -22,11 +21,8 @@ impl Default for Object {
         };
         object
             .content
-            .insert(String::from("greet"), NativeFunction::wrap(greet));
+            .insert(String::from("var"), NativeFunction::wrap(var));
 
-        object
-            .content
-            .insert(String::from("log"), NativeFunction::wrap(log));
         object
     }
 }

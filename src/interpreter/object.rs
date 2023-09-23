@@ -1,6 +1,6 @@
 use super::function::NativeFunction;
 use super::standard::greet;
-use super::standard::error;
+use super::standard::log;
 use super::value::Value;
 use std::collections::HashMap;
 
@@ -26,7 +26,7 @@ impl Default for Object {
 
         object
             .content
-            .insert(String::from("error"), NativeFunction::wrap(error));
+            .insert(String::from("log"), NativeFunction::wrap(log));
         object
     }
 }

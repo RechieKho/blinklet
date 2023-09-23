@@ -1,4 +1,4 @@
-use crate::error::Error;
+use crate::log::Log;
 use crate::mark::{Mark, MarkLine};
 use std::ops::Range;
 use std::rc::Rc;
@@ -49,7 +49,7 @@ pub struct TokenLine {
     pub indent_count: usize,
 }
 
-pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Error> {
+pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Log> {
     let name = Rc::new(name);
     let mut result: Vec<TokenLine> = Vec::new();
     let mut indent_char = '\0';
@@ -78,10 +78,10 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Error> {
                         indent_char = current_char;
                     }
                     if current_char != indent_char {
-                        return Err(Error {
-                            message: format!("Inconsistent indentation character."),
-                            mark: Some(Rc::new(Mark::new(mark_line, 0..j))),
-                        });
+                        return Err(Log::error(
+                            format!("Inconsistent indentation character."),
+                            Some(Rc::new(Mark::new(mark_line, 0..j))),
+                        ));
                     }
                     token_line.indent_count += 1;
                     continue;
@@ -94,10 +94,10 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Error> {
                     if indent_factor != 0 {
                         // We are not using else to consider the value change.
                         if token_line.indent_count % indent_factor != 0 {
-                            return Err(Error {
-                                message: format!("Inconsistent indentation factor."),
-                                mark: Some(Rc::new(Mark::new(mark_line, 0..j))),
-                            });
+                            return Err(Log::error(
+                                format!("Inconsistent indentation factor."),
+                                Some(Rc::new(Mark::new(mark_line, 0..j))),
+                            ));
                         }
                         token_line.indent_count /= indent_factor
                     }
@@ -170,13 +170,13 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Error> {
 
         // Check if unterminated string literal.
         if string_char != '\0' {
-            return Err(Error {
-                message: format!("unterminated string."),
-                mark: Some(Rc::new(Mark::new(
+            return Err(Log::error(
+                format!("unterminated string."),
+                Some(Rc::new(Mark::new(
                     mark_line,
                     slice_start..(line_length - 1),
                 ))),
-            });
+            ));
         }
 
         // Check if there is unhandled token.

@@ -1,25 +1,22 @@
-use crate::{error::Error, mark::Mark};
+use crate::{log::Log, mark::Mark};
 use std::{
     fmt::{Debug, Display},
     rc::Rc,
 };
 
 #[derive(Debug, Clone)]
-pub struct Backtrace(Vec<Error>);
+pub struct Backtrace(Vec<Log>);
 
 impl Backtrace {
-    pub fn new(error: Error) -> Backtrace {
-        Backtrace(vec![error])
+    pub fn new(log: Log) -> Backtrace {
+        Backtrace(vec![log])
     }
 
-    pub fn push(&mut self, error: Error) {
-        self.0.push(error);
+    pub fn push(&mut self, log: Log) {
+        self.0.push(log);
     }
 
-    pub fn trace<T>(
-        result: Result<T, Backtrace>,
-        mark: &Option<Rc<Mark>>,
-    ) -> Result<T, Backtrace>
+    pub fn trace<T>(result: Result<T, Backtrace>, mark: &Option<Rc<Mark>>) -> Result<T, Backtrace>
     where
         T: Debug,
     {
@@ -28,18 +25,15 @@ impl Backtrace {
         }
 
         let mut backtrace = result.unwrap_err();
-        backtrace.push(Error {
-            message: format!("Trace."),
-            mark: mark.clone(),
-        });
+        backtrace.push(Log::trace(mark.clone()));
         Err(backtrace)
     }
 }
 
 impl Display for Backtrace {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        for error in self.0.iter() {
-            let rendering = format!("{error}");
+        for log in self.0.iter() {
+            let rendering = format!("{log}");
             f.pad(&rendering)?;
         }
         Ok(())

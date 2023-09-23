@@ -1,7 +1,7 @@
 use super::lexer::Token;
 use super::lexer::TokenLine;
 use super::lexer::TokenValue;
-use crate::error::Error;
+use crate::log::Log;
 use crate::mark::Mark;
 use std::rc::Rc;
 
@@ -95,7 +95,7 @@ impl Atom {
     }
 }
 
-pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Error> {
+pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Log> {
     let mut result: Vec<Command> = Vec::new();
     let mut current_indent_count = 0usize;
 
@@ -122,10 +122,10 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Error>
     for mut token_line in lot.drain(..) {
         let indent_displacement = token_line.indent_count as isize - current_indent_count as isize;
         if indent_displacement > 1 {
-            return Err(Error {
-                message: format!("Excessive indentation."),
-                mark: Some(Rc::new(Mark::new(token_line.mark_line, 0..0))),
-            });
+            return Err(Log::error(
+                format!("Excessive indentation."),
+                Some(Rc::new(Mark::new(token_line.mark_line, 0..0))),
+            ));
         }
 
         let mut atoms: Vec<Atom> = Vec::default();
@@ -142,10 +142,10 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Error>
 
         // Indentation at the very first command, this is a sin.
         if result.len() == 0 && token_line.indent_count != 0 {
-            return Err(Error {
-                message: format!("Unexpected indentation."),
-                mark: Some(Rc::new(Mark::new(token_line.mark_line, 0..0))),
-            });
+            return Err(Log::error(
+                format!("Unexpected indentation."),
+                Some(Rc::new(Mark::new(token_line.mark_line, 0..0))),
+            ));
         }
 
         // Just append to the result since there is no indentation.
@@ -169,28 +169,28 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Error>
                     }
                 }
                 AtomValue::STRING(_) => {
-                    return Err(Error {
-                        message: format!("String as the head of a command is forbidden."),
-                        mark: first_atom.mark.clone(),
-                    });
+                    return Err(Log::error(
+                        format!("String as the head of a command is forbidden."),
+                        first_atom.mark.clone(),
+                    ));
                 }
                 AtomValue::NUMBER(_) => {
-                    return Err(Error {
-                        message: format!("Number as the head of a command is forbidden."),
-                        mark: first_atom.mark.clone(),
-                    });
+                    return Err(Log::error(
+                        format!("Number as the head of a command is forbidden."),
+                        first_atom.mark.clone(),
+                    ));
                 }
                 AtomValue::BOOL(_) => {
-                    return Err(Error {
-                        message: format!("Bool as the head of a command is forbidden."),
-                        mark: first_atom.mark.clone(),
-                    });
+                    return Err(Log::error(
+                        format!("Bool as the head of a command is forbidden."),
+                        first_atom.mark.clone(),
+                    ));
                 }
                 AtomValue::NULL => {
-                    return Err(Error {
-                        message: format!("Null as the head of a command is forbidden."),
-                        mark: first_atom.mark.clone(),
-                    });
+                    return Err(Log::error(
+                        format!("Null as the head of a command is forbidden."),
+                        first_atom.mark.clone(),
+                    ));
                 }
                 AtomValue::COMMAND(_) => {
                     unreachable!("Command as the head of a command should be unreachable.");

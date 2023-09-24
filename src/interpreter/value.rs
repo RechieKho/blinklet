@@ -22,13 +22,23 @@ impl ToString for Value {
             Value::STRING(d) => d.clone(),
             Value::OBJECT(d) => d.to_string(),
             Value::FUNCTION(d) => d.to_string(),
-            Value::LIST(d) => format!(
-                "[{}]",
-                d.iter()
-                    .map(|x| x.to_string())
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            ),
+            Value::LIST(d) => {
+                fn to_repr(x: &Value) -> String {
+                    if let Value::STRING(string) = x {
+                        format!("\"{}\"", string)
+                    } else {
+                        x.to_string()
+                    }
+                }
+
+                format!(
+                    "[{}]",
+                    d.iter()
+                        .map(to_repr)
+                        .collect::<Vec<String>>()
+                        .join(", ")
+                )
+            }
         }
     }
 }

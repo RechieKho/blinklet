@@ -35,8 +35,8 @@ impl Display for Mark {
         let (start, end) = self.column.clone().into_inner();
         let underline = format!(
             "{:>width$}",
-            "~".repeat(end - start + 1),
-            width = leader.len() + line.len()
+            "~".repeat(end - start),
+            width = leader.len() + start + end
         );
         let rendering = format!("{header}\n{leader}{line}\n{underline}");
         f.write_str(&rendering)

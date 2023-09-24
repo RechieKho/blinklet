@@ -11,7 +11,7 @@ use crate::raise_backtrace_bug;
 use crate::raise_backtrace_error;
 
 pub fn var(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
-    assert_atoms_count!(body, 3..3);
+    assert_atoms_count!(body, 3);
     let first_atom = body.first().unwrap();
     let identifier = atom_as_identifier!(&body[1]);
     let value = context.resolve_value(&body[2])?;

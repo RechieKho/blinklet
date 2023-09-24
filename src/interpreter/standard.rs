@@ -4,19 +4,41 @@ pub mod print;
 
 #[macro_export]
 macro_rules! assert_atoms_count {
-    ($atoms:expr, $range:expr) => {
+    ($atoms:expr, $count:expr) => {
         let atom = $atoms.first().unwrap();
-        if $atoms.len() > $range.end {
+        if $atoms.len() != $count {
             raise_backtrace_error!(
                 atom.mark.clone(),
                 "Argument count exceeds maximum, which is {}.",
-                $range.end
+                $count
             );
-        } else if $atoms.len() < $range.start {
+        }
+    }
+}
+
+#[macro_export]
+macro_rules! assert_atoms_count_max {
+    ($atoms:expr, $max:expr) => {
+        let atom = $atoms.first().unwrap();
+        if $atoms.len() > $max {
+            raise_backtrace_error!(
+                atom.mark.clone(),
+                "Argument count exceeds maximum, which is {}.",
+                $max
+            );
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! assert_atoms_count_min {
+    ($atoms:expr, $min:expr) => {
+        let atom = $atoms.first().unwrap();
+        if $atoms.len() < $min {
             raise_backtrace_error!(
                 atom.mark.clone(),
                 "Argument count recede minimum, which is {}.",
-                $range.start
+                $min
             );
         }
     };

@@ -60,7 +60,8 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
     let mut result: Vec<TokenLine> = Vec::new();
     let mut indent_char = '\0';
     let mut indent_factor = 0usize;
-    for (i, line) in code.lines().enumerate() {
+
+    'row: for (i, line) in code.lines().enumerate() {
         if line.len() == 0 {
             continue;
         }
@@ -76,7 +77,7 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
         let mut string_char = '\0';
         let mut slice_start = 0usize;
 
-        for (j, current_char) in line.chars().into_iter().enumerate() {
+        'column: for (j, current_char) in line.chars().into_iter().enumerate() {
             // Collect indentation count.
             if !is_indent_scanned {
                 if current_char.is_whitespace() {
@@ -122,6 +123,11 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
                     string_char = '\0';
                 }
                 continue;
+            }
+
+            // Check if it is a comment.
+            if current_char == '#' {
+                break 'row;
             }
 
             // Check if it is starting a string literal.

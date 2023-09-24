@@ -19,12 +19,12 @@ pub struct Log {
 impl Display for Log {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let header = match self.message {
-            LogMessage::TRACE => format!("➡️  Traceback: \n"),
-            LogMessage::INFO(ref info) => format!("🗨 Info: {}\n", info.clone()),
-            LogMessage::WARNING(ref warning) => format!("⚠️  Warning: {}\n", warning.clone()),
-            LogMessage::ERROR(ref error) => format!("⛔ Error: {}\n", error.clone()),
+            LogMessage::TRACE => format!("Traceback: \n"),
+            LogMessage::INFO(ref info) => format!("Info: {}\n", info.clone()),
+            LogMessage::WARNING(ref warning) => format!("Warning: {}\n", warning.clone()),
+            LogMessage::ERROR(ref error) => format!("Error: {}\n", error.clone()),
             LogMessage::BUG(ref bug) => format!(
-                "🐞 Internal Bug: {} (You should report this to the developers...)\n",
+                "Internal Bug: {} (You should report this to the developers...)\n",
                 bug.clone()
             ),
         };

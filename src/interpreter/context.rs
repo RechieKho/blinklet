@@ -278,11 +278,11 @@ impl Context {
     }
 
     pub fn run_command(&mut self, command: &[Atom]) -> Result<Signal, Backtrace> {
-        if command.is_empty() {
-            return Ok(Signal::COMPLETE(Value::NULL));
-        }
         if self.scopes.len() == 0 {
             self.scopes.push(Object::default())
+        }
+        if command.is_empty() {
+            return Ok(Signal::COMPLETE(Value::NULL));
         }
         let head = command.first().unwrap();
         let function = self.resolve_function(head);
@@ -331,12 +331,17 @@ impl Context {
         let result = lex(name, code)?;
         let mut result = generate_commands(result)?;
 
+        if self.scopes.len() == 0 {
+            self.scopes.push(Object::default())
+        }
+
         for command in result.drain(..) {
             let signal = self.run_command(command.as_slice())?;
             if let Signal::RETURN(value) = signal {
                 return Ok(value);
             }
         }
+
         let object = self.scopes.pop().unwrap();
         Ok(Value::OBJECT(object))
     }

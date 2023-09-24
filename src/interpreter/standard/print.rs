@@ -1,4 +1,4 @@
-use crate::interpreter::backtrace::Backtrace;
+use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::interpreter::value::Value;

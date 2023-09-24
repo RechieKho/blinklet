@@ -1,5 +1,6 @@
 #![deny(rust_2018_idioms)]
 
+mod backtrace;
 mod interpreter;
 mod log;
 mod mark;

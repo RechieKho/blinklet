@@ -23,7 +23,10 @@ impl Display for Log {
             LogMessage::INFO(ref info) => format!("🗨 Info: {}\n", info.clone()),
             LogMessage::WARNING(ref warning) => format!("⚠️  Warning: {}\n", warning.clone()),
             LogMessage::ERROR(ref error) => format!("⛔ Error: {}\n", error.clone()),
-            LogMessage::BUG(ref bug) => format!("🐞 Internal Bug: {} (You should report this to the developers...)\n", bug.clone()),
+            LogMessage::BUG(ref bug) => format!(
+                "🐞 Internal Bug: {} (You should report this to the developers...)\n",
+                bug.clone()
+            ),
         };
         if self.mark.is_none() {
             f.write_str(&header)
@@ -36,10 +39,10 @@ impl Display for Log {
 }
 
 impl Log {
-    pub fn trace(mark: Option<Rc<Mark>>) -> Log {
+    pub fn trace(mark: Rc<Mark>) -> Log {
         Log {
             message: LogMessage::TRACE,
-            mark,
+            mark: Some(mark),
         }
     }
 

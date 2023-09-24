@@ -1,8 +1,11 @@
 use super::lexer::Token;
 use super::lexer::TokenLine;
 use super::lexer::TokenValue;
+use crate::backtrace::Backtrace;
 use crate::log::Log;
 use crate::mark::Mark;
+use crate::raise_bug;
+use crate::raise_error;
 use std::rc::Rc;
 
 const NULL_STR: &'static str = "null";
@@ -10,6 +13,28 @@ const TRUE_STR: &'static str = "true";
 const FALSE_STR: &'static str = "false";
 
 pub type Command = Vec<Atom>;
+
+#[macro_export]
+macro_rules! atom_as_identifier {
+    ($atom: expr) => {
+        if let AtomValue::IDENTIFIER(ref identifier) = $atom.value {
+            identifier
+        } else {
+            raise_error!(Some($atom.mark.clone()), "Expecting an identifier.");
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! atom_as_command {
+    ($atom: expr) => {
+        if let AtomValue::COMMAND(ref command) = $atom.value {
+            command
+        } else {
+            raise_error!(Some($atom.mark.clone()), "Expecting a command.");
+        }
+    };
+}
 
 #[derive(Debug, Clone)]
 pub enum AtomValue {
@@ -24,46 +49,46 @@ pub enum AtomValue {
 #[derive(Debug, Clone)]
 pub struct Atom {
     pub value: AtomValue,
-    pub mark: Option<Rc<Mark>>,
+    pub mark: Rc<Mark>,
 }
 
 impl Atom {
-    pub fn new_null(mark: Option<Rc<Mark>>) -> Self {
+    pub fn new_null(mark: Rc<Mark>) -> Self {
         Atom {
             value: AtomValue::NULL,
             mark,
         }
     }
 
-    pub fn new_identifier(identifier: String, mark: Option<Rc<Mark>>) -> Self {
+    pub fn new_identifier(identifier: String, mark: Rc<Mark>) -> Self {
         Atom {
             value: AtomValue::IDENTIFIER(identifier),
             mark,
         }
     }
 
-    pub fn new_bool(boolean: bool, mark: Option<Rc<Mark>>) -> Self {
+    pub fn new_bool(boolean: bool, mark: Rc<Mark>) -> Self {
         Atom {
             value: AtomValue::BOOL(boolean),
             mark,
         }
     }
 
-    pub fn new_string(string: String, mark: Option<Rc<Mark>>) -> Self {
+    pub fn new_string(string: String, mark: Rc<Mark>) -> Self {
         Atom {
             value: AtomValue::STRING(string),
             mark,
         }
     }
 
-    pub fn new_number(number: f64, mark: Option<Rc<Mark>>) -> Self {
+    pub fn new_number(number: f64, mark: Rc<Mark>) -> Self {
         Atom {
             value: AtomValue::NUMBER(number),
             mark,
         }
     }
 
-    pub fn new_command(command: Command, mark: Option<Rc<Mark>>) -> Self {
+    pub fn new_command(command: Command, mark: Rc<Mark>) -> Self {
         Atom {
             value: AtomValue::COMMAND(command),
             mark,
@@ -75,22 +100,22 @@ impl Atom {
         match value {
             TokenValue::WORD(word) => {
                 if word == NULL_STR {
-                    Atom::new_null(Some(mark))
+                    Atom::new_null(mark)
                 } else if word == TRUE_STR {
-                    Atom::new_bool(true, Some(mark))
+                    Atom::new_bool(true, mark)
                 } else if word == FALSE_STR {
-                    Atom::new_bool(false, Some(mark))
+                    Atom::new_bool(false, mark)
                 } else {
-                    Atom::new_identifier(word, Some(mark))
+                    Atom::new_identifier(word, mark)
                 }
             }
-            TokenValue::STRING(string) => Atom::new_string(string, Some(mark)),
-            TokenValue::NUMBER(number) => Atom::new_number(number, Some(mark)),
+            TokenValue::STRING(string) => Atom::new_string(string, mark),
+            TokenValue::NUMBER(number) => Atom::new_number(number, mark),
         }
     }
 }
 
-pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Log> {
+pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Backtrace> {
     let mut result: Vec<Command> = Vec::new();
     let mut current_indent_count = 0usize;
 
@@ -117,10 +142,10 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Log> {
     for mut token_line in lot.drain(..) {
         let indent_displacement = token_line.indent_count as isize - current_indent_count as isize;
         if indent_displacement > 1 {
-            return Err(Log::error(
-                format!("Excessive indentation."),
-                Some(Rc::new(Mark::new(token_line.mark_line, 0..0))),
-            ));
+            raise_error!(
+                Some(Rc::new(Mark::new(token_line.mark_line, 0..=0))),
+                "Excessive indentation."
+            );
         }
 
         let mut atoms: Vec<Atom> = Vec::default();
@@ -137,10 +162,10 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Log> {
 
         // Indentation at the very first command, this is a sin.
         if result.len() == 0 && token_line.indent_count != 0 {
-            return Err(Log::error(
-                format!("Unexpected indentation."),
-                Some(Rc::new(Mark::new(token_line.mark_line, 0..0))),
-            ));
+            raise_error!(
+                Some(Rc::new(Mark::new(token_line.mark_line, 0..=0))),
+                "Unexpected indentation."
+            );
         }
 
         // Just append to the result since there is no indentation.
@@ -164,40 +189,43 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Log> {
                     }
                 }
                 AtomValue::STRING(_) => {
-                    return Err(Log::error(
-                        format!("String as the head of a command is forbidden."),
-                        first_atom.mark.clone(),
-                    ));
+                    raise_error!(
+                        Some(first_atom.mark.clone()),
+                        "String as the head of a command is forbidden."
+                    );
                 }
                 AtomValue::NUMBER(_) => {
-                    return Err(Log::error(
-                        format!("Number as the head of a command is forbidden."),
-                        first_atom.mark.clone(),
-                    ));
+                    raise_error!(
+                        Some(first_atom.mark.clone()),
+                        "Number as the head of a command is forbidden."
+                    );
                 }
                 AtomValue::BOOL(_) => {
-                    return Err(Log::error(
-                        format!("Bool as the head of a command is forbidden."),
-                        first_atom.mark.clone(),
-                    ));
+                    raise_error!(
+                        Some(first_atom.mark.clone()),
+                        "Bool as the head of a command is forbidden."
+                    );
                 }
                 AtomValue::NULL => {
-                    return Err(Log::error(
-                        format!("Null as the head of a command is forbidden."),
-                        first_atom.mark.clone(),
-                    ));
+                    raise_error!(
+                        Some(first_atom.mark.clone()),
+                        "Null as the head of a command is forbidden."
+                    );
                 }
                 AtomValue::COMMAND(_) => {
-                    return Err(Log::bug(format!("Command as the head of a command should be unreachable."), first_atom.mark.clone()));
+                    raise_bug!(
+                        Some(first_atom.mark.clone()),
+                        "Command as the head of a command should be unreachable."
+                    );
                 }
             }
         }
         parent_command.push(Atom::new_command(
             atoms,
-            Some(Rc::new(Mark::new(
+            Rc::new(Mark::new(
                 token_line.mark_line.clone(),
-                0..token_line.mark_line.content.len(),
-            ))),
+                0..=token_line.mark_line.content.len(),
+            )),
         ));
         current_indent_count = token_line.indent_count;
     }

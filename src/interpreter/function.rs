@@ -1,11 +1,10 @@
-use super::backtrace::Backtrace;
 use super::context::Context;
 use super::object::Object;
 use super::signal::Signal;
 use super::value::Value;
+use crate::backtrace::Backtrace;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
-use std::default;
 use std::fmt::Debug;
 use std::rc::Rc;
 

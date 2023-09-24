@@ -1,27 +1,23 @@
-use super::backtrace::Backtrace;
 use super::function::Function;
 use super::object::Object;
 use super::signal::Signal;
 use super::value::Value;
+use crate::backtrace::Backtrace;
 use crate::log::Log;
-use crate::mark::Mark;
 use crate::parser::command::generate_commands;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
 use crate::parser::lexer::lex;
-use crate::raise_backtrace_error;
+use crate::raise_error;
 use std::fs;
 use std::rc::Rc;
 
-pub type CodeRequestHandler = fn(name: &String) -> Result<String, Log>;
+pub type CodeRequestHandler = fn(name: &String) -> Result<String, Backtrace>;
 
-fn default_code_request_handler(name: &String) -> Result<String, Log> {
+fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
     let result = fs::read_to_string(name);
     if result.is_err() {
-        Err(Log::error(
-            format!("Unable to fetch code '{}'.", name),
-            None,
-        ))
+        raise_error!(None, "Unable to fetch code '{}'.", name);
     } else {
         Ok(result.unwrap())
     }
@@ -92,8 +88,8 @@ impl Context {
             AtomValue::IDENTIFIER(ref identifier) => {
                 let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
-                    raise_backtrace_error!(
-                        atom.mark.clone(),
+                    raise_error!(
+                        Some(atom.mark.clone()),
                         "Identifier '{}' is not defined.",
                         identifier
                     );
@@ -110,8 +106,8 @@ impl Context {
             AtomValue::IDENTIFIER(ref identifier) => {
                 let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
-                    raise_backtrace_error!(
-                        atom.mark.clone(),
+                    raise_error!(
+                        Some(atom.mark.clone()),
                         "Identifier '{}' is not defined.",
                         identifier
                     );
@@ -119,8 +115,8 @@ impl Context {
                     match optional_value.unwrap() {
                         Value::BOOL(boolean) => Ok(*boolean),
                         _ => {
-                            raise_backtrace_error!(
-                                atom.mark.clone(),
+                            raise_error!(
+                                Some(atom.mark.clone()),
                                 "'{}' is not a boolean",
                                 identifier
                             );
@@ -129,7 +125,7 @@ impl Context {
                 }
             }
             _ => {
-                raise_backtrace_error!(atom.mark.clone(), "Value given is not a boolean.");
+                raise_error!(Some(atom.mark.clone()), "Value given is not a boolean.");
             }
         }
     }
@@ -140,8 +136,8 @@ impl Context {
             AtomValue::IDENTIFIER(ref identifier) => {
                 let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
-                    raise_backtrace_error!(
-                        atom.mark.clone(),
+                    raise_error!(
+                        Some(atom.mark.clone()),
                         "Identifier '{}' is not defined.",
                         identifier
                     );
@@ -149,8 +145,8 @@ impl Context {
                     match optional_value.unwrap() {
                         Value::NUMBER(number) => Ok(*number),
                         _ => {
-                            raise_backtrace_error!(
-                                atom.mark.clone(),
+                            raise_error!(
+                                Some(atom.mark.clone()),
                                 "'{}' is not a number",
                                 identifier
                             );
@@ -159,7 +155,7 @@ impl Context {
                 }
             }
             _ => {
-                raise_backtrace_error!(atom.mark.clone(), "Value given is not a number.");
+                raise_error!(Some(atom.mark.clone()), "Value given is not a number.");
             }
         }
     }
@@ -170,8 +166,8 @@ impl Context {
             AtomValue::IDENTIFIER(ref identifier) => {
                 let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
-                    raise_backtrace_error!(
-                        atom.mark.clone(),
+                    raise_error!(
+                        Some(atom.mark.clone()),
                         "Identifier '{}' is not defined.",
                         identifier
                     );
@@ -179,8 +175,8 @@ impl Context {
                     match optional_value.unwrap() {
                         Value::STRING(string) => Ok(string.clone()),
                         _ => {
-                            raise_backtrace_error!(
-                                atom.mark.clone(),
+                            raise_error!(
+                                Some(atom.mark.clone()),
                                 "'{}' is not a string.",
                                 identifier
                             );
@@ -189,7 +185,7 @@ impl Context {
                 }
             }
             _ => {
-                raise_backtrace_error!(atom.mark.clone(), "Value given is not a string.");
+                raise_error!(Some(atom.mark.clone()), "Value given is not a string.");
             }
         }
     }
@@ -199,8 +195,8 @@ impl Context {
             AtomValue::IDENTIFIER(ref identifier) => {
                 let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
-                    raise_backtrace_error!(
-                        atom.mark.clone(),
+                    raise_error!(
+                        Some(atom.mark.clone()),
                         "Identifier '{}' is not defined.",
                         identifier
                     );
@@ -208,8 +204,8 @@ impl Context {
                     match optional_value.unwrap() {
                         Value::LIST(list) => Ok(list.clone()),
                         _ => {
-                            raise_backtrace_error!(
-                                atom.mark.clone(),
+                            raise_error!(
+                                Some(atom.mark.clone()),
                                 "'{}' is not a list.",
                                 identifier
                             );
@@ -218,7 +214,7 @@ impl Context {
                 }
             }
             _ => {
-                raise_backtrace_error!(atom.mark.clone(), "Value given is not a list.");
+                raise_error!(Some(atom.mark.clone()), "Value given is not a list.");
             }
         }
     }
@@ -228,8 +224,8 @@ impl Context {
             AtomValue::IDENTIFIER(ref identifier) => {
                 let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
-                    raise_backtrace_error!(
-                        atom.mark.clone(),
+                    raise_error!(
+                        Some(atom.mark.clone()),
                         "Identifier '{}' is not defined.",
                         identifier
                     );
@@ -237,8 +233,8 @@ impl Context {
                     match optional_value.unwrap() {
                         Value::OBJECT(object) => Ok(object.clone()),
                         _ => {
-                            raise_backtrace_error!(
-                                atom.mark.clone(),
+                            raise_error!(
+                                Some(atom.mark.clone()),
                                 "'{}' is not an object.",
                                 identifier
                             );
@@ -247,7 +243,7 @@ impl Context {
                 }
             }
             _ => {
-                raise_backtrace_error!(atom.mark.clone(), "Value given is not an object.");
+                raise_error!(Some(atom.mark.clone()), "Value given is not an object.");
             }
         }
     }
@@ -257,8 +253,8 @@ impl Context {
             AtomValue::IDENTIFIER(ref identifier) => {
                 let optional_value = self.get_value(identifier.as_str());
                 if optional_value.is_none() {
-                    raise_backtrace_error!(
-                        atom.mark.clone(),
+                    raise_error!(
+                        Some(atom.mark.clone()),
                         "Identifier '{}' is not defined.",
                         identifier
                     );
@@ -266,8 +262,8 @@ impl Context {
                     match optional_value.unwrap() {
                         Value::FUNCTION(function) => Ok(function.clone()),
                         _ => {
-                            raise_backtrace_error!(
-                                atom.mark.clone(),
+                            raise_error!(
+                                Some(atom.mark.clone()),
                                 "'{}' is not a function.",
                                 identifier
                             );
@@ -276,7 +272,7 @@ impl Context {
                 }
             }
             _ => {
-                raise_backtrace_error!(atom.mark.clone(), "Value given is not a function.");
+                raise_error!(Some(atom.mark.clone()), "Value given is not a function.");
             }
         }
     }
@@ -324,30 +320,16 @@ impl Context {
             }
         }
 
-        Err(Backtrace::new(Log::error(
-            format!("Unexpected value as the head of a command."),
-            head.mark.clone(),
-        )))
+        raise_error!(
+            Some(head.mark.clone()),
+            "Unexpected value as the head of a command."
+        );
     }
 
     pub fn run_code(&mut self, name: String) -> Result<Value, Backtrace> {
-        let code = (self.code_request_handler)(&name);
-        if code.is_err() {
-            return Err(Backtrace::new(code.unwrap_err()));
-        }
-        let code = code.unwrap();
-
-        let result = lex(name, code);
-        if result.is_err() {
-            return Err(Backtrace::new(result.unwrap_err()));
-        }
-        let result = result.unwrap();
-
-        let result = generate_commands(result);
-        if result.is_err() {
-            return Err(Backtrace::new(result.unwrap_err()));
-        }
-        let mut result = result.unwrap();
+        let code = (self.code_request_handler)(&name)?;
+        let result = lex(name, code)?;
+        let mut result = generate_commands(result)?;
 
         for command in result.drain(..) {
             let signal = self.run_command(command.as_slice())?;

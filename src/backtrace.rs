@@ -5,14 +5,14 @@ use std::{
 };
 
 #[macro_export]
-macro_rules! raise_backtrace_error {
+macro_rules! raise_error {
     ($mark:expr, $($message:expr),*) => {
         return Err(Backtrace::new(Log::error(format!($($message),*), $mark)));
     };
 }
 
 #[macro_export]
-macro_rules! raise_backtrace_bug {
+macro_rules! raise_bug {
     ($mark:expr, $($message:expr),*) => {
         return Err(Backtrace::new(Log::bug(format!($($message),*), $mark)));
     };
@@ -30,11 +30,11 @@ impl Backtrace {
         self.0.push(log);
     }
 
-    pub fn trace<T>(result: Result<T, Backtrace>, mark: &Option<Rc<Mark>>) -> Result<T, Backtrace>
+    pub fn trace<T>(result: Result<T, Backtrace>, mark: &Rc<Mark>) -> Result<T, Backtrace>
     where
         T: Debug,
     {
-        if result.is_ok() || mark.is_none() {
+        if result.is_ok() {
             return result;
         }
 

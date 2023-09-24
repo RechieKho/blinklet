@@ -1,4 +1,3 @@
-pub mod backtrace;
 pub mod context;
 pub mod function;
 pub mod object;

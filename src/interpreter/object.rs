@@ -1,7 +1,7 @@
 use super::function::NativeFunction;
-use super::standard::var::var;
-use super::standard::set::set;
 use super::standard::print::print;
+use super::standard::set::set;
+use super::standard::var::var;
 use super::value::Value;
 use std::collections::HashMap;
 

@@ -9,6 +9,5 @@ pub fn print(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> 
         let value = context.resolve_value(atom)?;
         print!("{}", value.to_string());
     }
-    print!("\n");
     Ok(Signal::COMPLETE(Value::NULL))
 }

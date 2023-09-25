@@ -5,6 +5,7 @@ pub mod div;
 pub mod func;
 pub mod list;
 pub mod mul;
+pub mod object;
 pub mod print;
 pub mod rep;
 pub mod return_fn;

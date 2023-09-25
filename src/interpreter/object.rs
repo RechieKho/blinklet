@@ -6,6 +6,7 @@ use super::standard::div::div;
 use super::standard::func::func;
 use super::standard::list::list;
 use super::standard::mul::mul;
+use super::standard::object::object as create_object;
 use super::standard::print::print;
 use super::standard::rep::rep;
 use super::standard::return_fn::return_fn;
@@ -56,6 +57,7 @@ impl Default for Object {
         object_register_native_function!(object, mul);
         object_register_native_function!(object, div);
         object_register_native_function!(object, func);
+        object_register_native_function!(object, "object", create_object);
         object_register_native_function!(object, "return", return_fn);
         object_register_native_function!(object, "break", break_fn);
         object_register_native_function!(object, "continue", continue_fn);

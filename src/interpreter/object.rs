@@ -1,4 +1,5 @@
 use super::function::NativeFunction;
+use super::standard::return_fn::return_fn;
 use super::standard::div::div;
 use super::standard::mul::mul;
 use super::standard::sub::sub;
@@ -15,6 +16,13 @@ macro_rules! object_register_native_function {
     ($object:expr, $function:expr) => {
         $object.content.insert(
             String::from(stringify!($function)),
+            NativeFunction::wrap($function),
+        )
+    };
+
+    ($object:expr, $string:expr, $function:expr) => {
+        $object.content.insert(
+            String::from($string),
             NativeFunction::wrap($function),
         )
     };
@@ -45,6 +53,7 @@ impl Default for Object {
         object_register_native_function!(object, sub);
         object_register_native_function!(object, mul);
         object_register_native_function!(object, div);
+        object_register_native_function!(object, "return", return_fn);
         object
     }
 }

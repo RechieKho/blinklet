@@ -13,7 +13,7 @@ pub trait Function: ToString + Debug {
 }
 
 pub struct ScriptFunction {
-    pub command: Vec<Atom>,
+    pub commands: Vec<Atom>,
     pub closure: Vec<Object>,
 }
 
@@ -67,8 +67,8 @@ impl Function for ScriptFunction {
 }
 
 impl ScriptFunction {
-    pub fn wrap(command: Vec<Atom>, closure: Vec<Object>) -> Value {
-        let function: Rc<dyn Function> = Rc::new(ScriptFunction { command, closure });
+    pub fn wrap(commands: Vec<Atom>, closure: Vec<Object>) -> Value {
+        let function: Rc<dyn Function> = Rc::new(ScriptFunction { commands, closure });
         Value::FUNCTION(function)
     }
 }

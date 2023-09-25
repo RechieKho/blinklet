@@ -6,6 +6,7 @@ pub mod rep;
 pub mod add;
 pub mod sub;
 pub mod mul;
+pub mod div;
 
 #[macro_export]
 macro_rules! assert_atoms_count {

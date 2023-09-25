@@ -1,4 +1,5 @@
 use super::function::NativeFunction;
+use super::standard::div::div;
 use super::standard::mul::mul;
 use super::standard::sub::sub;
 use super::standard::add::add;
@@ -43,6 +44,7 @@ impl Default for Object {
         object_register_native_function!(object, add);
         object_register_native_function!(object, sub);
         object_register_native_function!(object, mul);
+        object_register_native_function!(object, div);
         object
     }
 }

@@ -186,45 +186,48 @@ impl Context {
             return Ok(Signal::COMPLETE(Value::NULL));
         }
         let head = command.first().unwrap();
-        let function = self.resolve_function(head);
-        if function.is_ok() {
-            let function = function.unwrap();
-            let result = function.call(self, command);
-            return result;
-        }
 
-        let object = self.resolve_object(head);
-        if object.is_ok() {
-            let object = object.unwrap();
-            self.scopes.push(object);
-            let mut final_result: Result<Signal, Backtrace> = Ok(Signal::COMPLETE(Value::NULL));
-            for atom in command.iter().skip(1) {
-                if let AtomValue::COMMAND(ref command) = atom.value {
-                    let result = self.run_command(command.as_slice());
-                    if result.is_err() {
-                        final_result = result;
-                        break;
-                    }
-                    let signal = result.unwrap();
-                    if let Signal::RETURN(_) = signal {
-                        final_result = Ok(signal);
-                        break;
+        let value = self.resolve_value(head)?;
+        match value {
+            Value::FUNCTION(function) => {
+                let result = function.call(self, command);
+                return result;
+            },
+
+            Value::OBJECT(object) => {
+                self.scopes.push(object);
+                let mut final_result: Result<Signal, Backtrace> = Ok(Signal::COMPLETE(Value::NULL));
+                for atom in command.iter().skip(1) {
+                    if let AtomValue::COMMAND(ref command) = atom.value {
+                        let result = self.run_command(command.as_slice());
+                        if result.is_err() {
+                            final_result = result;
+                            break;
+                        }
+                        let signal = result.unwrap();
+                        if let Signal::RETURN(_) = signal {
+                            final_result = Ok(signal);
+                            break;
+                        }
                     }
                 }
+                let object = self.scopes.pop().unwrap();
+                let signal = Backtrace::trace(final_result, &head.mark)?;
+                if let Signal::RETURN(_) = signal {
+                    return Ok(signal);
+                } else {
+                    return Ok(Signal::COMPLETE(Value::OBJECT(object)));
+                }
             }
-            let object = self.scopes.pop().unwrap();
-            let signal = Backtrace::trace(final_result, &head.mark)?;
-            if let Signal::RETURN(_) = signal {
-                return Ok(signal);
-            } else {
-                return Ok(Signal::COMPLETE(Value::OBJECT(object)));
+            
+            _ => {
+                raise_error!(
+                    Some(head.mark.clone()),
+                    "Unexpected value as the head of a command."
+                );
             }
         }
 
-        raise_error!(
-            Some(head.mark.clone()),
-            "Unexpected value as the head of a command."
-        );
     }
 
     pub fn run_code(&mut self, name: String) -> Result<Value, Backtrace> {

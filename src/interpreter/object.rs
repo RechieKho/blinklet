@@ -1,6 +1,7 @@
 use super::function::NativeFunction;
 use super::standard::add::add;
 use super::standard::break_fn::break_fn;
+use super::standard::continue_fn::continue_fn;
 use super::standard::div::div;
 use super::standard::list::list;
 use super::standard::mul::mul;
@@ -55,6 +56,7 @@ impl Default for Object {
         object_register_native_function!(object, div);
         object_register_native_function!(object, "return", return_fn);
         object_register_native_function!(object, "break", break_fn);
+        object_register_native_function!(object, "continue", continue_fn);
         object
     }
 }

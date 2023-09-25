@@ -79,6 +79,12 @@ impl Context {
                 match signal {
                     Signal::RETURN(value) => Ok(value),
                     Signal::COMPLETE(value) => Ok(value),
+                    _ => {
+                        raise_error!(
+                            Some(atom.mark.clone()),
+                            "Unexpected control command."
+                        );
+                    }
                 }
             }
             AtomValue::BOOL(boolean) => Ok(Value::BOOL(boolean)),

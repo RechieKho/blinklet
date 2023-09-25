@@ -106,180 +106,75 @@ impl Context {
         }
     }
 
-    pub fn resolve_bool(&self, atom: &Atom) -> Result<bool, Backtrace> {
-        match atom.value {
-            AtomValue::BOOL(boolean) => Ok(boolean),
-            AtomValue::IDENTIFIER(ref identifier) => {
-                let optional_value = self.get_value(identifier.as_str());
-                if optional_value.is_none() {
-                    raise_error!(
-                        Some(atom.mark.clone()),
-                        "Identifier '{}' is not defined.",
-                        identifier
-                    );
-                } else {
-                    match optional_value.unwrap() {
-                        Value::BOOL(boolean) => Ok(*boolean),
-                        _ => {
-                            raise_error!(
-                                Some(atom.mark.clone()),
-                                "'{}' is not a boolean",
-                                identifier
-                            );
-                        }
-                    }
-                }
-            }
-            _ => {
-                raise_error!(Some(atom.mark.clone()), "Value given is not a boolean.");
-            }
+    pub fn resolve_bool(&mut self, atom: &Atom) -> Result<bool, Backtrace> {
+        let value = self.resolve_value(atom)?;
+        if let Value::BOOL(boolean) = value {
+            Ok(boolean)
+        } else {
+            raise_error!(
+                Some(atom.mark.clone()),
+                "Value given is not a boolean."
+            );
         }
     }
 
-    pub fn resolve_number(&self, atom: &Atom) -> Result<f64, Backtrace> {
-        match atom.value {
-            AtomValue::NUMBER(number) => Ok(number),
-            AtomValue::IDENTIFIER(ref identifier) => {
-                let optional_value = self.get_value(identifier.as_str());
-                if optional_value.is_none() {
-                    raise_error!(
-                        Some(atom.mark.clone()),
-                        "Identifier '{}' is not defined.",
-                        identifier
-                    );
-                } else {
-                    match optional_value.unwrap() {
-                        Value::NUMBER(number) => Ok(*number),
-                        _ => {
-                            raise_error!(
-                                Some(atom.mark.clone()),
-                                "'{}' is not a number",
-                                identifier
-                            );
-                        }
-                    }
-                }
-            }
-            _ => {
-                raise_error!(Some(atom.mark.clone()), "Value given is not a number.");
-            }
+    pub fn resolve_number(&mut self, atom: &Atom) -> Result<f64, Backtrace> {
+        let value = self.resolve_value(atom)?;
+        if let Value::NUMBER(number) = value {
+            Ok(number)
+        } else {
+            raise_error!(
+                Some(atom.mark.clone()),
+                "Value given is not a number."
+            );
         }
     }
 
-    pub fn resolve_string(&self, atom: &Atom) -> Result<String, Backtrace> {
-        match atom.value {
-            AtomValue::STRING(ref string) => Ok(string.clone()),
-            AtomValue::IDENTIFIER(ref identifier) => {
-                let optional_value = self.get_value(identifier.as_str());
-                if optional_value.is_none() {
-                    raise_error!(
-                        Some(atom.mark.clone()),
-                        "Identifier '{}' is not defined.",
-                        identifier
-                    );
-                } else {
-                    match optional_value.unwrap() {
-                        Value::STRING(string) => Ok(string.clone()),
-                        _ => {
-                            raise_error!(
-                                Some(atom.mark.clone()),
-                                "'{}' is not a string.",
-                                identifier
-                            );
-                        }
-                    }
-                }
-            }
-            _ => {
-                raise_error!(Some(atom.mark.clone()), "Value given is not a string.");
-            }
+    pub fn resolve_string(&mut self, atom: &Atom) -> Result<String, Backtrace> {
+        let value = self.resolve_value(atom)?;
+        if let Value::STRING(string) = value {
+            Ok(string)
+        } else {
+            raise_error!(
+                Some(atom.mark.clone()),
+                "Value given is not a string."
+            );
         }
     }
 
-    pub fn resolve_list(&self, atom: &Atom) -> Result<Vec<Value>, Backtrace> {
-        match atom.value {
-            AtomValue::IDENTIFIER(ref identifier) => {
-                let optional_value = self.get_value(identifier.as_str());
-                if optional_value.is_none() {
-                    raise_error!(
-                        Some(atom.mark.clone()),
-                        "Identifier '{}' is not defined.",
-                        identifier
-                    );
-                } else {
-                    match optional_value.unwrap() {
-                        Value::LIST(list) => Ok(list.clone()),
-                        _ => {
-                            raise_error!(
-                                Some(atom.mark.clone()),
-                                "'{}' is not a list.",
-                                identifier
-                            );
-                        }
-                    }
-                }
-            }
-            _ => {
-                raise_error!(Some(atom.mark.clone()), "Value given is not a list.");
-            }
+    pub fn resolve_list(&mut self, atom: &Atom) -> Result<Vec<Value>, Backtrace> {
+        let value = self.resolve_value(atom)?;
+        if let Value::LIST(list) = value {
+            Ok(list)
+        } else {
+            raise_error!(
+                Some(atom.mark.clone()),
+                "Value given is not a list."
+            );
         }
     }
 
-    pub fn resolve_object(&self, atom: &Atom) -> Result<Object, Backtrace> {
-        match atom.value {
-            AtomValue::IDENTIFIER(ref identifier) => {
-                let optional_value = self.get_value(identifier.as_str());
-                if optional_value.is_none() {
-                    raise_error!(
-                        Some(atom.mark.clone()),
-                        "Identifier '{}' is not defined.",
-                        identifier
-                    );
-                } else {
-                    match optional_value.unwrap() {
-                        Value::OBJECT(object) => Ok(object.clone()),
-                        _ => {
-                            raise_error!(
-                                Some(atom.mark.clone()),
-                                "'{}' is not an object.",
-                                identifier
-                            );
-                        }
-                    }
-                }
-            }
-            _ => {
-                raise_error!(Some(atom.mark.clone()), "Value given is not an object.");
-            }
+    pub fn resolve_object(&mut self, atom: &Atom) -> Result<Object, Backtrace> {
+        let value = self.resolve_value(atom)?;
+        if let Value::OBJECT(object) = value {
+            Ok(object)
+        } else {
+            raise_error!(
+                Some(atom.mark.clone()),
+                "Value given is not an object."
+            );
         }
     }
 
-    pub fn resolve_function(&self, atom: &Atom) -> Result<Rc<dyn Function>, Backtrace> {
-        match atom.value {
-            AtomValue::IDENTIFIER(ref identifier) => {
-                let optional_value = self.get_value(identifier.as_str());
-                if optional_value.is_none() {
-                    raise_error!(
-                        Some(atom.mark.clone()),
-                        "Identifier '{}' is not defined.",
-                        identifier
-                    );
-                } else {
-                    match optional_value.unwrap() {
-                        Value::FUNCTION(function) => Ok(function.clone()),
-                        _ => {
-                            raise_error!(
-                                Some(atom.mark.clone()),
-                                "'{}' is not a function.",
-                                identifier
-                            );
-                        }
-                    }
-                }
-            }
-            _ => {
-                raise_error!(Some(atom.mark.clone()), "Value given is not a function.");
-            }
+    pub fn resolve_function(&mut self, atom: &Atom) -> Result<Rc<dyn Function>, Backtrace> {
+        let value = self.resolve_value(atom)?;
+        if let Value::FUNCTION(function) = value {
+            Ok(function)
+        } else {
+            raise_error!(
+                Some(atom.mark.clone()),
+                "Value given is not an object."
+            );
         }
     }
 

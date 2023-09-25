@@ -12,11 +12,25 @@ use crate::raise_error;
 
 pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     assert_atoms_count_min!(body, 5);
+
+    let first_atom = body.first().unwrap();
+
+    let commands = &body[5..];
+    if commands.len() == 0 {
+        return Ok(Signal::COMPLETE(Value::NULL));
+    }
+
+    let step = context.resolve_number(&body[4])?;
+    if step.is_sign_negative() {
+        raise_error!(
+            Some(first_atom.mark.clone()),
+            "Step of repetition must be positive, system will increment/decrement to approach end value for you."
+        );
+    }
+
     let index_identifier = atom_as_identifier!(&body[1]);
     let start = context.resolve_number(&body[2])?;
     let end = context.resolve_number(&body[3])?;
-    let step = context.resolve_number(&body[4])?;
-    let commands = &body[5..];
 
     let mut index = start;
 

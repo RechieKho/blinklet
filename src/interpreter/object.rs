@@ -1,13 +1,13 @@
 use super::function::NativeFunction;
-use super::standard::return_fn::return_fn;
-use super::standard::div::div;
-use super::standard::mul::mul;
-use super::standard::sub::sub;
 use super::standard::add::add;
-use super::standard::rep::rep;
+use super::standard::div::div;
 use super::standard::list::list;
+use super::standard::mul::mul;
 use super::standard::print::print;
+use super::standard::rep::rep;
+use super::standard::return_fn::return_fn;
 use super::standard::set::set;
+use super::standard::sub::sub;
 use super::standard::var::var;
 use super::value::Value;
 use hashbrown::HashMap;
@@ -21,10 +21,9 @@ macro_rules! object_register_native_function {
     };
 
     ($object:expr, $string:expr, $function:expr) => {
-        $object.content.insert(
-            String::from($string),
-            NativeFunction::wrap($function),
-        )
+        $object
+            .content
+            .insert(String::from($string), NativeFunction::wrap($function))
     };
 }
 

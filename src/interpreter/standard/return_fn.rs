@@ -1,6 +1,4 @@
 use crate::assert_atoms_count_max;
-use crate::raise_error;
-use crate::log::Log;
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;

@@ -5,7 +5,6 @@ use crate::interpreter::context::Context;
 use crate::interpreter::object::Object;
 use crate::interpreter::signal::Signal;
 use crate::interpreter::value::Value;
-use crate::log::Log;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
 use crate::raise_error;
@@ -36,7 +35,9 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
 
     loop {
         let mut scope = Object::default();
-        scope.content.insert(index_identifier.clone(), Value::NUMBER(index));
+        scope
+            .content
+            .insert(index_identifier.clone(), Value::NUMBER(index));
         context.scopes.push(scope);
         let mut final_result: Result<Signal, Backtrace> = Ok(Signal::COMPLETE(Value::NULL));
         for atom in commands.iter() {

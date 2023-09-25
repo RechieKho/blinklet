@@ -5,5 +5,5 @@ pub enum Signal {
     COMPLETE(Value),
     RETURN(Value),
     BREAK,
-    CONTINUE
+    CONTINUE,
 }

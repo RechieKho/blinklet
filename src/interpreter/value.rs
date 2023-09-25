@@ -33,10 +33,7 @@ impl ToString for Value {
 
                 format!(
                     "[{}]",
-                    d.iter()
-                        .map(to_repr)
-                        .collect::<Vec<String>>()
-                        .join(", ")
+                    d.iter().map(to_repr).collect::<Vec<String>>().join(", ")
                 )
             }
         }

@@ -7,14 +7,14 @@ use std::{
 #[macro_export]
 macro_rules! raise_error {
     ($mark:expr, $($message:expr),*) => {
-        return Err(Backtrace::new(Log::error(format!($($message),*), $mark)));
+        return Err(crate::backtrace::Backtrace::new(crate::log::Log::error(format!($($message),*), $mark)));
     };
 }
 
 #[macro_export]
 macro_rules! raise_bug {
     ($mark:expr, $($message:expr),*) => {
-        return Err(Backtrace::new(Log::bug(format!($($message),*), $mark)));
+        return Err(crate::backtrace::Backtrace::new(crate::log::Log::bug(format!($($message),*), $mark)));
     };
 }
 

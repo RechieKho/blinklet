@@ -80,10 +80,7 @@ impl Context {
                     Signal::RETURN(value) => Ok(value),
                     Signal::COMPLETE(value) => Ok(value),
                     _ => {
-                        raise_error!(
-                            Some(atom.mark.clone()),
-                            "Unexpected control command."
-                        );
+                        raise_error!(Some(atom.mark.clone()), "Unexpected control command.");
                     }
                 }
             }
@@ -111,10 +108,7 @@ impl Context {
         if let Value::BOOL(boolean) = value {
             Ok(boolean)
         } else {
-            raise_error!(
-                Some(atom.mark.clone()),
-                "Value given is not a boolean."
-            );
+            raise_error!(Some(atom.mark.clone()), "Value given is not a boolean.");
         }
     }
 
@@ -123,10 +117,7 @@ impl Context {
         if let Value::NUMBER(number) = value {
             Ok(number)
         } else {
-            raise_error!(
-                Some(atom.mark.clone()),
-                "Value given is not a number."
-            );
+            raise_error!(Some(atom.mark.clone()), "Value given is not a number.");
         }
     }
 
@@ -135,10 +126,7 @@ impl Context {
         if let Value::STRING(string) = value {
             Ok(string)
         } else {
-            raise_error!(
-                Some(atom.mark.clone()),
-                "Value given is not a string."
-            );
+            raise_error!(Some(atom.mark.clone()), "Value given is not a string.");
         }
     }
 
@@ -147,10 +135,7 @@ impl Context {
         if let Value::LIST(list) = value {
             Ok(list)
         } else {
-            raise_error!(
-                Some(atom.mark.clone()),
-                "Value given is not a list."
-            );
+            raise_error!(Some(atom.mark.clone()), "Value given is not a list.");
         }
     }
 
@@ -159,10 +144,7 @@ impl Context {
         if let Value::OBJECT(object) = value {
             Ok(object)
         } else {
-            raise_error!(
-                Some(atom.mark.clone()),
-                "Value given is not an object."
-            );
+            raise_error!(Some(atom.mark.clone()), "Value given is not an object.");
         }
     }
 
@@ -171,10 +153,7 @@ impl Context {
         if let Value::FUNCTION(function) = value {
             Ok(function)
         } else {
-            raise_error!(
-                Some(atom.mark.clone()),
-                "Value given is not an object."
-            );
+            raise_error!(Some(atom.mark.clone()), "Value given is not an object.");
         }
     }
 
@@ -192,7 +171,7 @@ impl Context {
             Value::FUNCTION(function) => {
                 let result = function.call(self, command);
                 return result;
-            },
+            }
 
             Value::OBJECT(object) => {
                 self.scopes.push(object);
@@ -219,7 +198,7 @@ impl Context {
                     return Ok(Signal::COMPLETE(Value::OBJECT(object)));
                 }
             }
-            
+
             _ => {
                 raise_error!(
                     Some(head.mark.clone()),
@@ -227,7 +206,6 @@ impl Context {
                 );
             }
         }
-
     }
 
     pub fn run_code(&mut self, name: String) -> Result<Value, Backtrace> {

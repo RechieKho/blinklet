@@ -4,7 +4,6 @@ use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::interpreter::value::Value;
-use crate::log::Log;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
 use crate::raise_bug;

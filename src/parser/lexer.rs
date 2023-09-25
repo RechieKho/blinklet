@@ -34,9 +34,7 @@ impl Token {
         mark_line: Rc<MarkLine>,
         column: RangeInclusive<usize>,
     ) -> Self {
-        let formatted = string
-            .replace("\\n", "\n")
-            .replace("\\\\", "\\");
+        let formatted = string.replace("\\n", "\n").replace("\\\\", "\\");
 
         Token {
             value: TokenValue::STRING(formatted),

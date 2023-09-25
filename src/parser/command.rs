@@ -2,7 +2,6 @@ use super::lexer::Token;
 use super::lexer::TokenLine;
 use super::lexer::TokenValue;
 use crate::backtrace::Backtrace;
-use crate::log::Log;
 use crate::mark::Mark;
 use crate::raise_bug;
 use crate::raise_error;

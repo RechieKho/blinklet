@@ -1,5 +1,4 @@
 use crate::backtrace::Backtrace;
-use crate::log::Log;
 use crate::mark::{Mark, MarkLine};
 use crate::raise_error;
 use std::ops::RangeInclusive;

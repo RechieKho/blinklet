@@ -3,7 +3,6 @@ use super::object::Object;
 use super::signal::Signal;
 use super::value::Value;
 use crate::backtrace::Backtrace;
-use crate::log::Log;
 use crate::parser::command::generate_commands;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;

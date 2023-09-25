@@ -1,4 +1,5 @@
 use super::function::NativeFunction;
+use super::standard::sub::sub;
 use super::standard::add::add;
 use super::standard::rep::rep;
 use super::standard::list::list;
@@ -39,6 +40,7 @@ impl Default for Object {
         object_register_native_function!(object, list);
         object_register_native_function!(object, rep);
         object_register_native_function!(object, add);
+        object_register_native_function!(object, sub);
         object
     }
 }

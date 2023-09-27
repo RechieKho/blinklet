@@ -190,7 +190,8 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
 
             match first_atom.value {
                 AtomValue::IDENTIFIER(ref identifier) => {
-                    if identifier == "ensuing" {
+                    if identifier == "|" {
+                        atoms.remove(0); // Remove the "|".
                         parent_command.append(&mut atoms);
                         current_indent_count = token_line.indent_count;
                         continue;

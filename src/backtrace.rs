@@ -47,7 +47,7 @@ impl Backtrace {
 impl Display for Backtrace {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for log in self.0.iter().rev() {
-            let rendering = format!("{log}");
+            let rendering = format!("{log}\n");
             f.write_str(&rendering)?;
         }
         Ok(())

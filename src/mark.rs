@@ -36,7 +36,7 @@ impl Display for Mark {
         let underline = format!(
             "{:>width$}",
             "~".repeat(end - start),
-            width = leader.len() + start + end
+            width = leader.len() + end
         );
         let rendering = format!("{header}\n{leader}{line}\n{underline}");
         f.write_str(&rendering)

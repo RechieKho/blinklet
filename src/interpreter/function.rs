@@ -4,7 +4,8 @@ use super::signal::Signal;
 use super::value::Value;
 use crate::backtrace::Backtrace;
 use crate::parser::command::Atom;
-use crate::parser::command::AtomValue;
+use crate::raise_error;
+use crate::signal_no_loop_control;
 use std::fmt::Debug;
 use std::rc::Rc;
 
@@ -41,28 +42,13 @@ impl Function for ScriptFunction {
         let mark = &body.first().unwrap().mark;
         let mut closure_context = Context::new(self.closure.clone(), Vec::new());
         for atom in body.iter().skip(1) {
-            let value = Backtrace::trace(context.resolve_value(atom), mark)?;
+            let value = context.resolve_value(atom)?;
             closure_context.slots.push(value);
         }
-        closure_context.scopes.push(Object::default());
-        let mut final_result: Result<Signal, Backtrace> = Ok(Signal::COMPLETE(Value::NULL));
-        for atom in body.iter().skip(1) {
-            if let AtomValue::COMMAND(ref command) = atom.value {
-                let result = closure_context.run_command(command.as_slice());
-                if result.is_err() {
-                    final_result = result;
-                    break;
-                }
-                let signal = result.unwrap();
-                if let Signal::RETURN(_) = signal {
-                    final_result = Ok(signal);
-                    break;
-                }
-            }
-        }
-        closure_context.scopes.pop();
-        let final_result = Backtrace::trace(final_result, mark);
-        final_result
+
+        let signal = closure_context.run_commands(&self.commands, Object::default())?;
+        signal_no_loop_control!(signal);
+        return Ok(signal);
     }
 }
 

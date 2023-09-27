@@ -6,5 +6,6 @@ use crate::parser::command::Atom;
 
 pub fn continue_fn(_context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     assert_atoms_count!(body, 1);
-    Ok(Signal::CONTINUE)
+    let mark = &body.first().unwrap().mark;
+    Ok(Signal::CONTINUE(mark.clone()))
 }

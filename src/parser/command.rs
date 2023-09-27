@@ -11,8 +11,6 @@ const NULL_STR: &'static str = "null";
 const TRUE_STR: &'static str = "true";
 const FALSE_STR: &'static str = "false";
 
-pub type Command = Vec<Atom>;
-
 #[macro_export]
 macro_rules! atom_as_identifier {
     ($atom: expr) => {
@@ -42,7 +40,7 @@ pub enum AtomValue {
     BOOL(bool),
     STRING(String),
     NUMBER(f64),
-    COMMAND(Command),
+    COMMAND(Vec<Atom>),
 }
 
 #[derive(Debug, Clone)]
@@ -87,7 +85,7 @@ impl Atom {
         }
     }
 
-    pub fn new_command(command: Command, mark: Rc<Mark>) -> Self {
+    pub fn new_command(command: Vec<Atom>, mark: Rc<Mark>) -> Self {
         Atom {
             value: AtomValue::COMMAND(command),
             mark,
@@ -114,28 +112,25 @@ impl Atom {
     }
 }
 
-pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Backtrace> {
-    let mut result: Vec<Command> = Vec::new();
+pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace> {
+    let mut result: Vec<Atom> = Vec::new();
     let mut current_indent_count = 0usize;
 
-    fn get_subcommand_mut<'command, 'pool>(
-        command: &'command mut Command,
-        nesting: usize,
-    ) -> Option<&'command mut Command> {
-        let mut subcommand = command;
-        for _ in 0..nesting {
-            let last = subcommand.last_mut();
-            if last.is_none() {
-                return None;
-            }
-            let atom = last.unwrap();
-            if let AtomValue::COMMAND(ref mut c) = atom.value {
-                subcommand = c;
+    fn get_subatom_mut(atom: &mut Atom, nesting: usize) -> Option<&mut Atom> {
+        if nesting == 0 {
+            return if let AtomValue::COMMAND(_) = atom.value {
+                Some(atom)
             } else {
-                return None;
-            }
+                None
+            };
         }
-        Some(subcommand)
+
+        if let AtomValue::COMMAND(ref mut command) = atom.value {
+            let last = command.last_mut()?;
+            return get_subatom_mut(last, nesting - 1);
+        } else {
+            return None;
+        }
     }
 
     for mut token_line in lot.drain(..) {
@@ -169,13 +164,27 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Command>, Backtr
 
         // Just append to the result since there is no indentation.
         if token_line.indent_count == 0 {
-            result.push(atoms);
+            result.push(Atom::new_command(
+                atoms,
+                Rc::new(Mark::new(
+                    token_line.mark_line.clone(),
+                    0..=token_line.mark_line.content.len(),
+                )),
+            ));
             current_indent_count = token_line.indent_count;
             continue;
         }
+
         // There is indentation, get the parent command and push the subcommand.
-        let parent_command =
-            get_subcommand_mut(result.last_mut().unwrap(), token_line.indent_count - 1).unwrap();
+        let parent_atom =
+            get_subatom_mut(result.last_mut().unwrap(), token_line.indent_count - 1).unwrap();
+
+        let parent_command = if let AtomValue::COMMAND(ref mut command) = parent_atom.value {
+            command
+        } else {
+            raise_error!(Some(parent_atom.mark.clone()), "Expecting a command.");
+        };
+
         {
             let first_atom = atoms.first().unwrap();
 

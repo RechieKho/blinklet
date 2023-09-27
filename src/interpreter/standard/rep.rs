@@ -38,34 +38,15 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         scope
             .content
             .insert(index_identifier.clone(), Value::NUMBER(index));
-        context.scopes.push(scope);
-        let mut final_result: Result<Signal, Backtrace> = Ok(Signal::COMPLETE(Value::NULL));
-        for atom in commands.iter() {
-            if let AtomValue::COMMAND(ref command) = atom.value {
-                let result = context.run_command(command.as_slice());
-                if result.is_err() {
-                    final_result = result;
-                    break;
-                }
-                let signal = result.unwrap();
-                match signal {
-                    Signal::BREAK | Signal::CONTINUE | Signal::RETURN(_) => {
-                        final_result = Ok(signal);
-                        break;
-                    }
-                    _ => {}
-                }
-            }
-        }
-        context.scopes.pop();
-        let signal = final_result?;
+
+        let signal = context.run_commands(commands, scope)?;
         match signal {
-            Signal::RETURN(_) => {
+            Signal::RETURN(_, _) => {
                 return Ok(signal);
-            }
-            Signal::BREAK => {
+            },
+            Signal::BREAK(_) => {
                 break;
-            }
+            },
             _ => {}
         }
 

@@ -8,6 +8,7 @@ use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
 use crate::parser::lexer::lex;
 use crate::raise_error;
+use crate::signal_no_loop_control;
 use std::fs;
 use std::rc::Rc;
 
@@ -76,8 +77,7 @@ impl Context {
             AtomValue::COMMAND(ref command) => {
                 let signal = self.run_command(command.as_slice())?;
                 match signal {
-                    Signal::RETURN(value) => Ok(value),
-                    Signal::COMPLETE(value) => Ok(value),
+                    Signal::RETURN(value, _) | Signal::COMPLETE(value) => Ok(value),
                     _ => {
                         raise_error!(Some(atom.mark.clone()), "Unexpected control command.");
                     }
@@ -157,11 +157,11 @@ impl Context {
     }
 
     pub fn run_command(&mut self, command: &[Atom]) -> Result<Signal, Backtrace> {
-        if self.scopes.len() == 0 {
-            self.scopes.push(Object::default())
-        }
         if command.is_empty() {
             return Ok(Signal::COMPLETE(Value::NULL));
+        }
+        if self.scopes.len() == 0 {
+            self.scopes.push(Object::default())
         }
         let head = command.first().unwrap();
 
@@ -169,33 +169,14 @@ impl Context {
         match value {
             Value::FUNCTION(function) => {
                 let result = function.call(self, command);
-                return result;
+                return Backtrace::trace(result, &head.mark);
             }
 
             Value::OBJECT(object) => {
-                self.scopes.push(object);
-                let mut final_result: Result<Signal, Backtrace> = Ok(Signal::COMPLETE(Value::NULL));
-                for atom in command.iter().skip(1) {
-                    if let AtomValue::COMMAND(ref command) = atom.value {
-                        let result = self.run_command(command.as_slice());
-                        if result.is_err() {
-                            final_result = result;
-                            break;
-                        }
-                        let signal = result.unwrap();
-                        if let Signal::RETURN(_) = signal {
-                            final_result = Ok(signal);
-                            break;
-                        }
-                    }
-                }
-                let object = self.scopes.pop().unwrap();
-                let signal = Backtrace::trace(final_result, &head.mark)?;
-                if let Signal::RETURN(_) = signal {
-                    return Ok(signal);
-                } else {
-                    return Ok(Signal::COMPLETE(Value::OBJECT(object)));
-                }
+                let signal =
+                    Backtrace::trace(self.run_commands(&command[1..], object), &head.mark)?;
+                signal_no_loop_control!(signal);
+                return Ok(signal);
             }
 
             _ => {
@@ -207,23 +188,47 @@ impl Context {
         }
     }
 
+    pub fn run_commands(&mut self, commands: &[Atom], scope: Object) -> Result<Signal, Backtrace> {
+        if commands.len() == 0 {
+            return Ok(Signal::COMPLETE(Value::OBJECT(scope)));
+        }
+
+        self.scopes.push(scope);
+        for atom in commands.iter() {
+            if let AtomValue::COMMAND(ref command) = atom.value {
+                let result = self.run_command(command.as_slice());
+                if result.is_err() {
+                    self.scopes.pop();
+                    return result;
+                }
+
+                let signal = result.unwrap();
+                match signal {
+                    Signal::COMPLETE(_) => {}
+                    Signal::BREAK(_) | Signal::CONTINUE(_) | Signal::RETURN(_, _) => {
+                        self.scopes.pop();
+                        return Ok(signal);
+                    }
+                }
+            } else {
+                self.scopes.pop();
+                raise_error!(Some(atom.mark.clone()), "Expecting command.");
+            }
+        }
+        let scope = self.scopes.pop().unwrap();
+        Ok(Signal::COMPLETE(Value::OBJECT(scope)))
+    }
+
     pub fn run_code(&mut self, name: String) -> Result<Value, Backtrace> {
         let code = (self.code_request_handler)(&name)?;
         let result = lex(name, code)?;
-        let mut result = generate_commands(result)?;
-
-        if self.scopes.len() == 0 {
-            self.scopes.push(Object::default())
-        }
-
-        for command in result.drain(..) {
-            let signal = self.run_command(command.as_slice())?;
-            if let Signal::RETURN(value) = signal {
-                return Ok(value);
+        let result = generate_commands(result)?;
+        let signal = self.run_commands(result.as_slice(), Object::default())?;
+        match signal {
+            Signal::BREAK(ref mark) | Signal::CONTINUE(ref mark) => {
+                raise_error!(Some(mark.clone()), "Unexpected control flow structure.");
             }
+            Signal::COMPLETE(value) | Signal::RETURN(value, _) => Ok(value),
         }
-
-        let object = self.scopes.pop().unwrap();
-        Ok(Value::OBJECT(object))
     }
 }

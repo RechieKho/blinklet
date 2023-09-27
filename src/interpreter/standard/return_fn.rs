@@ -7,10 +7,11 @@ use crate::parser::command::Atom;
 
 pub fn return_fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     assert_atoms_count_max!(body, 2);
+    let mark = &body.first().unwrap().mark;
     if body.len() == 1 {
-        Ok(Signal::RETURN(Value::NULL))
+        Ok(Signal::RETURN(Value::NULL, mark.clone()))
     } else {
         let value = context.resolve_value(&body[1])?;
-        Ok(Signal::RETURN(value))
+        Ok(Signal::RETURN(value, mark.clone()))
     }
 }

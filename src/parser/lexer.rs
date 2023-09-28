@@ -132,7 +132,39 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
 
             // Check if it is a comment.
             if current_char == '#' {
-                break 'row;
+                // Check if unterminated string literal.
+                if string_char != '\0' {
+                    raise_error!(
+                        Some(Arc::new(Mark::new(
+                            mark_line,
+                            slice_start..=j - 1,
+                        ))),
+                        "unterminated string."
+                    );
+                }
+
+                // Check if there is unhandled token.
+                if slice_start != j {
+                    let slice = &line[slice_start..j];
+                    let parse_result = slice.parse::<f64>();
+                    if parse_result.is_ok() {
+                        token_line.tokens.push(Token::new_number(
+                            parse_result.unwrap(),
+                            mark_line.clone(),
+                            slice_start..=j - 1,
+                        ));
+                    } else {
+                        token_line.tokens.push(Token::new_word(
+                            String::from(slice),
+                            mark_line.clone(),
+                            slice_start..=j - 1,
+                        ));
+                    }
+                }
+
+                // Push `TokenLine`.
+                result.push(token_line);
+                continue 'row;
             }
 
             // Check if it is starting a string literal.

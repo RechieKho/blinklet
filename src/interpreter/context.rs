@@ -10,6 +10,7 @@ use crate::parser::lexer::lex;
 use crate::raise_error;
 use crate::signal_no_loop_control;
 use std::fs;
+use std::mem;
 use std::sync::Arc;
 
 pub type CodeRequestHandler = fn(name: &String) -> Result<String, Backtrace>;
@@ -49,29 +50,6 @@ impl Context {
         }
     }
 
-    fn get_value<'context>(&'context self, identifier: &str) -> Option<&'context Value> {
-        let scopes_count = self.scopes.len();
-        if scopes_count == 0 {
-            return None;
-        }
-        for i in (0..scopes_count).rev() {
-            let object = self.scopes.get(i);
-            if object.is_none() {
-                continue;
-            }
-            let object = object.unwrap();
-
-            let value = object.content.get(identifier);
-            if value.is_none() {
-                continue;
-            }
-            let value = value.unwrap();
-
-            return Some(value);
-        }
-        None
-    }
-
     pub fn resolve_value(&mut self, atom: &Atom) -> Result<Value, Backtrace> {
         match atom.value {
             AtomValue::COMMAND(ref command) => {
@@ -88,16 +66,41 @@ impl Context {
             AtomValue::STRING(ref string) => Ok(Value::STRING(string.clone())),
             AtomValue::NUMBER(number) => Ok(Value::NUMBER(number)),
             AtomValue::IDENTIFIER(ref identifier) => {
-                let optional_value = self.get_value(identifier.as_str());
-                if optional_value.is_none() {
+                let scopes_count = self.scopes.len();
+                if scopes_count == 0 {
                     raise_error!(
                         Some(atom.mark.clone()),
                         "Identifier '{}' is not defined.",
                         identifier
                     );
-                } else {
-                    Ok(optional_value.unwrap().clone())
                 }
+
+                for i in (0..scopes_count).rev() {
+                    let object = self.scopes.get_mut(i);
+                    if object.is_none() {
+                        continue;
+                    }
+                    let object = object.unwrap();
+
+                    let value = object.content.get_mut(identifier);
+                    if value.is_none() {
+                        continue;
+                    }
+                    let value = value.unwrap();
+
+                    if let Value::OBJECT(_) = value {
+                        let object = mem::replace(value, Value::NULL);
+                        return Ok(object);
+                    } else {
+                        return Ok(value.clone());
+                    }
+                }
+
+                raise_error!(
+                    Some(atom.mark.clone()),
+                    "Identifier '{}' is not defined.",
+                    identifier
+                );
             }
         }
     }

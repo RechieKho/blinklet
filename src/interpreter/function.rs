@@ -9,7 +9,7 @@ use crate::signal_no_loop_control;
 use std::fmt::Debug;
 use std::sync::Arc;
 
-pub trait Function: ToString + Debug + Sync + Send{
+pub trait Function: ToString + Debug + Sync + Send {
     fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace>;
 }
 

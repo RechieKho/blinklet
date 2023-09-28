@@ -43,10 +43,10 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         match signal {
             Signal::RETURN(_, _) => {
                 return Ok(signal);
-            },
+            }
             Signal::BREAK(_) => {
                 break;
-            },
+            }
             _ => {}
         }
 

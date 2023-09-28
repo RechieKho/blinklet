@@ -1,6 +1,3 @@
-use std::sync::OnceLock;
-use std::sync::Arc;
-use crate::interpreter::function::Function;
 use super::function::NativeFunction;
 use super::standard::add::add;
 use super::standard::break_fn::break_fn;
@@ -17,28 +14,35 @@ use super::standard::set::set;
 use super::standard::sub::sub;
 use super::standard::var::var;
 use super::value::Value;
+use crate::interpreter::function::Function;
 use hashbrown::HashMap;
+use std::sync::Arc;
+use std::sync::OnceLock;
 
 macro_rules! object_register_native_function {
-    ($object:expr, $function:expr) => {
-        {
-            static NATIVE_FUNCTION : OnceLock<Arc<dyn Function>> = OnceLock::new();
-            $object.content.insert(
-                String::from(stringify!($function)),
-                Value::FUNCTION(NATIVE_FUNCTION.get_or_init(|| Arc::new(NativeFunction { handler: $function })).clone())
-            );
-        }
-    };
+    ($object:expr, $function:expr) => {{
+        static NATIVE_FUNCTION: OnceLock<Arc<dyn Function>> = OnceLock::new();
+        $object.content.insert(
+            String::from(stringify!($function)),
+            Value::FUNCTION(
+                NATIVE_FUNCTION
+                    .get_or_init(|| Arc::new(NativeFunction { handler: $function }))
+                    .clone(),
+            ),
+        );
+    }};
 
-    ($object:expr, $string:expr, $function:expr) => {
-        {
-            static NATIVE_FUNCTION : OnceLock<Arc<dyn Function>> = OnceLock::new();
-            $object.content.insert(
-                String::from($string),
-                Value::FUNCTION(NATIVE_FUNCTION.get_or_init(|| Arc::new(NativeFunction { handler: $function })).clone())
-            );
-        }
-    };
+    ($object:expr, $string:expr, $function:expr) => {{
+        static NATIVE_FUNCTION: OnceLock<Arc<dyn Function>> = OnceLock::new();
+        $object.content.insert(
+            String::from($string),
+            Value::FUNCTION(
+                NATIVE_FUNCTION
+                    .get_or_init(|| Arc::new(NativeFunction { handler: $function }))
+                    .clone(),
+            ),
+        );
+    }};
 }
 
 #[derive(Debug, Clone)]

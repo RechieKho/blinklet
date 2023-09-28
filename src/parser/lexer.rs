@@ -2,9 +2,9 @@ use crate::backtrace::Backtrace;
 use crate::mark::{Mark, MarkLine};
 use crate::raise_error;
 use std::ops::RangeInclusive;
-use std::sync::Arc;
 use std::result::Result;
 use std::string::String;
+use std::sync::Arc;
 use std::vec::Vec;
 
 #[derive(Debug, PartialEq)]
@@ -41,7 +41,11 @@ impl Token {
         }
     }
 
-    pub fn new_number(number: f64, mark_line: Arc<MarkLine>, column: RangeInclusive<usize>) -> Self {
+    pub fn new_number(
+        number: f64,
+        mark_line: Arc<MarkLine>,
+        column: RangeInclusive<usize>,
+    ) -> Self {
         Token {
             value: TokenValue::NUMBER(number),
             mark: Arc::new(Mark::new(mark_line, column)),

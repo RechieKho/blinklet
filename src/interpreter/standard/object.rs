@@ -11,9 +11,7 @@ pub fn object(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace>
     match signal {
         Signal::BREAK(ref mark) | Signal::CONTINUE(ref mark) => {
             raise_error!(Some(mark.clone()), "Loop control structure is forbidden.");
-        },
-        Signal::COMPLETE(value) | Signal::RETURN(value, _) => {
-            Ok(Signal::COMPLETE(value))
         }
+        Signal::COMPLETE(value) | Signal::RETURN(value, _) => Ok(Signal::COMPLETE(value)),
     }
 }

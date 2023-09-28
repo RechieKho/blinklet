@@ -5,6 +5,7 @@ use crate::interpreter::context::Context;
 use crate::interpreter::object::Object;
 use crate::interpreter::signal::Signal;
 use crate::interpreter::value::Value;
+use crate::mutex_force_lock;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
 use crate::raise_error;
@@ -34,10 +35,13 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     let mut index = start;
 
     loop {
-        let mut scope = Object::default();
-        scope
-            .content
-            .insert(index_identifier.clone(), Value::NUMBER(index));
+        let scope = Object::with_mutex();
+        {
+            let mut scope = mutex_force_lock!(scope, first_atom.mark.clone());
+            scope
+                .content
+                .insert(index_identifier.clone(), Value::NUMBER(index));
+        }
 
         let signal = context.run_commands(commands, scope)?;
         match signal {

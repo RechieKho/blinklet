@@ -2,6 +2,7 @@ use super::object::Object;
 use super::signal::Signal;
 use super::value::Value;
 use crate::backtrace::Backtrace;
+use crate::mutex_force_lock;
 use crate::parser::command::generate_commands;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
@@ -9,7 +10,8 @@ use crate::parser::lexer::lex;
 use crate::raise_error;
 use crate::signal_no_loop_control;
 use std::fs;
-use std::mem;
+use std::sync::Arc;
+use std::sync::Mutex;
 
 pub type CodeRequestHandler = fn(name: &String) -> Result<String, Backtrace>;
 
@@ -24,7 +26,7 @@ fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
 
 /// The runtime that runs Minky code.
 pub struct Context {
-    pub scopes: Vec<Object>,
+    pub scopes: Vec<Arc<Mutex<Object>>>,
     pub slots: Vec<Value>,
     pub code_request_handler: CodeRequestHandler,
 }
@@ -40,7 +42,7 @@ impl Default for Context {
 }
 
 impl Context {
-    pub fn new(scopes: Vec<Object>, slots: Vec<Value>) -> Context {
+    pub fn new(scopes: Vec<Arc<Mutex<Object>>>, slots: Vec<Value>) -> Context {
         Context {
             scopes,
             slots,
@@ -79,19 +81,14 @@ impl Context {
                         continue;
                     }
                     let object = object.unwrap();
+                    let mut object = mutex_force_lock!(object, atom.mark.clone());
 
                     let value = object.content.get_mut(identifier);
                     if value.is_none() {
                         continue;
                     }
                     let value = value.unwrap();
-
-                    if let Value::OBJECT(_) = value {
-                        let object = mem::replace(value, Value::NULL);
-                        return Ok(object);
-                    } else {
-                        return Ok(value.clone());
-                    }
+                    return Ok(value.clone());
                 }
 
                 raise_error!(
@@ -139,21 +136,12 @@ impl Context {
         }
     }
 
-    pub fn resolve_object(&mut self, atom: &Atom) -> Result<Object, Backtrace> {
-        let value = self.resolve_value(atom)?;
-        if let Value::OBJECT(object) = value {
-            Ok(object)
-        } else {
-            raise_error!(Some(atom.mark.clone()), "Value given is not an object.");
-        }
-    }
-
     pub fn run_command(&mut self, command: &[Atom]) -> Result<Signal, Backtrace> {
         if command.is_empty() {
             return Ok(Signal::COMPLETE(Value::NULL));
         }
         if self.scopes.len() == 0 {
-            self.scopes.push(Object::default())
+            self.scopes.push(Object::with_mutex())
         }
         let head = command.first().unwrap();
 
@@ -165,15 +153,7 @@ impl Context {
             }
 
             Value::CLOSURE(closure) => {
-                let mut guard = match closure.lock() {
-                    Ok(guard) => guard,
-                    Err(_) => {
-                        raise_error!(
-                            Some(head.mark.clone()),
-                            "Thread is poisoned while locking mutex of closure."
-                        );
-                    }
-                };
+                let mut guard = mutex_force_lock!(closure, head.mark.clone());
                 let result = guard.call_mut(self, command);
                 return Backtrace::trace(result, &head.mark);
             }
@@ -194,7 +174,11 @@ impl Context {
         }
     }
 
-    pub fn run_commands(&mut self, commands: &[Atom], scope: Object) -> Result<Signal, Backtrace> {
+    pub fn run_commands(
+        &mut self,
+        commands: &[Atom],
+        scope: Arc<Mutex<Object>>,
+    ) -> Result<Signal, Backtrace> {
         if commands.len() == 0 {
             return Ok(Signal::COMPLETE(Value::OBJECT(scope)));
         }
@@ -229,7 +213,7 @@ impl Context {
         let code = (self.code_request_handler)(&name)?;
         let result = lex(name, code)?;
         let result = generate_commands(result)?;
-        let signal = self.run_commands(result.as_slice(), Object::default())?;
+        let signal = self.run_commands(result.as_slice(), Object::with_mutex())?;
         match signal {
             Signal::BREAK(ref mark) | Signal::CONTINUE(ref mark) => {
                 raise_error!(Some(mark.clone()), "Unexpected control flow structure.");

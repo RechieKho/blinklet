@@ -6,7 +6,7 @@ use crate::parser::command::Atom;
 use crate::raise_error;
 
 pub fn object(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
-    let scope = Object::default();
+    let scope = Object::with_mutex();
     let signal = context.run_commands(&body[1..], scope)?;
     match signal {
         Signal::BREAK(ref mark) | Signal::CONTINUE(ref mark) => {

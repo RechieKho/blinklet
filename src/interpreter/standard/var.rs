@@ -4,6 +4,7 @@ use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::interpreter::value::Value;
+use crate::mutex_force_lock;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
 use crate::raise_bug;
@@ -23,6 +24,7 @@ pub fn var(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         );
     }
     let scope = scope.unwrap();
+    let mut scope = mutex_force_lock!(scope, first_atom.mark.clone());
     let popped = scope.content.insert(identifier.clone(), value);
     if popped.is_some() {
         raise_error!(

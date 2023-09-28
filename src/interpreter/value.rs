@@ -8,6 +8,22 @@ use std::fmt::Debug;
 use std::sync::Arc;
 use std::sync::Mutex;
 
+#[macro_export]
+macro_rules! mutex_force_lock {
+    ($mutex:expr, $mark:expr) => {
+        match $mutex.lock() {
+            Ok(guard) => guard,
+            Err(_) => {
+                use crate::raise_bug;
+                raise_bug!(
+                    Some($mark),
+                    "Thread is poisoned while locking mutex of closure."
+                );
+            }
+        }
+    };
+}
+
 #[derive(Clone)]
 pub enum Value {
     NULL,
@@ -15,7 +31,7 @@ pub enum Value {
     NUMBER(f64),
     STRING(String),
     LIST(Vec<Value>),
-    OBJECT(Object),
+    OBJECT(Arc<Mutex<Object>>),
     FUNCTION(Arc<dyn Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace>>),
     CLOSURE(Arc<Mutex<Closure>>),
 }

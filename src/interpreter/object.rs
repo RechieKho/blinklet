@@ -14,7 +14,7 @@ use super::standard::sub::sub;
 use super::standard::var::var;
 use super::value::Value;
 use hashbrown::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 macro_rules! object_register_function {
     ($object:expr, $function:expr) => {{
@@ -36,14 +36,8 @@ pub struct Object {
     pub content: HashMap<String, Value>,
 }
 
-impl ToString for Object {
-    fn to_string(&self) -> String {
-        format!("<Object at {:p}>", self)
-    }
-}
-
-impl Default for Object {
-    fn default() -> Self {
+impl Object {
+    pub fn new() -> Self {
         let mut object = Object {
             content: HashMap::default(),
         };
@@ -62,5 +56,9 @@ impl Default for Object {
         object_register_function!(object, "break", break_fn);
         object_register_function!(object, "continue", continue_fn);
         object
+    }
+
+    pub fn with_mutex() -> Arc<Mutex<Self>> {
+        Arc::new(Mutex::new(Object::new()))
     }
 }

@@ -12,7 +12,7 @@ use std::sync::Mutex;
 #[derive(Debug, Clone)]
 pub struct Closure {
     pub commands: Vec<Atom>,
-    pub parent_scopes: Vec<Object>,
+    pub parent_scopes: Vec<Arc<Mutex<Object>>>,
 }
 
 impl Closure {
@@ -25,14 +25,14 @@ impl Closure {
 
         let mut closure_context = Context::new(Vec::new(), slots);
         mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);
-        let result = closure_context.run_commands(&self.commands, Object::default());
+        let result = closure_context.run_commands(&self.commands, Object::with_mutex());
         mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);
         let signal = result?;
         signal_no_loop_control!(signal);
         return Ok(signal);
     }
 
-    pub fn wrap(commands: Vec<Atom>, parent_scopes: Vec<Object>) -> Value {
+    pub fn wrap(commands: Vec<Atom>, parent_scopes: Vec<Arc<Mutex<Object>>>) -> Value {
         let closure = Arc::new(Mutex::new(Closure {
             commands,
             parent_scopes,

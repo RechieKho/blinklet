@@ -1,9 +1,8 @@
-use super::function::NativeFunction;
 use super::standard::add::add;
 use super::standard::break_fn::break_fn;
 use super::standard::continue_fn::continue_fn;
+use super::standard::cs::cs;
 use super::standard::div::div;
-use super::standard::func::func;
 use super::standard::list::list;
 use super::standard::mul::mul;
 use super::standard::object::object as create_object;
@@ -14,34 +13,21 @@ use super::standard::set::set;
 use super::standard::sub::sub;
 use super::standard::var::var;
 use super::value::Value;
-use crate::interpreter::function::Function;
 use hashbrown::HashMap;
 use std::sync::Arc;
-use std::sync::OnceLock;
 
-macro_rules! object_register_native_function {
+macro_rules! object_register_function {
     ($object:expr, $function:expr) => {{
-        static NATIVE_FUNCTION: OnceLock<Arc<dyn Function>> = OnceLock::new();
         $object.content.insert(
             String::from(stringify!($function)),
-            Value::FUNCTION(
-                NATIVE_FUNCTION
-                    .get_or_init(|| Arc::new(NativeFunction { handler: $function }))
-                    .clone(),
-            ),
+            Value::FUNCTION(Arc::new($function)),
         );
     }};
 
     ($object:expr, $string:expr, $function:expr) => {{
-        static NATIVE_FUNCTION: OnceLock<Arc<dyn Function>> = OnceLock::new();
-        $object.content.insert(
-            String::from($string),
-            Value::FUNCTION(
-                NATIVE_FUNCTION
-                    .get_or_init(|| Arc::new(NativeFunction { handler: $function }))
-                    .clone(),
-            ),
-        );
+        $object
+            .content
+            .insert(String::from($string), Value::FUNCTION(Arc::new($function)));
     }};
 }
 
@@ -61,20 +47,20 @@ impl Default for Object {
         let mut object = Object {
             content: HashMap::default(),
         };
-        object_register_native_function!(object, var);
-        object_register_native_function!(object, set);
-        object_register_native_function!(object, print);
-        object_register_native_function!(object, list);
-        object_register_native_function!(object, rep);
-        object_register_native_function!(object, add);
-        object_register_native_function!(object, sub);
-        object_register_native_function!(object, mul);
-        object_register_native_function!(object, div);
-        object_register_native_function!(object, func);
-        object_register_native_function!(object, "object", create_object);
-        object_register_native_function!(object, "return", return_fn);
-        object_register_native_function!(object, "break", break_fn);
-        object_register_native_function!(object, "continue", continue_fn);
+        object_register_function!(object, var);
+        object_register_function!(object, set);
+        object_register_function!(object, print);
+        object_register_function!(object, list);
+        object_register_function!(object, rep);
+        object_register_function!(object, add);
+        object_register_function!(object, sub);
+        object_register_function!(object, mul);
+        object_register_function!(object, div);
+        object_register_function!(object, cs);
+        object_register_function!(object, "object", create_object);
+        object_register_function!(object, "return", return_fn);
+        object_register_function!(object, "break", break_fn);
+        object_register_function!(object, "continue", continue_fn);
         object
     }
 }

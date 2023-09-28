@@ -1,4 +1,3 @@
-use super::function::Function;
 use super::object::Object;
 use super::signal::Signal;
 use super::value::Value;
@@ -11,7 +10,6 @@ use crate::raise_error;
 use crate::signal_no_loop_control;
 use std::fs;
 use std::mem;
-use std::sync::Arc;
 
 pub type CodeRequestHandler = fn(name: &String) -> Result<String, Backtrace>;
 
@@ -150,15 +148,6 @@ impl Context {
         }
     }
 
-    pub fn resolve_function(&mut self, atom: &Atom) -> Result<Arc<dyn Function>, Backtrace> {
-        let value = self.resolve_value(atom)?;
-        if let Value::FUNCTION(function) = value {
-            Ok(function)
-        } else {
-            raise_error!(Some(atom.mark.clone()), "Value given is not an object.");
-        }
-    }
-
     pub fn run_command(&mut self, command: &[Atom]) -> Result<Signal, Backtrace> {
         if command.is_empty() {
             return Ok(Signal::COMPLETE(Value::NULL));
@@ -171,7 +160,21 @@ impl Context {
         let value = self.resolve_value(head)?;
         match value {
             Value::FUNCTION(function) => {
-                let result = function.call(self, command);
+                let result = function(self, command);
+                return Backtrace::trace(result, &head.mark);
+            }
+
+            Value::CLOSURE(closure) => {
+                let mut guard = match closure.lock() {
+                    Ok(guard) => guard,
+                    Err(_) => {
+                        raise_error!(
+                            Some(head.mark.clone()),
+                            "Thread is poisoned while locking mutex of closure."
+                        );
+                    }
+                };
+                let result = guard.call_mut(self, command);
                 return Backtrace::trace(result, &head.mark);
             }
 

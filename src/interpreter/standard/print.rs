@@ -7,7 +7,7 @@ use crate::parser::command::Atom;
 pub fn print(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     for atom in body.iter().skip(1) {
         let value = context.resolve_value(atom)?;
-        print!("{}", value.to_string());
+        print!("{:?}", value);
     }
     Ok(Signal::COMPLETE(Value::NULL))
 }

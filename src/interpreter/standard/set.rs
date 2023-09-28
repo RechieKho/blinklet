@@ -4,7 +4,7 @@ use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::interpreter::value::Value;
-use crate::mutex_force_lock;
+use crate::mutex_lock_unwrap;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
 use crate::raise_bug;
@@ -29,7 +29,7 @@ pub fn set(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
             continue;
         }
         let object = object.unwrap();
-        let mut object = mutex_force_lock!(object, first_atom.mark.clone());
+        let mut object = mutex_lock_unwrap!(object, first_atom.mark.clone());
         if object.content.contains_key(identifier.as_str()) {
             object.content.insert(identifier.clone(), value).unwrap();
             return Ok(Signal::COMPLETE(Value::NULL));

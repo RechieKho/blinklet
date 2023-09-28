@@ -9,16 +9,13 @@ use std::sync::Arc;
 use std::sync::Mutex;
 
 #[macro_export]
-macro_rules! mutex_force_lock {
+macro_rules! mutex_lock_unwrap {
     ($mutex:expr, $mark:expr) => {
         match $mutex.lock() {
             Ok(guard) => guard,
             Err(_) => {
                 use crate::raise_bug;
-                raise_bug!(
-                    Some($mark),
-                    "Thread is poisoned while locking mutex."
-                );
+                raise_bug!(Some($mark), "Thread is poisoned while locking mutex.");
             }
         }
     };

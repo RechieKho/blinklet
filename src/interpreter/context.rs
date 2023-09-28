@@ -2,7 +2,7 @@ use super::object::Object;
 use super::signal::Signal;
 use super::value::Value;
 use crate::backtrace::Backtrace;
-use crate::mutex_force_lock;
+use crate::mutex_lock_unwrap;
 use crate::parser::command::generate_commands;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
@@ -81,7 +81,7 @@ impl Context {
                         continue;
                     }
                     let object = object.unwrap();
-                    let mut object = mutex_force_lock!(object, atom.mark.clone());
+                    let mut object = mutex_lock_unwrap!(object, atom.mark.clone());
 
                     let value = object.content.get_mut(identifier);
                     if value.is_none() {
@@ -153,7 +153,7 @@ impl Context {
             }
 
             Value::CLOSURE(closure) => {
-                let mut guard = mutex_force_lock!(closure, head.mark.clone());
+                let mut guard = mutex_lock_unwrap!(closure, head.mark.clone());
                 let result = guard.call_mut(self, command);
                 return Backtrace::trace(result, &head.mark);
             }

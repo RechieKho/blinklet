@@ -10,7 +10,7 @@ use crate::parser::lexer::lex;
 use crate::raise_error;
 use crate::signal_no_loop_control;
 use std::fs;
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub type CodeRequestHandler = fn(name: &String) -> Result<String, Backtrace>;
 
@@ -147,7 +147,7 @@ impl Context {
         }
     }
 
-    pub fn resolve_function(&mut self, atom: &Atom) -> Result<Rc<dyn Function>, Backtrace> {
+    pub fn resolve_function(&mut self, atom: &Atom) -> Result<Arc<dyn Function>, Backtrace> {
         let value = self.resolve_value(atom)?;
         if let Value::FUNCTION(function) = value {
             Ok(function)

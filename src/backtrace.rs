@@ -1,7 +1,7 @@
 use crate::{log::Log, mark::Mark};
 use std::{
     fmt::{Debug, Display},
-    rc::Rc,
+    sync::Arc,
 };
 
 #[macro_export]
@@ -30,7 +30,7 @@ impl Backtrace {
         self.0.push(log);
     }
 
-    pub fn trace<T>(result: Result<T, Backtrace>, mark: &Rc<Mark>) -> Result<T, Backtrace>
+    pub fn trace<T>(result: Result<T, Backtrace>, mark: &Arc<Mark>) -> Result<T, Backtrace>
     where
         T: Debug,
     {

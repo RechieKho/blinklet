@@ -5,7 +5,7 @@ use crate::backtrace::Backtrace;
 use crate::mark::Mark;
 use crate::raise_bug;
 use crate::raise_error;
-use std::rc::Rc;
+use std::sync::Arc;
 
 const NULL_STR: &'static str = "null";
 const TRUE_STR: &'static str = "true";
@@ -46,46 +46,46 @@ pub enum AtomValue {
 #[derive(Debug, Clone)]
 pub struct Atom {
     pub value: AtomValue,
-    pub mark: Rc<Mark>,
+    pub mark: Arc<Mark>,
 }
 
 impl Atom {
-    pub fn new_null(mark: Rc<Mark>) -> Self {
+    pub fn new_null(mark: Arc<Mark>) -> Self {
         Atom {
             value: AtomValue::NULL,
             mark,
         }
     }
 
-    pub fn new_identifier(identifier: String, mark: Rc<Mark>) -> Self {
+    pub fn new_identifier(identifier: String, mark: Arc<Mark>) -> Self {
         Atom {
             value: AtomValue::IDENTIFIER(identifier),
             mark,
         }
     }
 
-    pub fn new_bool(boolean: bool, mark: Rc<Mark>) -> Self {
+    pub fn new_bool(boolean: bool, mark: Arc<Mark>) -> Self {
         Atom {
             value: AtomValue::BOOL(boolean),
             mark,
         }
     }
 
-    pub fn new_string(string: String, mark: Rc<Mark>) -> Self {
+    pub fn new_string(string: String, mark: Arc<Mark>) -> Self {
         Atom {
             value: AtomValue::STRING(string),
             mark,
         }
     }
 
-    pub fn new_number(number: f64, mark: Rc<Mark>) -> Self {
+    pub fn new_number(number: f64, mark: Arc<Mark>) -> Self {
         Atom {
             value: AtomValue::NUMBER(number),
             mark,
         }
     }
 
-    pub fn new_command(command: Vec<Atom>, mark: Rc<Mark>) -> Self {
+    pub fn new_command(command: Vec<Atom>, mark: Arc<Mark>) -> Self {
         Atom {
             value: AtomValue::COMMAND(command),
             mark,
@@ -137,7 +137,7 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
         let indent_displacement = token_line.indent_count as isize - current_indent_count as isize;
         if indent_displacement > 1 {
             raise_error!(
-                Some(Rc::new(Mark::new(token_line.mark_line, 0..=0))),
+                Some(Arc::new(Mark::new(token_line.mark_line, 0..=0))),
                 "Excessive indentation."
             );
         }
@@ -157,7 +157,7 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
         // Indentation at the very first command, this is a sin.
         if result.len() == 0 && token_line.indent_count != 0 {
             raise_error!(
-                Some(Rc::new(Mark::new(token_line.mark_line, 0..=0))),
+                Some(Arc::new(Mark::new(token_line.mark_line, 0..=0))),
                 "Unexpected indentation."
             );
         }
@@ -166,7 +166,7 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
         if token_line.indent_count == 0 {
             result.push(Atom::new_command(
                 atoms,
-                Rc::new(Mark::new(
+                Arc::new(Mark::new(
                     token_line.mark_line.clone(),
                     0..=token_line.mark_line.content.len(),
                 )),
@@ -231,7 +231,7 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
         }
         parent_command.push(Atom::new_command(
             atoms,
-            Rc::new(Mark::new(
+            Arc::new(Mark::new(
                 token_line.mark_line.clone(),
                 0..=token_line.mark_line.content.len(),
             )),

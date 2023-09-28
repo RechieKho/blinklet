@@ -1,5 +1,5 @@
 use super::mark::Mark;
-use std::{fmt::Display, rc::Rc};
+use std::{fmt::Display, sync::Arc};
 
 #[derive(Debug, Clone)]
 pub enum LogMessage {
@@ -13,7 +13,7 @@ pub enum LogMessage {
 #[derive(Debug, Clone)]
 pub struct Log {
     pub message: LogMessage,
-    pub mark: Option<Rc<Mark>>,
+    pub mark: Option<Arc<Mark>>,
 }
 
 impl Display for Log {
@@ -39,35 +39,35 @@ impl Display for Log {
 }
 
 impl Log {
-    pub fn trace(mark: Rc<Mark>) -> Log {
+    pub fn trace(mark: Arc<Mark>) -> Log {
         Log {
             message: LogMessage::TRACE,
             mark: Some(mark),
         }
     }
 
-    pub fn info(message: String, mark: Option<Rc<Mark>>) -> Log {
+    pub fn info(message: String, mark: Option<Arc<Mark>>) -> Log {
         Log {
             message: LogMessage::INFO(message),
             mark,
         }
     }
 
-    pub fn warning(message: String, mark: Option<Rc<Mark>>) -> Log {
+    pub fn warning(message: String, mark: Option<Arc<Mark>>) -> Log {
         Log {
             message: LogMessage::WARNING(message),
             mark,
         }
     }
 
-    pub fn error(message: String, mark: Option<Rc<Mark>>) -> Log {
+    pub fn error(message: String, mark: Option<Arc<Mark>>) -> Log {
         Log {
             message: LogMessage::ERROR(message),
             mark,
         }
     }
 
-    pub fn bug(message: String, mark: Option<Rc<Mark>>) -> Log {
+    pub fn bug(message: String, mark: Option<Arc<Mark>>) -> Log {
         Log {
             message: LogMessage::BUG(message),
             mark,

@@ -1,3 +1,6 @@
+use std::sync::OnceLock;
+use std::sync::Arc;
+use crate::interpreter::function::Function;
 use super::function::NativeFunction;
 use super::standard::add::add;
 use super::standard::break_fn::break_fn;
@@ -18,16 +21,23 @@ use hashbrown::HashMap;
 
 macro_rules! object_register_native_function {
     ($object:expr, $function:expr) => {
-        $object.content.insert(
-            String::from(stringify!($function)),
-            NativeFunction::wrap($function),
-        )
+        {
+            static NATIVE_FUNCTION : OnceLock<Arc<dyn Function>> = OnceLock::new();
+            $object.content.insert(
+                String::from(stringify!($function)),
+                Value::FUNCTION(NATIVE_FUNCTION.get_or_init(|| Arc::new(NativeFunction { handler: $function })).clone())
+            );
+        }
     };
 
     ($object:expr, $string:expr, $function:expr) => {
-        $object
-            .content
-            .insert(String::from($string), NativeFunction::wrap($function))
+        {
+            static NATIVE_FUNCTION : OnceLock<Arc<dyn Function>> = OnceLock::new();
+            $object.content.insert(
+                String::from($string),
+                Value::FUNCTION(NATIVE_FUNCTION.get_or_init(|| Arc::new(NativeFunction { handler: $function })).clone())
+            );
+        }
     };
 }
 

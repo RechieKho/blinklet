@@ -1,5 +1,5 @@
 use crate::mark::Mark;
-use std::rc::Rc;
+use std::sync::Arc;
 use super::value::Value;
 
 #[macro_export]
@@ -19,7 +19,7 @@ macro_rules! signal_no_loop_control {
 #[derive(Debug, Clone)]
 pub enum Signal {
     COMPLETE(Value),
-    RETURN(Value, Rc<Mark>),
-    BREAK(Rc<Mark>),
-    CONTINUE(Rc<Mark>),
+    RETURN(Value, Arc<Mark>),
+    BREAK(Arc<Mark>),
+    CONTINUE(Arc<Mark>),
 }

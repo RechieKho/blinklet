@@ -2,7 +2,7 @@ use crate::backtrace::Backtrace;
 use crate::mark::{Mark, MarkLine};
 use crate::raise_error;
 use std::ops::RangeInclusive;
-use std::rc::Rc;
+use std::sync::Arc;
 use std::result::Result;
 use std::string::String;
 use std::vec::Vec;
@@ -17,47 +17,47 @@ pub enum TokenValue {
 #[derive(Debug)]
 pub struct Token {
     pub value: TokenValue,
-    pub mark: Rc<Mark>,
+    pub mark: Arc<Mark>,
 }
 
 impl Token {
-    pub fn new_word(word: String, mark_line: Rc<MarkLine>, column: RangeInclusive<usize>) -> Self {
+    pub fn new_word(word: String, mark_line: Arc<MarkLine>, column: RangeInclusive<usize>) -> Self {
         Token {
             value: TokenValue::WORD(word),
-            mark: Rc::new(Mark::new(mark_line, column)),
+            mark: Arc::new(Mark::new(mark_line, column)),
         }
     }
 
     pub fn new_string(
         string: String,
-        mark_line: Rc<MarkLine>,
+        mark_line: Arc<MarkLine>,
         column: RangeInclusive<usize>,
     ) -> Self {
         let formatted = string.replace("\\n", "\n").replace("\\\\", "\\");
 
         Token {
             value: TokenValue::STRING(formatted),
-            mark: Rc::new(Mark::new(mark_line, column)),
+            mark: Arc::new(Mark::new(mark_line, column)),
         }
     }
 
-    pub fn new_number(number: f64, mark_line: Rc<MarkLine>, column: RangeInclusive<usize>) -> Self {
+    pub fn new_number(number: f64, mark_line: Arc<MarkLine>, column: RangeInclusive<usize>) -> Self {
         Token {
             value: TokenValue::NUMBER(number),
-            mark: Rc::new(Mark::new(mark_line, column)),
+            mark: Arc::new(Mark::new(mark_line, column)),
         }
     }
 }
 
 #[derive(Debug)]
 pub struct TokenLine {
-    pub mark_line: Rc<MarkLine>,
+    pub mark_line: Arc<MarkLine>,
     pub tokens: Vec<Token>,
     pub indent_count: usize,
 }
 
 pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
-    let name = Rc::new(name);
+    let name = Arc::new(name);
     let mut result: Vec<TokenLine> = Vec::new();
     let mut indent_char = '\0';
     let mut indent_factor = 0usize;
@@ -67,7 +67,7 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
             continue;
         }
 
-        let mark_line = Rc::new(MarkLine::new(name.clone(), Rc::new(String::from(line)), i));
+        let mark_line = Arc::new(MarkLine::new(name.clone(), Arc::new(String::from(line)), i));
 
         let mut token_line: TokenLine = TokenLine {
             mark_line: mark_line.clone(),
@@ -87,7 +87,7 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
                     }
                     if current_char != indent_char {
                         raise_error!(
-                            Some(Rc::new(Mark::new(mark_line, 0..=j))),
+                            Some(Arc::new(Mark::new(mark_line, 0..=j))),
                             "Inconsistent indentation character."
                         );
                     }
@@ -103,7 +103,7 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
                         // We are not using else to consider the value change.
                         if token_line.indent_count % indent_factor != 0 {
                             raise_error!(
-                                Some(Rc::new(Mark::new(mark_line, 0..=j))),
+                                Some(Arc::new(Mark::new(mark_line, 0..=j))),
                                 "Inconsistent indentation factor."
                             );
                         }
@@ -184,7 +184,7 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
         // Check if unterminated string literal.
         if string_char != '\0' {
             raise_error!(
-                Some(Rc::new(Mark::new(
+                Some(Arc::new(Mark::new(
                     mark_line,
                     slice_start..=(line_length - 1),
                 ))),

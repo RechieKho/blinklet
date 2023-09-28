@@ -1,28 +1,28 @@
 use std::fmt::Display;
 use std::ops::RangeInclusive;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct MarkLine {
-    pub name: Rc<String>,
-    pub content: Rc<String>,
+    pub name: Arc<String>,
+    pub content: Arc<String>,
     pub row: usize,
 }
 
 #[derive(Debug, Clone)]
 pub struct Mark {
-    pub line: Rc<MarkLine>,
+    pub line: Arc<MarkLine>,
     pub column: RangeInclusive<usize>,
 }
 
 impl MarkLine {
-    pub fn new(name: Rc<String>, content: Rc<String>, row: usize) -> MarkLine {
+    pub fn new(name: Arc<String>, content: Arc<String>, row: usize) -> MarkLine {
         MarkLine { name, content, row }
     }
 }
 
 impl Mark {
-    pub fn new(line: Rc<MarkLine>, column: RangeInclusive<usize>) -> Mark {
+    pub fn new(line: Arc<MarkLine>, column: RangeInclusive<usize>) -> Mark {
         Mark { line, column }
     }
 }

@@ -7,9 +7,9 @@ use crate::parser::command::Atom;
 use crate::raise_error;
 use crate::signal_no_loop_control;
 use std::fmt::Debug;
-use std::rc::Rc;
+use std::sync::Arc;
 
-pub trait Function: ToString + Debug {
+pub trait Function: ToString + Debug + Sync + Send{
     fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace>;
 }
 
@@ -54,7 +54,7 @@ impl Function for ScriptFunction {
 
 impl ScriptFunction {
     pub fn wrap(commands: Vec<Atom>, closure: Vec<Object>) -> Value {
-        let function: Rc<dyn Function> = Rc::new(ScriptFunction { commands, closure });
+        let function: Arc<dyn Function> = Arc::new(ScriptFunction { commands, closure });
         Value::FUNCTION(function)
     }
 }
@@ -74,12 +74,5 @@ impl Debug for NativeFunction {
 impl Function for NativeFunction {
     fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         (self.handler)(context, body)
-    }
-}
-
-impl NativeFunction {
-    pub fn wrap(handler: NativeFunctionHandler) -> Value {
-        let function: Rc<dyn Function> = Rc::new(NativeFunction { handler });
-        Value::FUNCTION(function)
     }
 }

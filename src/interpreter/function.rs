@@ -39,7 +39,6 @@ impl Debug for ScriptFunction {
 
 impl Function for ScriptFunction {
     fn call(&self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
-        let mark = &body.first().unwrap().mark;
         let mut closure_context = Context::new(self.closure.clone(), Vec::new());
         for atom in body.iter().skip(1) {
             let value = context.resolve_value(atom)?;

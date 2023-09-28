@@ -78,7 +78,7 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
         let mut string_char = '\0';
         let mut slice_start = 0usize;
 
-        'column: for (j, current_char) in line.chars().into_iter().enumerate() {
+        for (j, current_char) in line.chars().into_iter().enumerate() {
             // Collect indentation count.
             if !is_indent_scanned {
                 if current_char.is_whitespace() {

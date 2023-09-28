@@ -17,7 +17,7 @@ macro_rules! mutex_force_lock {
                 use crate::raise_bug;
                 raise_bug!(
                     Some($mark),
-                    "Thread is poisoned while locking mutex of closure."
+                    "Thread is poisoned while locking mutex."
                 );
             }
         }

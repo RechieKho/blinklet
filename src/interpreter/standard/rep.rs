@@ -15,6 +15,9 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
 
     let first_atom = body.first().unwrap();
 
+    let index_identifier = atom_as_identifier!(&body[1]);
+    let start = context.resolve_number(&body[2])?;
+    let end = context.resolve_number(&body[3])?;
     let commands = &body[5..];
     if commands.len() == 0 {
         return Ok(Signal::COMPLETE(Value::NULL));
@@ -27,10 +30,6 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
             "Step of repetition must be positive, system will increment/decrement to approach end value for you."
         );
     }
-
-    let index_identifier = atom_as_identifier!(&body[1]);
-    let start = context.resolve_number(&body[2])?;
-    let end = context.resolve_number(&body[3])?;
 
     let mut index = start;
 

@@ -56,7 +56,7 @@ fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
 
 /// The runtime that runs Minky code.
 pub struct Context {
-    pub root: Arc<Mutex<Object>>,
+    standard: Object,
     pub scopes: Vec<Arc<Mutex<Object>>>,
     pub slots: Vec<Value>,
     pub code_request_handler: CodeRequestHandler,
@@ -64,25 +64,25 @@ pub struct Context {
 
 impl Default for Context {
     fn default() -> Self {
-        let mut root_object = Object::new();
+        let mut standard = Object::new();
 
-        object_register_function!(root_object, var);
-        object_register_function!(root_object, set);
-        object_register_function!(root_object, print);
-        object_register_function!(root_object, list);
-        object_register_function!(root_object, rep);
-        object_register_function!(root_object, add);
-        object_register_function!(root_object, sub);
-        object_register_function!(root_object, mul);
-        object_register_function!(root_object, div);
-        object_register_function!(root_object, cs);
-        object_register_function!(root_object, "object", create_object);
-        object_register_function!(root_object, "return", return_fn);
-        object_register_function!(root_object, "break", break_fn);
-        object_register_function!(root_object, "continue", continue_fn);
+        object_register_function!(standard, var);
+        object_register_function!(standard, set);
+        object_register_function!(standard, print);
+        object_register_function!(standard, list);
+        object_register_function!(standard, rep);
+        object_register_function!(standard, add);
+        object_register_function!(standard, sub);
+        object_register_function!(standard, mul);
+        object_register_function!(standard, div);
+        object_register_function!(standard, cs);
+        object_register_function!(standard, "object", create_object);
+        object_register_function!(standard, "return", return_fn);
+        object_register_function!(standard, "break", break_fn);
+        object_register_function!(standard, "continue", continue_fn);
 
         Context {
-            root: Arc::new(Mutex::new(root_object)),
+            standard,
             scopes: Vec::new(),
             slots: Vec::new(),
             code_request_handler: default_code_request_handler,
@@ -107,9 +107,8 @@ impl Context {
             AtomValue::STRING(ref string) => Ok(Value::STRING(string.clone())),
             AtomValue::NUMBER(number) => Ok(Value::NUMBER(number)),
             AtomValue::IDENTIFIER(ref identifier) => {
-                // Query root.
-                let root = mutex_lock_unwrap!(self.root, atom.mark.clone());
-                let value = root.content.get(identifier);
+                // Query standard.
+                let value = self.standard.content.get(identifier);
                 if value.is_some() {
                     return Ok(value.unwrap().clone());
                 }

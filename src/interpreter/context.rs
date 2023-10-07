@@ -189,7 +189,7 @@ impl Context {
             return Ok(Signal::COMPLETE(Value::NULL));
         }
         if self.scopes.len() == 0 {
-            self.scopes.push(Object::with_mutex())
+            self.scopes.push(Object::with_arc_mutex())
         }
         let head = command.first().unwrap();
 
@@ -261,7 +261,7 @@ impl Context {
         let code = (self.code_request_handler)(&name)?;
         let result = lex(name, code)?;
         let result = generate_commands(result)?;
-        let signal = self.run_commands(result.as_slice(), Object::with_mutex())?;
+        let signal = self.run_commands(result.as_slice(), Object::with_arc_mutex())?;
         match signal {
             Signal::BREAK(ref mark) | Signal::CONTINUE(ref mark) => {
                 raise_error!(Some(mark.clone()), "Unexpected control flow structure.");

@@ -27,7 +27,7 @@ impl Closure {
         let mut closure_context = Context::default();
         closure_context.slots = slots;
         mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);
-        let result = closure_context.run_commands(&self.commands, Object::with_mutex());
+        let result = closure_context.run_commands(&self.commands, Object::with_arc_mutex());
         mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);
         let signal = result?;
         signal_no_loop_control!(signal);

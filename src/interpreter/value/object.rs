@@ -14,7 +14,7 @@ impl Object {
         }
     }
 
-    pub fn with_mutex() -> Arc<Mutex<Self>> {
+    pub fn with_arc_mutex() -> Arc<Mutex<Self>> {
         Arc::new(Mutex::new(Object::new()))
     }
 }

@@ -1,9 +1,12 @@
-use super::closure::Closure;
+pub mod closure;
+pub mod object;
+
 use super::context::Context;
-use super::object::Object;
 use super::signal::Signal;
 use crate::backtrace::Backtrace;
 use crate::parser::command::Atom;
+use closure::Closure;
+use object::Object;
 use std::fmt::Debug;
 use std::sync::Arc;
 use std::sync::Mutex;

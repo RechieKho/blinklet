@@ -1,5 +1,20 @@
-use super::object::Object;
+use super::standard::add::add;
+use super::standard::break_fn::break_fn;
+use super::standard::continue_fn::continue_fn;
+use super::standard::cs::cs;
+use super::standard::div::div;
+use super::standard::list::list;
+use super::standard::mul::mul;
+use super::standard::object::object as create_object;
+use super::standard::print::print;
+use super::standard::rep::rep;
+use super::standard::return_fn::return_fn;
+use super::standard::set::set;
+use super::standard::sub::sub;
+use super::standard::var::var;
+
 use super::signal::Signal;
+use super::value::object::Object;
 use super::value::Value;
 use crate::backtrace::Backtrace;
 use crate::mutex_lock_unwrap;
@@ -12,6 +27,21 @@ use crate::signal_no_loop_control;
 use std::fs;
 use std::sync::Arc;
 use std::sync::Mutex;
+
+macro_rules! object_register_function {
+    ($object:expr, $function:expr) => {{
+        $object.content.insert(
+            String::from(stringify!($function)),
+            Value::FUNCTION(Arc::new($function)),
+        );
+    }};
+
+    ($object:expr, $string:expr, $function:expr) => {{
+        $object
+            .content
+            .insert(String::from($string), Value::FUNCTION(Arc::new($function)));
+    }};
+}
 
 pub type CodeRequestHandler = fn(name: &String) -> Result<String, Backtrace>;
 
@@ -26,6 +56,7 @@ fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
 
 /// The runtime that runs Minky code.
 pub struct Context {
+    pub root: Arc<Mutex<Object>>,
     pub scopes: Vec<Arc<Mutex<Object>>>,
     pub slots: Vec<Value>,
     pub code_request_handler: CodeRequestHandler,
@@ -33,7 +64,25 @@ pub struct Context {
 
 impl Default for Context {
     fn default() -> Self {
+        let mut root_object = Object::new();
+
+        object_register_function!(root_object, var);
+        object_register_function!(root_object, set);
+        object_register_function!(root_object, print);
+        object_register_function!(root_object, list);
+        object_register_function!(root_object, rep);
+        object_register_function!(root_object, add);
+        object_register_function!(root_object, sub);
+        object_register_function!(root_object, mul);
+        object_register_function!(root_object, div);
+        object_register_function!(root_object, cs);
+        object_register_function!(root_object, "object", create_object);
+        object_register_function!(root_object, "return", return_fn);
+        object_register_function!(root_object, "break", break_fn);
+        object_register_function!(root_object, "continue", continue_fn);
+
         Context {
+            root: Arc::new(Mutex::new(root_object)),
             scopes: Vec::new(),
             slots: Vec::new(),
             code_request_handler: default_code_request_handler,
@@ -42,14 +91,6 @@ impl Default for Context {
 }
 
 impl Context {
-    pub fn new(scopes: Vec<Arc<Mutex<Object>>>, slots: Vec<Value>) -> Context {
-        Context {
-            scopes,
-            slots,
-            code_request_handler: default_code_request_handler,
-        }
-    }
-
     pub fn resolve_value(&mut self, atom: &Atom) -> Result<Value, Backtrace> {
         match atom.value {
             AtomValue::COMMAND(ref command) => {
@@ -66,6 +107,14 @@ impl Context {
             AtomValue::STRING(ref string) => Ok(Value::STRING(string.clone())),
             AtomValue::NUMBER(number) => Ok(Value::NUMBER(number)),
             AtomValue::IDENTIFIER(ref identifier) => {
+                // Query root.
+                let root = mutex_lock_unwrap!(self.root, atom.mark.clone());
+                let value = root.content.get(identifier);
+                if value.is_some() {
+                    return Ok(value.unwrap().clone());
+                }
+
+                // Query scope.
                 let scopes_count = self.scopes.len();
                 if scopes_count == 0 {
                     raise_error!(
@@ -76,14 +125,14 @@ impl Context {
                 }
 
                 for i in (0..scopes_count).rev() {
-                    let object = self.scopes.get_mut(i);
+                    let object = self.scopes.get(i);
                     if object.is_none() {
                         continue;
                     }
                     let object = object.unwrap();
-                    let mut object = mutex_lock_unwrap!(object, atom.mark.clone());
+                    let object = mutex_lock_unwrap!(object, atom.mark.clone());
 
-                    let value = object.content.get_mut(identifier);
+                    let value = object.content.get(identifier);
                     if value.is_none() {
                         continue;
                     }

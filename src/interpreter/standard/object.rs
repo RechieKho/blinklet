@@ -1,7 +1,7 @@
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
-use crate::interpreter::object::Object;
 use crate::interpreter::signal::Signal;
+use crate::interpreter::value::object::Object;
 use crate::parser::command::Atom;
 use crate::raise_error;
 

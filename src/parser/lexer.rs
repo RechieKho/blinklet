@@ -135,10 +135,7 @@ pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
                 // Check if unterminated string literal.
                 if string_char != '\0' {
                     raise_error!(
-                        Some(Arc::new(Mark::new(
-                            mark_line,
-                            slice_start..=j - 1,
-                        ))),
+                        Some(Arc::new(Mark::new(mark_line, slice_start..=j - 1,))),
                         "unterminated string."
                     );
                 }

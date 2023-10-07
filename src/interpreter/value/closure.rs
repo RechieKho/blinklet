@@ -1,6 +1,7 @@
-use super::context::Context;
-use super::value::Value;
-use super::{object::Object, signal::Signal};
+use super::object::Object;
+use super::Value;
+use crate::interpreter::context::Context;
+use crate::interpreter::signal::Signal;
 use crate::parser::command::Atom;
 use crate::signal_no_loop_control;
 use crate::{backtrace::Backtrace, raise_error};
@@ -23,7 +24,8 @@ impl Closure {
             slots.push(value);
         }
 
-        let mut closure_context = Context::new(Vec::new(), slots);
+        let mut closure_context = Context::default();
+        closure_context.slots = slots;
         mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);
         let result = closure_context.run_commands(&self.commands, Object::with_mutex());
         mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);

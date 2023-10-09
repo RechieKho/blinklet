@@ -3,6 +3,7 @@ use crate::atom_as_identifier;
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
+use crate::interpreter::value::null::Null;
 use crate::interpreter::value::Value;
 use crate::mutex_lock_unwrap;
 use crate::parser::command::Atom;
@@ -32,7 +33,7 @@ pub fn set(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         let mut table = mutex_lock_unwrap!(table, Some(first_atom.mark.clone()));
         if table.contains_key(identifier) {
             table.insert(identifier.clone(), value).unwrap();
-            return Ok(Signal::COMPLETE(Value::NULL));
+            return Ok(Signal::COMPLETE(Value::NULL(Null())));
         }
     }
 

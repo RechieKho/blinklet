@@ -3,6 +3,7 @@ use crate::atom_as_identifier;
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
+use crate::interpreter::value::null::Null;
 use crate::interpreter::value::scope::Scope;
 use crate::interpreter::value::table::Table;
 use crate::interpreter::value::Value;
@@ -21,7 +22,7 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     let end = context.resolve_number(&body[3])?;
     let commands = &body[5..];
     if commands.len() == 0 {
-        return Ok(Signal::COMPLETE(Value::NULL));
+        return Ok(Signal::COMPLETE(Value::NULL(Null())));
     }
 
     let step = context.resolve_number(&body[4])?;
@@ -67,5 +68,5 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         }
     }
 
-    Ok(Signal::COMPLETE(Value::NULL))
+    Ok(Signal::COMPLETE(Value::NULL(Null())))
 }

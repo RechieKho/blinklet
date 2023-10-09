@@ -1,7 +1,10 @@
 pub mod closure;
+pub mod null;
 pub mod represent;
 pub mod scope;
 pub mod table;
+
+use self::null::Null;
 
 use super::context::Context;
 use super::signal::Signal;
@@ -28,7 +31,7 @@ macro_rules! mutex_lock_unwrap {
 
 #[derive(Clone)]
 pub enum Value {
-    NULL,
+    NULL(Null),
     BOOL(bool),
     NUMBER(f64),
     STRING(String),
@@ -41,7 +44,7 @@ pub enum Value {
 impl Debug for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Value::NULL => f.write_str("null"),
+            Value::NULL(null) => f.write_fmt(format_args!("{:?}", null)),
             Value::BOOL(boolean) => f.write_fmt(format_args!("{:?}", boolean)),
             Value::NUMBER(number) => f.write_fmt(format_args!("{:?}", number)),
             Value::STRING(string) => f.write_str(string),
@@ -53,16 +56,10 @@ impl Debug for Value {
     }
 }
 
-impl Default for Value {
-    fn default() -> Self {
-        Value::NULL
-    }
-}
-
 impl Represent for Value {
     fn represent(&self) -> Result<String, Backtrace> {
         match self {
-            Value::NULL => Ok(String::from("null")),
+            Value::NULL(null) => Ok(format!("{}", null)),
             Value::BOOL(boolean) => Ok(format!("{}", boolean)),
             Value::NUMBER(number) => Ok(format!("{}", number)),
             Value::STRING(string) => Ok(string.clone()),

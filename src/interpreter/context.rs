@@ -12,6 +12,7 @@ use super::standard::scope_fn::scope_fn;
 use super::standard::set::set;
 use super::standard::sub::sub;
 use super::standard::var::var;
+use super::value::null::Null;
 use super::value::scope::Scope;
 
 use super::signal::Signal;
@@ -102,7 +103,7 @@ impl Context {
                 }
             }
             AtomValue::BOOL(boolean) => Ok(Value::BOOL(boolean)),
-            AtomValue::NULL => Ok(Value::NULL),
+            AtomValue::NULL => Ok(Value::NULL(Null())),
             AtomValue::STRING(ref string) => Ok(Value::STRING(string.clone())),
             AtomValue::NUMBER(number) => Ok(Value::NUMBER(number)),
             AtomValue::IDENTIFIER(ref identifier) => {
@@ -185,7 +186,7 @@ impl Context {
 
     pub fn run_command(&mut self, command: &[Atom]) -> Result<Signal, Backtrace> {
         if command.is_empty() {
-            return Ok(Signal::COMPLETE(Value::NULL));
+            return Ok(Signal::COMPLETE(Value::NULL(Null())));
         }
         if self.scopes.len() == 0 {
             self.scopes.push(Scope::with_arc_mutex())

@@ -3,6 +3,7 @@ use crate::atom_as_identifier;
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
+use crate::interpreter::value::null::Null;
 use crate::interpreter::value::Value;
 use crate::mutex_lock_unwrap;
 use crate::parser::command::Atom;
@@ -34,5 +35,5 @@ pub fn var(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         );
     }
 
-    Ok(Signal::COMPLETE(Value::NULL))
+    Ok(Signal::COMPLETE(Value::NULL(Null())))
 }

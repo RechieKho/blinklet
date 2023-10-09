@@ -25,7 +25,7 @@ pub fn var(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     }
     let scope = scope.unwrap();
     let mut scope = mutex_lock_unwrap!(scope, first_atom.mark.clone());
-    let popped = scope.content.insert(identifier.clone(), value);
+    let popped = scope.insert(identifier.clone(), value);
     if popped.is_some() {
         raise_error!(
             Some(first_atom.mark.clone()),

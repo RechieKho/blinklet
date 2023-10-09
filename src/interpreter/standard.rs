@@ -1,11 +1,11 @@
 pub mod add;
 pub mod break_fn;
 pub mod continue_fn;
-pub mod cs;
+pub mod closure_fn;
 pub mod div;
 pub mod list;
 pub mod mul;
-pub mod object;
+pub mod scope_fn;
 pub mod print;
 pub mod rep;
 pub mod return_fn;

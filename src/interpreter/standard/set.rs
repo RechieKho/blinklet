@@ -24,14 +24,14 @@ pub fn set(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         );
     }
     for i in (0..scopes_count).rev() {
-        let object = context.scopes.get_mut(i);
-        if object.is_none() {
+        let table = context.scopes.get_mut(i);
+        if table.is_none() {
             continue;
         }
-        let object = object.unwrap();
-        let mut object = mutex_lock_unwrap!(object, first_atom.mark.clone());
-        if object.content.contains_key(identifier.as_str()) {
-            object.content.insert(identifier.clone(), value).unwrap();
+        let table = table.unwrap();
+        let mut table = mutex_lock_unwrap!(table, first_atom.mark.clone());
+        if table.contains_key(identifier) {
+            table.insert(identifier.clone(), value).unwrap();
             return Ok(Signal::COMPLETE(Value::NULL));
         }
     }

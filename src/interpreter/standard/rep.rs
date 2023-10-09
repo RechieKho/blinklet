@@ -3,8 +3,9 @@ use crate::atom_as_identifier;
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
-use crate::interpreter::value::object::Object;
+use crate::interpreter::value::scope::Scope;
 use crate::interpreter::value::Value;
+use crate::interpreter::value::table::Table;
 use crate::mutex_lock_unwrap;
 use crate::parser::command::Atom;
 use crate::parser::command::AtomValue;
@@ -34,12 +35,10 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     let mut index = start;
 
     loop {
-        let scope = Object::with_arc_mutex();
+        let scope = Scope::with_arc_mutex();
         {
             let mut scope = mutex_lock_unwrap!(scope, first_atom.mark.clone());
-            scope
-                .content
-                .insert(index_identifier.clone(), Value::NUMBER(index));
+            scope.insert(index_identifier.clone(), Value::NUMBER(index));
         }
 
         let signal = context.run_commands(commands, scope)?;

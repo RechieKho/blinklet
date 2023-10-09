@@ -1,12 +1,13 @@
 pub mod closure;
-pub mod object;
+pub mod scope;
+pub mod table;
 
 use super::context::Context;
 use super::signal::Signal;
 use crate::backtrace::Backtrace;
 use crate::parser::command::Atom;
 use closure::Closure;
-use object::Object;
+use table::Table;
 use std::fmt::Debug;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -31,7 +32,7 @@ pub enum Value {
     NUMBER(f64),
     STRING(String),
     LIST(Vec<Value>),
-    OBJECT(Arc<Mutex<Object>>),
+    TABLE(Arc<Mutex<dyn Table>>),
     FUNCTION(Arc<dyn Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace>>),
     CLOSURE(Arc<Mutex<Closure>>),
 }
@@ -54,7 +55,7 @@ impl Debug for Value {
                     .collect::<Vec<String>>()
                     .join(", ")
             )),
-            Value::OBJECT(_) => f.write_str("<Object>"),
+            Value::TABLE(_) => f.write_str("<Table>"),
             Value::FUNCTION(_) => f.write_str("<Function>"),
             Value::CLOSURE(_) => f.write_str("<Closure>"),
         }

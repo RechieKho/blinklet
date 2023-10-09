@@ -1,11 +1,12 @@
+use super::value::scope::Scope;
 use super::standard::add::add;
 use super::standard::break_fn::break_fn;
 use super::standard::continue_fn::continue_fn;
-use super::standard::cs::cs;
+use super::standard::closure_fn::closure_fn;
 use super::standard::div::div;
 use super::standard::list::list;
 use super::standard::mul::mul;
-use super::standard::object::object as create_object;
+use super::standard::scope_fn::scope_fn;
 use super::standard::print::print;
 use super::standard::rep::rep;
 use super::standard::return_fn::return_fn;
@@ -14,7 +15,7 @@ use super::standard::sub::sub;
 use super::standard::var::var;
 
 use super::signal::Signal;
-use super::value::object::Object;
+use super::value::table::Table;
 use super::value::Value;
 use crate::backtrace::Backtrace;
 use crate::mutex_lock_unwrap;
@@ -28,17 +29,16 @@ use std::fs;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-macro_rules! object_register_function {
-    ($object:expr, $function:expr) => {{
-        $object.content.insert(
+macro_rules! standard_register_function {
+    ($standard:expr, $function:expr) => {{
+        $standard.insert(
             String::from(stringify!($function)),
             Value::FUNCTION(Arc::new($function)),
         );
     }};
 
-    ($object:expr, $string:expr, $function:expr) => {{
-        $object
-            .content
+    ($standard:expr, $string:expr, $function:expr) => {{
+        $standard
             .insert(String::from($string), Value::FUNCTION(Arc::new($function)));
     }};
 }
@@ -56,30 +56,30 @@ fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
 
 /// The runtime that runs Minky code.
 pub struct Context {
-    standard: Object,
-    pub scopes: Vec<Arc<Mutex<Object>>>,
+    standard: Scope,
+    pub scopes: Vec<Arc<Mutex<dyn Table>>>,
     pub slots: Vec<Value>,
     pub code_request_handler: CodeRequestHandler,
 }
 
 impl Default for Context {
     fn default() -> Self {
-        let mut standard = Object::new();
+        let mut standard = Scope::default();
 
-        object_register_function!(standard, var);
-        object_register_function!(standard, set);
-        object_register_function!(standard, print);
-        object_register_function!(standard, list);
-        object_register_function!(standard, rep);
-        object_register_function!(standard, add);
-        object_register_function!(standard, sub);
-        object_register_function!(standard, mul);
-        object_register_function!(standard, div);
-        object_register_function!(standard, cs);
-        object_register_function!(standard, "object", create_object);
-        object_register_function!(standard, "return", return_fn);
-        object_register_function!(standard, "break", break_fn);
-        object_register_function!(standard, "continue", continue_fn);
+        standard_register_function!(standard, var);
+        standard_register_function!(standard, set);
+        standard_register_function!(standard, print);
+        standard_register_function!(standard, list);
+        standard_register_function!(standard, rep);
+        standard_register_function!(standard, add);
+        standard_register_function!(standard, sub);
+        standard_register_function!(standard, mul);
+        standard_register_function!(standard, div);
+        standard_register_function!(standard, "closure", closure_fn);
+        standard_register_function!(standard, "scope", scope_fn);
+        standard_register_function!(standard, "return", return_fn);
+        standard_register_function!(standard, "break", break_fn);
+        standard_register_function!(standard, "continue", continue_fn);
 
         Context {
             standard,
@@ -108,7 +108,7 @@ impl Context {
             AtomValue::NUMBER(number) => Ok(Value::NUMBER(number)),
             AtomValue::IDENTIFIER(ref identifier) => {
                 // Query standard.
-                let value = self.standard.content.get(identifier);
+                let value = self.standard.get(identifier);
                 if value.is_some() {
                     return Ok(value.unwrap().clone());
                 }
@@ -124,14 +124,14 @@ impl Context {
                 }
 
                 for i in (0..scopes_count).rev() {
-                    let object = self.scopes.get(i);
-                    if object.is_none() {
+                    let table = self.scopes.get(i);
+                    if table.is_none() {
                         continue;
                     }
-                    let object = object.unwrap();
-                    let object = mutex_lock_unwrap!(object, atom.mark.clone());
+                    let table = table.unwrap();
+                    let table = mutex_lock_unwrap!(table, atom.mark.clone());
 
-                    let value = object.content.get(identifier);
+                    let value = table.get(identifier);
                     if value.is_none() {
                         continue;
                     }
@@ -189,7 +189,7 @@ impl Context {
             return Ok(Signal::COMPLETE(Value::NULL));
         }
         if self.scopes.len() == 0 {
-            self.scopes.push(Object::with_arc_mutex())
+            self.scopes.push(Scope::with_arc_mutex())
         }
         let head = command.first().unwrap();
 
@@ -206,9 +206,9 @@ impl Context {
                 return Backtrace::trace(result, &head.mark);
             }
 
-            Value::OBJECT(object) => {
+            Value::TABLE(table) => {
                 let signal =
-                    Backtrace::trace(self.run_commands(&command[1..], object), &head.mark)?;
+                    Backtrace::trace(self.run_commands(&command[1..], table), &head.mark)?;
                 signal_no_loop_control!(signal);
                 return Ok(signal);
             }
@@ -225,10 +225,10 @@ impl Context {
     pub fn run_commands(
         &mut self,
         commands: &[Atom],
-        scope: Arc<Mutex<Object>>,
+        scope: Arc<Mutex<dyn Table>>,
     ) -> Result<Signal, Backtrace> {
         if commands.len() == 0 {
-            return Ok(Signal::COMPLETE(Value::OBJECT(scope)));
+            return Ok(Signal::COMPLETE(Value::TABLE(scope)));
         }
 
         self.scopes.push(scope);
@@ -254,14 +254,14 @@ impl Context {
             }
         }
         let scope = self.scopes.pop().unwrap();
-        Ok(Signal::COMPLETE(Value::OBJECT(scope)))
+        Ok(Signal::COMPLETE(Value::TABLE(scope)))
     }
 
     pub fn run_code(&mut self, name: String) -> Result<Value, Backtrace> {
         let code = (self.code_request_handler)(&name)?;
         let result = lex(name, code)?;
         let result = generate_commands(result)?;
-        let signal = self.run_commands(result.as_slice(), Object::with_arc_mutex())?;
+        let signal = self.run_commands(result.as_slice(), Scope::with_arc_mutex())?;
         match signal {
             Signal::BREAK(ref mark) | Signal::CONTINUE(ref mark) => {
                 raise_error!(Some(mark.clone()), "Unexpected control flow structure.");

@@ -1,12 +1,12 @@
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
-use crate::interpreter::value::object::Object;
+use crate::interpreter::value::scope::Scope;
 use crate::parser::command::Atom;
 use crate::raise_error;
 
-pub fn object(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
-    let scope = Object::with_arc_mutex();
+pub fn scope_fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
+    let scope = Scope::with_arc_mutex();
     let signal = context.run_commands(&body[1..], scope)?;
     match signal {
         Signal::BREAK(ref mark) | Signal::CONTINUE(ref mark) => {

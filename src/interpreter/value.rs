@@ -1,4 +1,5 @@
 pub mod closure;
+pub mod represent;
 pub mod scope;
 pub mod table;
 
@@ -7,10 +8,11 @@ use super::signal::Signal;
 use crate::backtrace::Backtrace;
 use crate::parser::command::Atom;
 use closure::Closure;
-use table::Table;
+use represent::Represent;
 use std::fmt::Debug;
 use std::sync::Arc;
 use std::sync::Mutex;
+use table::Table;
 
 #[macro_export]
 macro_rules! mutex_lock_unwrap {
@@ -18,8 +20,7 @@ macro_rules! mutex_lock_unwrap {
         match $mutex.lock() {
             Ok(guard) => guard,
             Err(_) => {
-                use crate::raise_bug;
-                raise_bug!(Some($mark), "Thread is poisoned while locking mutex.");
+                crate::raise_bug!($mark, "Thread is poisoned while locking mutex.");
             }
         }
     };
@@ -40,24 +41,14 @@ pub enum Value {
 impl Debug for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Value::NULL => f.write_str("NULL"),
+            Value::NULL => f.write_str("null"),
             Value::BOOL(boolean) => f.write_fmt(format_args!("{:?}", boolean)),
             Value::NUMBER(number) => f.write_fmt(format_args!("{:?}", number)),
             Value::STRING(string) => f.write_str(string),
-            Value::LIST(list) => f.write_fmt(format_args!(
-                "[{}]",
-                list.iter()
-                    .map(|x| if let Value::STRING(string) = x {
-                        format!("\"{:?}\"", string)
-                    } else {
-                        format!("{:?}", x)
-                    })
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            )),
-            Value::TABLE(_) => f.write_str("<Table>"),
-            Value::FUNCTION(_) => f.write_str("<Function>"),
-            Value::CLOSURE(_) => f.write_str("<Closure>"),
+            Value::LIST(_) => f.write_str("list"),
+            Value::TABLE(_) => f.write_str("table"),
+            Value::FUNCTION(_) => f.write_str("function"),
+            Value::CLOSURE(_) => f.write_str("closure"),
         }
     }
 }
@@ -65,5 +56,35 @@ impl Debug for Value {
 impl Default for Value {
     fn default() -> Self {
         Value::NULL
+    }
+}
+
+impl Represent for Value {
+    fn represent(&self) -> Result<String, Backtrace> {
+        match self {
+            Value::NULL => Ok(String::from("null")),
+            Value::BOOL(boolean) => Ok(format!("{}", boolean)),
+            Value::NUMBER(number) => Ok(format!("{}", number)),
+            Value::STRING(string) => Ok(string.clone()),
+            Value::LIST(list) => {
+                let representations = list
+                    .iter()
+                    .map(|x| match x {
+                        Value::STRING(string) => Ok(format!("\"{}\"", string)),
+                        _ => x.represent(),
+                    })
+                    .collect::<Result<Vec<String>, Backtrace>>()?;
+                Ok(format!("[{}]", representations.join(", ")))
+            }
+            Value::TABLE(table) => {
+                let table = mutex_lock_unwrap!(table, None);
+                table.represent()
+            }
+            Value::FUNCTION(_) => Ok(String::from("function")),
+            Value::CLOSURE(closure) => {
+                let closure = mutex_lock_unwrap!(closure, None);
+                closure.represent()
+            }
+        }
     }
 }

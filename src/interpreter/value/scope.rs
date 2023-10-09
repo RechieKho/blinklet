@@ -1,14 +1,21 @@
+use super::{represent::Represent, table::Table};
+use crate::backtrace::Backtrace;
 use crate::interpreter::value::Value;
 use hashbrown::HashMap;
 use std::sync::{Arc, Mutex};
-use super::table::Table;
 
-#[derive(Debug, Clone)]
-pub struct Scope (HashMap<String, Value>);
+#[derive(Clone)]
+pub struct Scope(HashMap<String, Value>);
 
 impl Default for Scope {
     fn default() -> Self {
         Scope(HashMap::default())
+    }
+}
+
+impl Represent for Scope {
+    fn represent(&self) -> Result<String, Backtrace> {
+        Ok(String::from("Scope")) // TODO
     }
 }
 

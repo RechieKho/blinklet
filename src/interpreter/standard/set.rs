@@ -29,7 +29,7 @@ pub fn set(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
             continue;
         }
         let table = table.unwrap();
-        let mut table = mutex_lock_unwrap!(table, first_atom.mark.clone());
+        let mut table = mutex_lock_unwrap!(table, Some(first_atom.mark.clone()));
         if table.contains_key(identifier) {
             table.insert(identifier.clone(), value).unwrap();
             return Ok(Signal::COMPLETE(Value::NULL));

@@ -1,8 +1,10 @@
-use super::Value;
+use super::represent::Represent;
+use super::scope::Scope;
 use super::table::Table;
+use super::Value;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
-use super::scope::Scope;
+use crate::mark::Mark;
 use crate::parser::command::Atom;
 use crate::signal_no_loop_control;
 use crate::{backtrace::Backtrace, raise_error};
@@ -11,8 +13,15 @@ use std::sync::Arc;
 use std::sync::Mutex;
 
 pub struct Closure {
+    pub mark: Arc<Mark>,
     pub commands: Vec<Atom>,
     pub parent_scopes: Vec<Arc<Mutex<dyn Table>>>,
+}
+
+impl Represent for Closure {
+    fn represent(&self) -> Result<String, Backtrace> {
+        Ok(String::from("Closure")) // TODO
+    }
 }
 
 impl Closure {
@@ -33,8 +42,13 @@ impl Closure {
         return Ok(signal);
     }
 
-    pub fn wrap(commands: Vec<Atom>, parent_scopes: Vec<Arc<Mutex<dyn Table>>>) -> Value {
+    pub fn wrap(
+        mark: Arc<Mark>,
+        commands: Vec<Atom>,
+        parent_scopes: Vec<Arc<Mutex<dyn Table>>>,
+    ) -> Value {
         let closure = Arc::new(Mutex::new(Closure {
+            mark,
             commands,
             parent_scopes,
         }));

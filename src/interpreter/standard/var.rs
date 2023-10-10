@@ -6,8 +6,8 @@ use crate::interpreter::signal::Signal;
 use crate::interpreter::value::null::Null;
 use crate::interpreter::value::Value;
 use crate::mutex_lock_unwrap;
-use crate::parser::command::Atom;
-use crate::parser::command::AtomValue;
+use crate::parser::atom::Atom;
+use crate::parser::atom::AtomValue;
 use crate::raise_bug;
 use crate::raise_error;
 

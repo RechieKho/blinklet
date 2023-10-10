@@ -60,7 +60,7 @@ pub struct TokenLine {
     pub indent_count: usize,
 }
 
-pub fn lex(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
+pub fn tokenize(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace> {
     let name = Arc::new(name);
     let mut result: Vec<TokenLine> = Vec::new();
     let mut indent_char = '\0';

@@ -1,2 +1,2 @@
-pub mod command;
-pub mod lexer;
+pub mod atom;
+pub mod token;

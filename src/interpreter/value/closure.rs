@@ -5,7 +5,7 @@ use super::Value;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::mark::Mark;
-use crate::parser::command::Atom;
+use crate::parser::atom::Atom;
 use crate::signal_no_loop_control;
 use crate::{backtrace::Backtrace, raise_error};
 use std::mem;

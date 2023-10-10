@@ -16,14 +16,15 @@ use super::value::null::Null;
 use super::value::scope::Scope;
 
 use super::signal::Signal;
+use super::value::command::Command;
 use super::value::table::Table;
 use super::value::Value;
 use crate::backtrace::Backtrace;
 use crate::mutex_lock_unwrap;
-use crate::parser::command::generate_commands;
-use crate::parser::command::Atom;
-use crate::parser::command::AtomValue;
-use crate::parser::lexer::lex;
+use crate::parser::atom::generate_commands;
+use crate::parser::atom::Atom;
+use crate::parser::atom::AtomValue;
+use crate::parser::token::tokenize;
 use crate::raise_error;
 use crate::signal_no_loop_control;
 use std::fs;
@@ -34,12 +35,15 @@ macro_rules! standard_register_function {
     ($standard:expr, $function:expr) => {{
         $standard.insert(
             String::from(stringify!($function)),
-            Value::FUNCTION(Arc::new($function)),
+            Value::COMMAND(Command::with_arc($function)),
         );
     }};
 
     ($standard:expr, $string:expr, $function:expr) => {{
-        $standard.insert(String::from($string), Value::FUNCTION(Arc::new($function)));
+        $standard.insert(
+            String::from($string),
+            Value::COMMAND(Command::with_arc($function)),
+        );
     }};
 }
 
@@ -195,8 +199,8 @@ impl Context {
 
         let value = self.resolve_value(head)?;
         match value {
-            Value::FUNCTION(function) => {
-                let result = function(self, command);
+            Value::COMMAND(function) => {
+                let result = function.call(self, command);
                 return Backtrace::trace(result, &head.mark);
             }
 
@@ -258,7 +262,7 @@ impl Context {
 
     pub fn run_code(&mut self, name: String) -> Result<Value, Backtrace> {
         let code = (self.code_request_handler)(&name)?;
-        let result = lex(name, code)?;
+        let result = tokenize(name, code)?;
         let result = generate_commands(result)?;
         let signal = self.run_commands(result.as_slice(), Scope::with_arc_mutex())?;
         match signal {

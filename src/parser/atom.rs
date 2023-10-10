@@ -1,6 +1,6 @@
-use super::lexer::Token;
-use super::lexer::TokenLine;
-use super::lexer::TokenValue;
+use super::token::Token;
+use super::token::TokenLine;
+use super::token::TokenValue;
 use crate::backtrace::Backtrace;
 use crate::mark::Mark;
 use crate::raise_bug;

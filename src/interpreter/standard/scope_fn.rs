@@ -2,7 +2,7 @@ use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::interpreter::value::scope::Scope;
-use crate::parser::command::Atom;
+use crate::parser::atom::Atom;
 use crate::raise_error;
 
 pub fn scope_fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {

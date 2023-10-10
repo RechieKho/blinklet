@@ -1,4 +1,5 @@
 pub mod closure;
+pub mod command;
 pub mod null;
 pub mod represent;
 pub mod scope;
@@ -6,11 +7,9 @@ pub mod table;
 
 use self::null::Null;
 
-use super::context::Context;
-use super::signal::Signal;
 use crate::backtrace::Backtrace;
-use crate::parser::command::Atom;
 use closure::Closure;
+use command::Command;
 use represent::Represent;
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -37,7 +36,7 @@ pub enum Value {
     STRING(String),
     LIST(Vec<Value>),
     TABLE(Arc<Mutex<dyn Table>>),
-    FUNCTION(Arc<dyn Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace>>),
+    COMMAND(Arc<Command>),
     CLOSURE(Arc<Mutex<Closure>>),
 }
 
@@ -50,7 +49,7 @@ impl Debug for Value {
             Value::STRING(string) => f.write_str(string),
             Value::LIST(_) => f.write_str("list"),
             Value::TABLE(_) => f.write_str("table"),
-            Value::FUNCTION(_) => f.write_str("function"),
+            Value::COMMAND(command) => f.write_fmt(format_args!("{:?}", command)),
             Value::CLOSURE(_) => f.write_str("closure"),
         }
     }
@@ -77,7 +76,7 @@ impl Represent for Value {
                 let table = mutex_lock_unwrap!(table, None);
                 table.represent()
             }
-            Value::FUNCTION(_) => Ok(String::from("function")),
+            Value::COMMAND(command) => command.represent(),
             Value::CLOSURE(closure) => {
                 let closure = mutex_lock_unwrap!(closure, None);
                 closure.represent()

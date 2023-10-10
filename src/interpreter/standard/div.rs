@@ -3,7 +3,7 @@ use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::interpreter::value::Value;
-use crate::parser::command::Atom;
+use crate::parser::atom::Atom;
 
 pub fn div(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     assert_atoms_count_min!(body, 3);

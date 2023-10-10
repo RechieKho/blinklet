@@ -8,8 +8,8 @@ use crate::interpreter::value::scope::Scope;
 use crate::interpreter::value::table::Table;
 use crate::interpreter::value::Value;
 use crate::mutex_lock_unwrap;
-use crate::parser::command::Atom;
-use crate::parser::command::AtomValue;
+use crate::parser::atom::Atom;
+use crate::parser::atom::AtomValue;
 use crate::raise_error;
 
 pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {

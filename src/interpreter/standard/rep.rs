@@ -50,6 +50,9 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
             Signal::BREAK(_) => {
                 break;
             }
+            Signal::CONTINUE(_) => {
+                continue;
+            }
             _ => {}
         }
 

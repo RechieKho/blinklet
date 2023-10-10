@@ -212,14 +212,11 @@ impl Context {
 
             Variant::CLOSURE(closure) => {
                 let mut guard = mutex_lock_unwrap!(closure, Some(head.mark.clone()));
-                let result = guard.call_mut(self, command);
-                return Backtrace::trace(result, &head.mark);
+                return Backtrace::trace(guard.call_mut(self, command), &head.mark);
             }
 
             Variant::TABLE(table) => {
-                let signal = Backtrace::trace(self.run_commands(&command[1..], table), &head.mark)?;
-                signal_no_loop_control!(signal);
-                return Ok(signal);
+                return Backtrace::trace(self.run_commands(&command[1..], table), &head.mark);
             }
 
             _ => {
@@ -262,20 +259,14 @@ impl Context {
                 raise_error!(Some(atom.mark.clone()), "Expecting command.");
             }
         }
-        let scope = self.scopes.pop().unwrap();
-        Ok(Signal::COMPLETE(Variant::TABLE(scope)))
+        let table = self.scopes.pop().unwrap();
+        Ok(Signal::COMPLETE(Variant::TABLE(table)))
     }
 
-    pub fn run_code(&mut self, name: String) -> Result<Variant, Backtrace> {
+    pub fn run_code(&mut self, name: String) -> Result<Signal, Backtrace> {
         let code = (self.code_request_handler)(&name)?;
         let result = tokenize(name, code)?;
         let result = generate_commands(result)?;
-        let signal = self.run_commands(result.as_slice(), Scope::wrap_arc_mutex())?;
-        match signal {
-            Signal::BREAK(ref mark) | Signal::CONTINUE(ref mark) => {
-                raise_error!(Some(mark.clone()), "Unexpected control flow structure.");
-            }
-            Signal::COMPLETE(value) | Signal::RETURN(value, _) => Ok(value),
-        }
+        self.run_commands(result.as_slice(), Scope::wrap_arc_mutex())
     }
 }

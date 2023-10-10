@@ -8,6 +8,7 @@ use crate::mark::Mark;
 use crate::parser::atom::Atom;
 use crate::signal_no_loop_control;
 use crate::{backtrace::Backtrace, raise_error};
+use std::fmt::Debug;
 use std::mem;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -16,6 +17,12 @@ pub struct Closure {
     pub mark: Arc<Mark>,
     pub commands: Vec<Atom>,
     pub parent_scopes: Vec<Arc<Mutex<dyn Table>>>,
+}
+
+impl Debug for Closure {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("closure") // TODO
+    }
 }
 
 impl Represent for Closure {

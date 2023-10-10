@@ -2,7 +2,10 @@ use super::{represent::Represent, table::Table};
 use crate::backtrace::Backtrace;
 use crate::interpreter::variant::Variant;
 use hashbrown::HashMap;
-use std::sync::{Arc, Mutex};
+use std::{
+    fmt::Debug,
+    sync::{Arc, Mutex},
+};
 
 #[derive(Clone)]
 pub struct Scope(HashMap<String, Variant>);
@@ -10,6 +13,12 @@ pub struct Scope(HashMap<String, Variant>);
 impl Default for Scope {
     fn default() -> Self {
         Scope(HashMap::default())
+    }
+}
+
+impl Debug for Scope {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("scope") // TODO
     }
 }
 

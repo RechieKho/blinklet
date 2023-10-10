@@ -53,9 +53,9 @@ impl Debug for Variant {
             Variant::NUMBER(number) => f.write_fmt(format_args!("{:?}", number)),
             Variant::STRAND(strand) => f.write_fmt(format_args!("{:?}", strand)),
             Variant::LIST(list) => f.write_fmt(format_args!("{:?}", list)),
-            Variant::TABLE(_) => f.write_str("table"),
+            Variant::TABLE(table) => f.write_fmt(format_args!("{:?}", table)),
             Variant::COMMAND(command) => f.write_fmt(format_args!("{:?}", command)),
-            Variant::CLOSURE(_) => f.write_str("closure"),
+            Variant::CLOSURE(closure) => f.write_fmt(format_args!("{:?}", closure)),
         }
     }
 }

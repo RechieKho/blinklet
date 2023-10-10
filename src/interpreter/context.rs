@@ -29,7 +29,6 @@ use crate::parser::atom::Atom;
 use crate::parser::atom::AtomValue;
 use crate::parser::token::tokenize;
 use crate::raise_error;
-use crate::signal_no_loop_control;
 use std::fs;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -100,8 +99,8 @@ impl Default for Context {
 impl Context {
     pub fn resolve_value(&mut self, atom: &Atom) -> Result<Variant, Backtrace> {
         match atom.value {
-            AtomValue::COMMAND(ref command) => {
-                let signal = self.run_command(command.as_slice())?;
+            AtomValue::STATEMENT(ref command) => {
+                let signal = self.run_statement(command.as_slice())?;
                 match signal {
                     Signal::RETURN(value, _) | Signal::COMPLETE(value) => Ok(value),
                     _ => {
@@ -194,7 +193,7 @@ impl Context {
         }
     }
 
-    pub fn run_command(&mut self, command: &[Atom]) -> Result<Signal, Backtrace> {
+    pub fn run_statement(&mut self, command: &[Atom]) -> Result<Signal, Backtrace> {
         if command.is_empty() {
             return Ok(Signal::COMPLETE(Variant::NULL(Null())));
         }
@@ -216,7 +215,7 @@ impl Context {
             }
 
             Variant::TABLE(table) => {
-                return Backtrace::trace(self.run_commands(&command[1..], table), &head.mark);
+                return Backtrace::trace(self.run_statements(&command[1..], table), &head.mark);
             }
 
             _ => {
@@ -228,7 +227,7 @@ impl Context {
         }
     }
 
-    pub fn run_commands(
+    pub fn run_statements(
         &mut self,
         commands: &[Atom],
         scope: Arc<Mutex<dyn Table>>,
@@ -239,8 +238,8 @@ impl Context {
 
         self.scopes.push(scope);
         for atom in commands.iter() {
-            if let AtomValue::COMMAND(ref command) = atom.value {
-                let result = self.run_command(command.as_slice());
+            if let AtomValue::STATEMENT(ref command) = atom.value {
+                let result = self.run_statement(command.as_slice());
                 if result.is_err() {
                     self.scopes.pop();
                     return result;
@@ -267,6 +266,6 @@ impl Context {
         let code = (self.code_request_handler)(&name)?;
         let result = tokenize(name, code)?;
         let result = generate_commands(result)?;
-        self.run_commands(result.as_slice(), Scope::wrap_arc_mutex())
+        self.run_statements(result.as_slice(), Scope::wrap_arc_mutex())
     }
 }

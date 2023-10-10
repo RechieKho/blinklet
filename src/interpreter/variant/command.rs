@@ -24,15 +24,6 @@ impl Represent for Command {
 }
 
 impl Command {
-    pub fn new<T>(callable: T) -> Self
-    where
-        T: Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace> + 'static,
-    {
-        Command {
-            callable: Box::new(callable),
-        }
-    }
-
     pub fn wrap_arc<T>(callable: T) -> Arc<Self>
     where
         T: Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace> + 'static,

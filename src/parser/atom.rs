@@ -25,7 +25,7 @@ macro_rules! atom_as_identifier {
 #[macro_export]
 macro_rules! atom_as_command {
     ($atom: expr) => {
-        if let AtomValue::COMMAND(ref command) = $atom.value {
+        if let AtomValue::STATEMENT(ref command) = $atom.value {
             command
         } else {
             raise_error!(Some($atom.mark.clone()), "Expecting a command.");
@@ -40,7 +40,7 @@ pub enum AtomValue {
     BOOL(bool),
     STRING(String),
     NUMBER(f64),
-    COMMAND(Vec<Atom>),
+    STATEMENT(Vec<Atom>),
 }
 
 #[derive(Debug, Clone)]
@@ -87,7 +87,7 @@ impl Atom {
 
     pub fn new_command(command: Vec<Atom>, mark: Arc<Mark>) -> Self {
         Atom {
-            value: AtomValue::COMMAND(command),
+            value: AtomValue::STATEMENT(command),
             mark,
         }
     }
@@ -118,14 +118,14 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
 
     fn get_subatom_mut(atom: &mut Atom, nesting: usize) -> Option<&mut Atom> {
         if nesting == 0 {
-            return if let AtomValue::COMMAND(_) = atom.value {
+            return if let AtomValue::STATEMENT(_) = atom.value {
                 Some(atom)
             } else {
                 None
             };
         }
 
-        if let AtomValue::COMMAND(ref mut command) = atom.value {
+        if let AtomValue::STATEMENT(ref mut command) = atom.value {
             let last = command.last_mut()?;
             return get_subatom_mut(last, nesting - 1);
         } else {
@@ -179,7 +179,7 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
         let parent_atom =
             get_subatom_mut(result.last_mut().unwrap(), token_line.indent_count - 1).unwrap();
 
-        let parent_command = if let AtomValue::COMMAND(ref mut command) = parent_atom.value {
+        let parent_command = if let AtomValue::STATEMENT(ref mut command) = parent_atom.value {
             command
         } else {
             raise_error!(Some(parent_atom.mark.clone()), "Expecting a command.");
@@ -221,7 +221,7 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
                         "Null as the head of a command is forbidden."
                     );
                 }
-                AtomValue::COMMAND(_) => {
+                AtomValue::STATEMENT(_) => {
                     raise_bug!(
                         Some(first_atom.mark.clone()),
                         "Command as the head of a command should be unreachable."

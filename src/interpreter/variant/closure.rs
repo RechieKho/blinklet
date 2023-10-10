@@ -2,12 +2,11 @@ use super::represent::Represent;
 use super::scope::Scope;
 use super::table::Table;
 use super::Variant;
+use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::mark::Mark;
 use crate::parser::atom::Atom;
-use crate::signal_no_loop_control;
-use crate::{backtrace::Backtrace, raise_error};
 use std::fmt::Debug;
 use std::mem;
 use std::sync::Arc;
@@ -42,11 +41,9 @@ impl Closure {
         let mut closure_context = Context::default();
         closure_context.slots = slots;
         mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);
-        let result = closure_context.run_commands(&self.commands, Scope::wrap_arc_mutex());
+        let result = closure_context.run_statements(&self.commands, Scope::wrap_arc_mutex());
         mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);
-        let signal = result?;
-        signal_no_loop_control!(signal);
-        return Ok(signal);
+        result
     }
 
     pub fn new(

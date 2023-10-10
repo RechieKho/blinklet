@@ -42,7 +42,7 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
             scope.insert(index_identifier.clone(), Variant::NUMBER(index));
         }
 
-        let signal = context.run_commands(commands, scope)?;
+        let signal = context.run_statements(commands, scope)?;
         match signal {
             Signal::RETURN(_, _) => {
                 return Ok(signal);

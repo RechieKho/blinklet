@@ -33,10 +33,8 @@ impl Token {
         mark_line: Arc<MarkLine>,
         column: RangeInclusive<usize>,
     ) -> Self {
-        let formatted = string.replace("\\n", "\n").replace("\\\\", "\\");
-
         Token {
-            value: TokenValue::STRING(formatted),
+            value: TokenValue::STRING(string),
             mark: Arc::new(Mark::new(mark_line, column)),
         }
     }

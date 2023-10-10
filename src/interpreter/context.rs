@@ -111,7 +111,10 @@ impl Context {
             }
             AtomValue::BOOL(boolean) => Ok(Variant::BOOL(Boolean::from(boolean))),
             AtomValue::NULL => Ok(Variant::NULL(Null())),
-            AtomValue::STRING(ref string) => Ok(Variant::STRAND(Strand::from(string.clone()))),
+            AtomValue::STRING(ref string) => {
+                let formatted = string.replace("\\n", "\n").replace("\\\\", "\\");
+                Ok(Variant::STRAND(Strand::from(formatted)))
+            }
             AtomValue::NUMBER(number) => Ok(Variant::NUMBER(number)),
             AtomValue::IDENTIFIER(ref identifier) => {
                 // Query standard.

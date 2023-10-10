@@ -5,35 +5,35 @@ use std::{fmt::Debug, ops::Add, ops::Div, ops::Mul, ops::Sub};
 #[derive(Clone, Copy)]
 pub struct Null();
 
-impl<T> Add<T> for Null {
+impl Add<Variant> for Null {
     type Output = Result<Variant, Backtrace>;
 
-    fn add(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Null cannot be added.");
+    fn add(self, rhs: Variant) -> Self::Output {
+        raise_error!(None, "`{}` cannot be added with `{}`.", self.represent()?, rhs.represent()?);
     }
 }
 
-impl<T> Sub<T> for Null {
+impl Sub<Variant> for Null {
     type Output = Result<Variant, Backtrace>;
 
-    fn sub(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Null cannot be subtracted.");
+    fn sub(self, rhs: Variant) -> Self::Output {
+        raise_error!(None, "`{}` cannot be subtracted with `{}`.", self.represent()?, rhs.represent()?);
     }
 }
 
-impl<T> Mul<T> for Null {
+impl Mul<Variant> for Null {
     type Output = Result<Variant, Backtrace>;
 
-    fn mul(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Null cannot be multiplied.");
+    fn mul(self, rhs: Variant) -> Self::Output {
+        raise_error!(None, "`{}` cannot be multiplied with `{}`.", self.represent()?, rhs.represent()?);
     }
 }
 
-impl<T> Div<T> for Null {
+impl Div<Variant> for Null {
     type Output = Result<Variant, Backtrace>;
 
-    fn div(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Null cannot be divided.");
+    fn div(self, rhs: Variant) -> Self::Output {
+        raise_error!(None, "`{}` cannot be divided with `{}`.", self.represent()?, rhs.represent()?);
     }
 }
 

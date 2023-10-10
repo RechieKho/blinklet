@@ -5,35 +5,35 @@ use std::{fmt::Debug, ops::Add, ops::Div, ops::Mul, ops::Sub};
 #[derive(Clone, Copy)]
 pub struct Boolean(bool);
 
-impl<T> Add<T> for Boolean {
+impl Add<Variant> for Boolean {
     type Output = Result<Variant, Backtrace>;
 
-    fn add(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Boolean cannot be added.");
+    fn add(self, rhs: Variant) -> Self::Output {
+        raise_error!(None, "`{}` cannot be added with `{}`.", self.represent()?, rhs.represent()?);
     }
 }
 
-impl<T> Sub<T> for Boolean {
+impl Sub<Variant> for Boolean {
     type Output = Result<Variant, Backtrace>;
 
-    fn sub(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Boolean cannot be subtracted.");
+    fn sub(self, rhs: Variant) -> Self::Output {
+        raise_error!(None, "`{}` cannot be subtracted with `{}`.", self.represent()?, rhs.represent()?);
     }
 }
 
-impl<T> Mul<T> for Boolean {
+impl Mul<Variant> for Boolean {
     type Output = Result<Variant, Backtrace>;
 
-    fn mul(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Boolean cannot be multiplied.");
+    fn mul(self, rhs: Variant) -> Self::Output {
+        raise_error!(None, "`{}` cannot be multiplied with `{}`.", self.represent()?, rhs.represent()?);
     }
 }
 
-impl<T> Div<T> for Boolean {
+impl Div<Variant> for Boolean {
     type Output = Result<Variant, Backtrace>;
 
-    fn div(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Boolean cannot be divided.");
+    fn div(self, rhs: Variant) -> Self::Output {
+        raise_error!(None, "`{}` cannot be divided with `{}`.", self.represent()?, rhs.represent()?);
     }
 }
 

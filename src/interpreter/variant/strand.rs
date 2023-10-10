@@ -5,35 +5,35 @@ use std::{fmt::Debug, ops::Add, ops::Div, ops::Mul, ops::Sub};
 #[derive(Clone)]
 pub struct Strand(String);
 
-impl<T> Add<T> for Strand {
+impl Add<Variant> for Strand {
     type Output = Result<Variant, Backtrace>;
 
-    fn add(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Strand cannot be added.");
+    fn add(self, rhs: Variant) -> Self::Output {
+        Ok(Variant::STRAND(Strand::from(self.0 + rhs.represent()?.as_str())))
     }
 }
 
-impl<T> Sub<T> for Strand {
+impl Sub<Variant> for Strand {
     type Output = Result<Variant, Backtrace>;
 
-    fn sub(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Strand cannot be subtracted.");
+    fn sub(self, rhs: Variant) -> Self::Output {
+        raise_error!(None, "`{}` cannot be subtracted with `{}`.", self.represent()?, rhs.represent()?);
     }
 }
 
-impl<T> Mul<T> for Strand {
+impl Mul<Variant> for Strand {
     type Output = Result<Variant, Backtrace>;
 
-    fn mul(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Strand cannot be multiplied.");
+    fn mul(self, rhs: Variant) -> Self::Output {
+        raise_error!(None, "`{}` cannot be multiplied with `{}`.", self.represent()?, rhs.represent()?);
     }
 }
 
-impl<T> Div<T> for Strand {
+impl Div<Variant> for Strand {
     type Output = Result<Variant, Backtrace>;
 
-    fn div(self, _rhs: T) -> Self::Output {
-        raise_error!(None, "Strand cannot be divided.");
+    fn div(self, rhs: Variant) -> Self::Output {
+        raise_error!(None, "`{}` cannot be divided with `{}`.", self.represent()?, rhs.represent()?);
     }
 }
 

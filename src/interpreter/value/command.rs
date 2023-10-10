@@ -33,7 +33,7 @@ impl Command {
         }
     }
 
-    pub fn with_arc<T>(callable: T) -> Arc<Self>
+    pub fn wrap_arc<T>(callable: T) -> Arc<Self>
     where
         T: Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace> + 'static,
     {

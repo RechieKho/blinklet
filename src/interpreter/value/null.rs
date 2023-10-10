@@ -1,15 +1,8 @@
+use super::{represent::Represent, Value};
 use crate::{backtrace::Backtrace, raise_error};
-use std::{
-    fmt::{Debug, Display},
-    ops::Add,
-    ops::Div,
-    ops::Mul,
-    ops::Sub,
-};
+use std::{fmt::Debug, ops::Add, ops::Div, ops::Mul, ops::Sub};
 
-use super::Value;
-
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct Null();
 
 impl<T> Add<T> for Null {
@@ -50,8 +43,8 @@ impl Debug for Null {
     }
 }
 
-impl Display for Null {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("null")
+impl Represent for Null {
+    fn represent(&self) -> Result<String, Backtrace> {
+        Ok(String::from("null"))
     }
 }

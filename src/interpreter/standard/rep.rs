@@ -36,7 +36,7 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     let mut index = start;
 
     loop {
-        let scope = Scope::with_arc_mutex();
+        let scope = Scope::wrap_arc_mutex();
         {
             let mut scope = mutex_lock_unwrap!(scope, Some(first_atom.mark.clone()));
             scope.insert(index_identifier.clone(), Value::NUMBER(index));

@@ -12,11 +12,12 @@ use super::standard::scope_fn::scope_fn;
 use super::standard::set::set;
 use super::standard::sub::sub;
 use super::standard::var::var;
-use super::value::null::Null;
-use super::value::scope::Scope;
 
 use super::signal::Signal;
+use super::value::boolean::Boolean;
 use super::value::command::Command;
+use super::value::null::Null;
+use super::value::scope::Scope;
 use super::value::table::Table;
 use super::value::Value;
 use crate::backtrace::Backtrace;
@@ -35,14 +36,14 @@ macro_rules! standard_register_function {
     ($standard:expr, $function:expr) => {{
         $standard.insert(
             String::from(stringify!($function)),
-            Value::COMMAND(Command::with_arc($function)),
+            Value::COMMAND(Command::wrap_arc($function)),
         );
     }};
 
     ($standard:expr, $string:expr, $function:expr) => {{
         $standard.insert(
             String::from($string),
-            Value::COMMAND(Command::with_arc($function)),
+            Value::COMMAND(Command::wrap_arc($function)),
         );
     }};
 }
@@ -106,7 +107,7 @@ impl Context {
                     }
                 }
             }
-            AtomValue::BOOL(boolean) => Ok(Value::BOOL(boolean)),
+            AtomValue::BOOL(boolean) => Ok(Value::BOOL(Boolean::from(boolean))),
             AtomValue::NULL => Ok(Value::NULL(Null())),
             AtomValue::STRING(ref string) => Ok(Value::STRING(string.clone())),
             AtomValue::NUMBER(number) => Ok(Value::NUMBER(number)),
@@ -155,7 +156,7 @@ impl Context {
     pub fn resolve_bool(&mut self, atom: &Atom) -> Result<bool, Backtrace> {
         let value = self.resolve_value(atom)?;
         if let Value::BOOL(boolean) = value {
-            Ok(boolean)
+            Ok(boolean.into())
         } else {
             raise_error!(Some(atom.mark.clone()), "Value given is not a boolean.");
         }
@@ -193,7 +194,7 @@ impl Context {
             return Ok(Signal::COMPLETE(Value::NULL(Null())));
         }
         if self.scopes.len() == 0 {
-            self.scopes.push(Scope::with_arc_mutex())
+            self.scopes.push(Scope::wrap_arc_mutex())
         }
         let head = command.first().unwrap();
 
@@ -264,7 +265,7 @@ impl Context {
         let code = (self.code_request_handler)(&name)?;
         let result = tokenize(name, code)?;
         let result = generate_commands(result)?;
-        let signal = self.run_commands(result.as_slice(), Scope::with_arc_mutex())?;
+        let signal = self.run_commands(result.as_slice(), Scope::wrap_arc_mutex())?;
         match signal {
             Signal::BREAK(ref mark) | Signal::CONTINUE(ref mark) => {
                 raise_error!(Some(mark.clone()), "Unexpected control flow structure.");

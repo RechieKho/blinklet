@@ -38,7 +38,7 @@ impl Table for Scope {
 }
 
 impl Scope {
-    pub fn with_arc_mutex() -> Arc<Mutex<Self>> {
+    pub fn wrap_arc_mutex() -> Arc<Mutex<Self>> {
         Arc::new(Mutex::new(Scope::default()))
     }
 }

@@ -1,3 +1,4 @@
+pub mod boolean;
 pub mod closure;
 pub mod command;
 pub mod null;
@@ -5,11 +6,11 @@ pub mod represent;
 pub mod scope;
 pub mod table;
 
-use self::null::Null;
-
 use crate::backtrace::Backtrace;
+use boolean::Boolean;
 use closure::Closure;
 use command::Command;
+use null::Null;
 use represent::Represent;
 use std::fmt::Debug;
 use std::sync::Arc;
@@ -31,7 +32,7 @@ macro_rules! mutex_lock_unwrap {
 #[derive(Clone)]
 pub enum Value {
     NULL(Null),
-    BOOL(bool),
+    BOOL(Boolean),
     NUMBER(f64),
     STRING(String),
     LIST(Vec<Value>),
@@ -58,8 +59,8 @@ impl Debug for Value {
 impl Represent for Value {
     fn represent(&self) -> Result<String, Backtrace> {
         match self {
-            Value::NULL(null) => Ok(format!("{}", null)),
-            Value::BOOL(boolean) => Ok(format!("{}", boolean)),
+            Value::NULL(null) => null.represent(),
+            Value::BOOL(boolean) => boolean.represent(),
             Value::NUMBER(number) => Ok(format!("{}", number)),
             Value::STRING(string) => Ok(string.clone()),
             Value::LIST(list) => {

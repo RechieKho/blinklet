@@ -18,6 +18,7 @@ use super::value::boolean::Boolean;
 use super::value::command::Command;
 use super::value::null::Null;
 use super::value::scope::Scope;
+use super::value::strand::Strand;
 use super::value::table::Table;
 use super::value::Value;
 use crate::backtrace::Backtrace;
@@ -109,7 +110,7 @@ impl Context {
             }
             AtomValue::BOOL(boolean) => Ok(Value::BOOL(Boolean::from(boolean))),
             AtomValue::NULL => Ok(Value::NULL(Null())),
-            AtomValue::STRING(ref string) => Ok(Value::STRING(string.clone())),
+            AtomValue::STRING(ref string) => Ok(Value::STRAND(Strand::from(string.clone()))),
             AtomValue::NUMBER(number) => Ok(Value::NUMBER(number)),
             AtomValue::IDENTIFIER(ref identifier) => {
                 // Query standard.
@@ -153,10 +154,10 @@ impl Context {
         }
     }
 
-    pub fn resolve_bool(&mut self, atom: &Atom) -> Result<bool, Backtrace> {
+    pub fn resolve_boolean(&mut self, atom: &Atom) -> Result<Boolean, Backtrace> {
         let value = self.resolve_value(atom)?;
         if let Value::BOOL(boolean) = value {
-            Ok(boolean.into())
+            Ok(boolean)
         } else {
             raise_error!(Some(atom.mark.clone()), "Value given is not a boolean.");
         }
@@ -171,10 +172,10 @@ impl Context {
         }
     }
 
-    pub fn resolve_string(&mut self, atom: &Atom) -> Result<String, Backtrace> {
+    pub fn resolve_strand(&mut self, atom: &Atom) -> Result<Strand, Backtrace> {
         let value = self.resolve_value(atom)?;
-        if let Value::STRING(string) = value {
-            Ok(string)
+        if let Value::STRAND(strand) = value {
+            Ok(strand)
         } else {
             raise_error!(Some(atom.mark.clone()), "Value given is not a string.");
         }

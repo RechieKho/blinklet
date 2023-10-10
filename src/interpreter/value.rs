@@ -4,6 +4,7 @@ pub mod command;
 pub mod null;
 pub mod represent;
 pub mod scope;
+pub mod strand;
 pub mod table;
 
 use crate::backtrace::Backtrace;
@@ -15,6 +16,7 @@ use represent::Represent;
 use std::fmt::Debug;
 use std::sync::Arc;
 use std::sync::Mutex;
+use strand::Strand;
 use table::Table;
 
 #[macro_export]
@@ -34,7 +36,7 @@ pub enum Value {
     NULL(Null),
     BOOL(Boolean),
     NUMBER(f64),
-    STRING(String),
+    STRAND(Strand),
     LIST(Vec<Value>),
     TABLE(Arc<Mutex<dyn Table>>),
     COMMAND(Arc<Command>),
@@ -47,7 +49,7 @@ impl Debug for Value {
             Value::NULL(null) => f.write_fmt(format_args!("{:?}", null)),
             Value::BOOL(boolean) => f.write_fmt(format_args!("{:?}", boolean)),
             Value::NUMBER(number) => f.write_fmt(format_args!("{:?}", number)),
-            Value::STRING(string) => f.write_str(string),
+            Value::STRAND(strand) => f.write_fmt(format_args!("{:?}", strand)),
             Value::LIST(_) => f.write_str("list"),
             Value::TABLE(_) => f.write_str("table"),
             Value::COMMAND(command) => f.write_fmt(format_args!("{:?}", command)),
@@ -62,12 +64,12 @@ impl Represent for Value {
             Value::NULL(null) => null.represent(),
             Value::BOOL(boolean) => boolean.represent(),
             Value::NUMBER(number) => Ok(format!("{}", number)),
-            Value::STRING(string) => Ok(string.clone()),
+            Value::STRAND(strand) => strand.represent(),
             Value::LIST(list) => {
                 let representations = list
                     .iter()
                     .map(|x| match x {
-                        Value::STRING(string) => Ok(format!("\"{}\"", string)),
+                        Value::STRAND(strand) => Ok(format!("\"{}\"", strand.as_str())),
                         _ => x.represent(),
                     })
                     .collect::<Result<Vec<String>, Backtrace>>()?;

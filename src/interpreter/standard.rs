@@ -3,7 +3,7 @@ pub mod break_fn;
 pub mod closure_fn;
 pub mod continue_fn;
 pub mod div;
-pub mod list;
+pub mod list_fn;
 pub mod mul;
 pub mod print;
 pub mod rep;

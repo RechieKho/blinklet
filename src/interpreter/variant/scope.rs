@@ -15,7 +15,7 @@ impl Default for Scope {
 
 impl Represent for Scope {
     fn represent(&self) -> Result<String, Backtrace> {
-        Ok(String::from("Scope")) // TODO
+        Ok(String::from("scope")) // TODO
     }
 }
 

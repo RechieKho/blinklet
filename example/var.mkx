@@ -1,6 +1,4 @@
 
-var say_hello
-    closure
-        print 'Hello world'
-
-say_hello
+print
+    list 1 2 3 4 5 
+    | '\n'

@@ -20,7 +20,7 @@ pub struct Closure {
 
 impl Represent for Closure {
     fn represent(&self) -> Result<String, Backtrace> {
-        Ok(String::from("Closure")) // TODO
+        Ok(String::from("closure")) // TODO
     }
 }
 

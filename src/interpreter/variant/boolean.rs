@@ -9,7 +9,12 @@ impl Add<Variant> for Boolean {
     type Output = Result<Variant, Backtrace>;
 
     fn add(self, rhs: Variant) -> Self::Output {
-        raise_error!(None, "`{}` cannot be added with `{}`.", self.represent()?, rhs.represent()?);
+        raise_error!(
+            None,
+            "`{}` cannot be added with `{}`.",
+            self.represent()?,
+            rhs.represent()?
+        );
     }
 }
 
@@ -17,7 +22,12 @@ impl Sub<Variant> for Boolean {
     type Output = Result<Variant, Backtrace>;
 
     fn sub(self, rhs: Variant) -> Self::Output {
-        raise_error!(None, "`{}` cannot be subtracted with `{}`.", self.represent()?, rhs.represent()?);
+        raise_error!(
+            None,
+            "`{}` cannot be subtracted with `{}`.",
+            self.represent()?,
+            rhs.represent()?
+        );
     }
 }
 
@@ -25,7 +35,12 @@ impl Mul<Variant> for Boolean {
     type Output = Result<Variant, Backtrace>;
 
     fn mul(self, rhs: Variant) -> Self::Output {
-        raise_error!(None, "`{}` cannot be multiplied with `{}`.", self.represent()?, rhs.represent()?);
+        raise_error!(
+            None,
+            "`{}` cannot be multiplied with `{}`.",
+            self.represent()?,
+            rhs.represent()?
+        );
     }
 }
 
@@ -33,7 +48,12 @@ impl Div<Variant> for Boolean {
     type Output = Result<Variant, Backtrace>;
 
     fn div(self, rhs: Variant) -> Self::Output {
-        raise_error!(None, "`{}` cannot be divided with `{}`.", self.represent()?, rhs.represent()?);
+        raise_error!(
+            None,
+            "`{}` cannot be divided with `{}`.",
+            self.represent()?,
+            rhs.represent()?
+        );
     }
 }
 

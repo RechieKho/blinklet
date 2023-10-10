@@ -9,7 +9,9 @@ impl Add<Variant> for Strand {
     type Output = Result<Variant, Backtrace>;
 
     fn add(self, rhs: Variant) -> Self::Output {
-        Ok(Variant::STRAND(Strand::from(self.0 + rhs.represent()?.as_str())))
+        Ok(Variant::STRAND(Strand::from(
+            self.0 + rhs.represent()?.as_str(),
+        )))
     }
 }
 
@@ -17,7 +19,12 @@ impl Sub<Variant> for Strand {
     type Output = Result<Variant, Backtrace>;
 
     fn sub(self, rhs: Variant) -> Self::Output {
-        raise_error!(None, "`{}` cannot be subtracted with `{}`.", self.represent()?, rhs.represent()?);
+        raise_error!(
+            None,
+            "`{}` cannot be subtracted with `{}`.",
+            self.represent()?,
+            rhs.represent()?
+        );
     }
 }
 
@@ -25,7 +32,12 @@ impl Mul<Variant> for Strand {
     type Output = Result<Variant, Backtrace>;
 
     fn mul(self, rhs: Variant) -> Self::Output {
-        raise_error!(None, "`{}` cannot be multiplied with `{}`.", self.represent()?, rhs.represent()?);
+        raise_error!(
+            None,
+            "`{}` cannot be multiplied with `{}`.",
+            self.represent()?,
+            rhs.represent()?
+        );
     }
 }
 
@@ -33,7 +45,12 @@ impl Div<Variant> for Strand {
     type Output = Result<Variant, Backtrace>;
 
     fn div(self, rhs: Variant) -> Self::Output {
-        raise_error!(None, "`{}` cannot be divided with `{}`.", self.represent()?, rhs.represent()?);
+        raise_error!(
+            None,
+            "`{}` cannot be divided with `{}`.",
+            self.represent()?,
+            rhs.represent()?
+        );
     }
 }
 

@@ -1,6 +1,7 @@
 pub mod boolean;
 pub mod closure;
 pub mod command;
+pub mod list;
 pub mod null;
 pub mod represent;
 pub mod scope;
@@ -11,6 +12,7 @@ use crate::backtrace::Backtrace;
 use boolean::Boolean;
 use closure::Closure;
 use command::Command;
+use list::List;
 use null::Null;
 use represent::Represent;
 use std::fmt::Debug;
@@ -37,7 +39,7 @@ pub enum Variant {
     BOOL(Boolean),
     NUMBER(f64),
     STRAND(Strand),
-    LIST(Vec<Variant>),
+    LIST(List),
     TABLE(Arc<Mutex<dyn Table>>),
     COMMAND(Arc<Command>),
     CLOSURE(Arc<Mutex<Closure>>),
@@ -50,7 +52,7 @@ impl Debug for Variant {
             Variant::BOOL(boolean) => f.write_fmt(format_args!("{:?}", boolean)),
             Variant::NUMBER(number) => f.write_fmt(format_args!("{:?}", number)),
             Variant::STRAND(strand) => f.write_fmt(format_args!("{:?}", strand)),
-            Variant::LIST(_) => f.write_str("list"),
+            Variant::LIST(list) => f.write_fmt(format_args!("{:?}", list)),
             Variant::TABLE(_) => f.write_str("table"),
             Variant::COMMAND(command) => f.write_fmt(format_args!("{:?}", command)),
             Variant::CLOSURE(_) => f.write_str("closure"),
@@ -65,16 +67,7 @@ impl Represent for Variant {
             Variant::BOOL(boolean) => boolean.represent(),
             Variant::NUMBER(number) => Ok(format!("{}", number)),
             Variant::STRAND(strand) => strand.represent(),
-            Variant::LIST(list) => {
-                let representations = list
-                    .iter()
-                    .map(|x| match x {
-                        Variant::STRAND(strand) => Ok(format!("\"{}\"", strand.as_str())),
-                        _ => x.represent(),
-                    })
-                    .collect::<Result<Vec<String>, Backtrace>>()?;
-                Ok(format!("[{}]", representations.join(", ")))
-            }
+            Variant::LIST(list) => list.represent(),
             Variant::TABLE(table) => {
                 let table = mutex_lock_unwrap!(table, None);
                 table.represent()

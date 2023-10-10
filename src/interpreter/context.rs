@@ -3,7 +3,7 @@ use super::standard::break_fn::break_fn;
 use super::standard::closure_fn::closure_fn;
 use super::standard::continue_fn::continue_fn;
 use super::standard::div::div;
-use super::standard::list::list;
+use super::standard::list_fn::list_fn;
 use super::standard::mul::mul;
 use super::standard::print::print;
 use super::standard::rep::rep;
@@ -16,6 +16,7 @@ use super::standard::var::var;
 use super::signal::Signal;
 use super::variant::boolean::Boolean;
 use super::variant::command::Command;
+use super::variant::list::List;
 use super::variant::null::Null;
 use super::variant::scope::Scope;
 use super::variant::strand::Strand;
@@ -75,12 +76,12 @@ impl Default for Context {
         standard_register_function!(standard, var);
         standard_register_function!(standard, set);
         standard_register_function!(standard, print);
-        standard_register_function!(standard, list);
         standard_register_function!(standard, rep);
         standard_register_function!(standard, add);
         standard_register_function!(standard, sub);
         standard_register_function!(standard, mul);
         standard_register_function!(standard, div);
+        standard_register_function!(standard, "list", list_fn);
         standard_register_function!(standard, "closure", closure_fn);
         standard_register_function!(standard, "scope", scope_fn);
         standard_register_function!(standard, "return", return_fn);
@@ -181,7 +182,7 @@ impl Context {
         }
     }
 
-    pub fn resolve_list(&mut self, atom: &Atom) -> Result<Vec<Variant>, Backtrace> {
+    pub fn resolve_list(&mut self, atom: &Atom) -> Result<List, Backtrace> {
         let value = self.resolve_value(atom)?;
         if let Variant::LIST(list) = value {
             Ok(list)

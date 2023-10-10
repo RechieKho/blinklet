@@ -3,10 +3,10 @@ use crate::atom_as_identifier;
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
-use crate::interpreter::value::null::Null;
-use crate::interpreter::value::scope::Scope;
-use crate::interpreter::value::table::Table;
-use crate::interpreter::value::Value;
+use crate::interpreter::variant::null::Null;
+use crate::interpreter::variant::scope::Scope;
+use crate::interpreter::variant::table::Table;
+use crate::interpreter::variant::Variant;
 use crate::mutex_lock_unwrap;
 use crate::parser::atom::Atom;
 use crate::parser::atom::AtomValue;
@@ -22,7 +22,7 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     let end = context.resolve_number(&body[3])?;
     let commands = &body[5..];
     if commands.len() == 0 {
-        return Ok(Signal::COMPLETE(Value::NULL(Null())));
+        return Ok(Signal::COMPLETE(Variant::NULL(Null())));
     }
 
     let step = context.resolve_number(&body[4])?;
@@ -39,7 +39,7 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         let scope = Scope::wrap_arc_mutex();
         {
             let mut scope = mutex_lock_unwrap!(scope, Some(first_atom.mark.clone()));
-            scope.insert(index_identifier.clone(), Value::NUMBER(index));
+            scope.insert(index_identifier.clone(), Variant::NUMBER(index));
         }
 
         let signal = context.run_commands(commands, scope)?;
@@ -68,5 +68,5 @@ pub fn rep(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         }
     }
 
-    Ok(Signal::COMPLETE(Value::NULL(Null())))
+    Ok(Signal::COMPLETE(Variant::NULL(Null())))
 }

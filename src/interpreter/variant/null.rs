@@ -1,4 +1,4 @@
-use super::{represent::Represent, Value};
+use super::{represent::Represent, Variant};
 use crate::{backtrace::Backtrace, raise_error};
 use std::{fmt::Debug, ops::Add, ops::Div, ops::Mul, ops::Sub};
 
@@ -6,7 +6,7 @@ use std::{fmt::Debug, ops::Add, ops::Div, ops::Mul, ops::Sub};
 pub struct Null();
 
 impl<T> Add<T> for Null {
-    type Output = Result<Value, Backtrace>;
+    type Output = Result<Variant, Backtrace>;
 
     fn add(self, _rhs: T) -> Self::Output {
         raise_error!(None, "Null cannot be added.");
@@ -14,7 +14,7 @@ impl<T> Add<T> for Null {
 }
 
 impl<T> Sub<T> for Null {
-    type Output = Result<Value, Backtrace>;
+    type Output = Result<Variant, Backtrace>;
 
     fn sub(self, _rhs: T) -> Self::Output {
         raise_error!(None, "Null cannot be subtracted.");
@@ -22,7 +22,7 @@ impl<T> Sub<T> for Null {
 }
 
 impl<T> Mul<T> for Null {
-    type Output = Result<Value, Backtrace>;
+    type Output = Result<Variant, Backtrace>;
 
     fn mul(self, _rhs: T) -> Self::Output {
         raise_error!(None, "Null cannot be multiplied.");
@@ -30,7 +30,7 @@ impl<T> Mul<T> for Null {
 }
 
 impl<T> Div<T> for Null {
-    type Output = Result<Value, Backtrace>;
+    type Output = Result<Variant, Backtrace>;
 
     fn div(self, _rhs: T) -> Self::Output {
         raise_error!(None, "Null cannot be divided.");

@@ -2,7 +2,7 @@ use crate::assert_atoms_count_min;
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
-use crate::interpreter::value::Value;
+use crate::interpreter::variant::Variant;
 use crate::parser::atom::Atom;
 
 pub fn add(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
@@ -13,5 +13,5 @@ pub fn add(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         sum += context.resolve_number(atom)?;
     }
 
-    Ok(Signal::COMPLETE(Value::NUMBER(sum)))
+    Ok(Signal::COMPLETE(Variant::NUMBER(sum)))
 }

@@ -1,4 +1,4 @@
-use super::value::Value;
+use super::variant::Variant;
 use crate::mark::Mark;
 use std::sync::Arc;
 
@@ -18,8 +18,8 @@ macro_rules! signal_no_loop_control {
 
 #[derive(Debug, Clone)]
 pub enum Signal {
-    COMPLETE(Value),
-    RETURN(Value, Arc<Mark>),
+    COMPLETE(Variant),
+    RETURN(Variant, Arc<Mark>),
     BREAK(Arc<Mark>),
     CONTINUE(Arc<Mark>),
 }

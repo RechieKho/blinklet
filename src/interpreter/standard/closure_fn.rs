@@ -1,7 +1,7 @@
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
-use crate::interpreter::value::closure::Closure;
+use crate::interpreter::variant::closure::Closure;
 use crate::parser::atom::Atom;
 
 pub fn closure_fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {

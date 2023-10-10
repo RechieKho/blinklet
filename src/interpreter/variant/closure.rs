@@ -1,7 +1,7 @@
 use super::represent::Represent;
 use super::scope::Scope;
 use super::table::Table;
-use super::Value;
+use super::Variant;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::mark::Mark;
@@ -26,7 +26,7 @@ impl Represent for Closure {
 
 impl Closure {
     pub fn call_mut(&mut self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
-        let mut slots: Vec<Value> = Vec::new();
+        let mut slots: Vec<Variant> = Vec::new();
         for atom in body.iter().skip(1) {
             let value = context.resolve_value(atom)?;
             slots.push(value);
@@ -46,12 +46,12 @@ impl Closure {
         mark: Arc<Mark>,
         commands: Vec<Atom>,
         parent_scopes: Vec<Arc<Mutex<dyn Table>>>,
-    ) -> Value {
+    ) -> Variant {
         let closure = Arc::new(Mutex::new(Closure {
             mark,
             commands,
             parent_scopes,
         }));
-        Value::CLOSURE(closure)
+        Variant::CLOSURE(closure)
     }
 }

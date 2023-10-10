@@ -32,55 +32,55 @@ macro_rules! mutex_lock_unwrap {
 }
 
 #[derive(Clone)]
-pub enum Value {
+pub enum Variant {
     NULL(Null),
     BOOL(Boolean),
     NUMBER(f64),
     STRAND(Strand),
-    LIST(Vec<Value>),
+    LIST(Vec<Variant>),
     TABLE(Arc<Mutex<dyn Table>>),
     COMMAND(Arc<Command>),
     CLOSURE(Arc<Mutex<Closure>>),
 }
 
-impl Debug for Value {
+impl Debug for Variant {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Value::NULL(null) => f.write_fmt(format_args!("{:?}", null)),
-            Value::BOOL(boolean) => f.write_fmt(format_args!("{:?}", boolean)),
-            Value::NUMBER(number) => f.write_fmt(format_args!("{:?}", number)),
-            Value::STRAND(strand) => f.write_fmt(format_args!("{:?}", strand)),
-            Value::LIST(_) => f.write_str("list"),
-            Value::TABLE(_) => f.write_str("table"),
-            Value::COMMAND(command) => f.write_fmt(format_args!("{:?}", command)),
-            Value::CLOSURE(_) => f.write_str("closure"),
+            Variant::NULL(null) => f.write_fmt(format_args!("{:?}", null)),
+            Variant::BOOL(boolean) => f.write_fmt(format_args!("{:?}", boolean)),
+            Variant::NUMBER(number) => f.write_fmt(format_args!("{:?}", number)),
+            Variant::STRAND(strand) => f.write_fmt(format_args!("{:?}", strand)),
+            Variant::LIST(_) => f.write_str("list"),
+            Variant::TABLE(_) => f.write_str("table"),
+            Variant::COMMAND(command) => f.write_fmt(format_args!("{:?}", command)),
+            Variant::CLOSURE(_) => f.write_str("closure"),
         }
     }
 }
 
-impl Represent for Value {
+impl Represent for Variant {
     fn represent(&self) -> Result<String, Backtrace> {
         match self {
-            Value::NULL(null) => null.represent(),
-            Value::BOOL(boolean) => boolean.represent(),
-            Value::NUMBER(number) => Ok(format!("{}", number)),
-            Value::STRAND(strand) => strand.represent(),
-            Value::LIST(list) => {
+            Variant::NULL(null) => null.represent(),
+            Variant::BOOL(boolean) => boolean.represent(),
+            Variant::NUMBER(number) => Ok(format!("{}", number)),
+            Variant::STRAND(strand) => strand.represent(),
+            Variant::LIST(list) => {
                 let representations = list
                     .iter()
                     .map(|x| match x {
-                        Value::STRAND(strand) => Ok(format!("\"{}\"", strand.as_str())),
+                        Variant::STRAND(strand) => Ok(format!("\"{}\"", strand.as_str())),
                         _ => x.represent(),
                     })
                     .collect::<Result<Vec<String>, Backtrace>>()?;
                 Ok(format!("[{}]", representations.join(", ")))
             }
-            Value::TABLE(table) => {
+            Variant::TABLE(table) => {
                 let table = mutex_lock_unwrap!(table, None);
                 table.represent()
             }
-            Value::COMMAND(command) => command.represent(),
-            Value::CLOSURE(closure) => {
+            Variant::COMMAND(command) => command.represent(),
+            Variant::CLOSURE(closure) => {
                 let closure = mutex_lock_unwrap!(closure, None);
                 closure.represent()
             }

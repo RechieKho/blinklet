@@ -14,13 +14,13 @@ use super::standard::sub::sub;
 use super::standard::var::var;
 
 use super::signal::Signal;
-use super::value::boolean::Boolean;
-use super::value::command::Command;
-use super::value::null::Null;
-use super::value::scope::Scope;
-use super::value::strand::Strand;
-use super::value::table::Table;
-use super::value::Value;
+use super::variant::boolean::Boolean;
+use super::variant::command::Command;
+use super::variant::null::Null;
+use super::variant::scope::Scope;
+use super::variant::strand::Strand;
+use super::variant::table::Table;
+use super::variant::Variant;
 use crate::backtrace::Backtrace;
 use crate::mutex_lock_unwrap;
 use crate::parser::atom::generate_commands;
@@ -37,14 +37,14 @@ macro_rules! standard_register_function {
     ($standard:expr, $function:expr) => {{
         $standard.insert(
             String::from(stringify!($function)),
-            Value::COMMAND(Command::wrap_arc($function)),
+            Variant::COMMAND(Command::wrap_arc($function)),
         );
     }};
 
     ($standard:expr, $string:expr, $function:expr) => {{
         $standard.insert(
             String::from($string),
-            Value::COMMAND(Command::wrap_arc($function)),
+            Variant::COMMAND(Command::wrap_arc($function)),
         );
     }};
 }
@@ -64,7 +64,7 @@ fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
 pub struct Context {
     standard: Scope,
     pub scopes: Vec<Arc<Mutex<dyn Table>>>,
-    pub slots: Vec<Value>,
+    pub slots: Vec<Variant>,
     pub code_request_handler: CodeRequestHandler,
 }
 
@@ -97,7 +97,7 @@ impl Default for Context {
 }
 
 impl Context {
-    pub fn resolve_value(&mut self, atom: &Atom) -> Result<Value, Backtrace> {
+    pub fn resolve_value(&mut self, atom: &Atom) -> Result<Variant, Backtrace> {
         match atom.value {
             AtomValue::COMMAND(ref command) => {
                 let signal = self.run_command(command.as_slice())?;
@@ -108,10 +108,10 @@ impl Context {
                     }
                 }
             }
-            AtomValue::BOOL(boolean) => Ok(Value::BOOL(Boolean::from(boolean))),
-            AtomValue::NULL => Ok(Value::NULL(Null())),
-            AtomValue::STRING(ref string) => Ok(Value::STRAND(Strand::from(string.clone()))),
-            AtomValue::NUMBER(number) => Ok(Value::NUMBER(number)),
+            AtomValue::BOOL(boolean) => Ok(Variant::BOOL(Boolean::from(boolean))),
+            AtomValue::NULL => Ok(Variant::NULL(Null())),
+            AtomValue::STRING(ref string) => Ok(Variant::STRAND(Strand::from(string.clone()))),
+            AtomValue::NUMBER(number) => Ok(Variant::NUMBER(number)),
             AtomValue::IDENTIFIER(ref identifier) => {
                 // Query standard.
                 let value = self.standard.get(identifier);
@@ -156,43 +156,43 @@ impl Context {
 
     pub fn resolve_boolean(&mut self, atom: &Atom) -> Result<Boolean, Backtrace> {
         let value = self.resolve_value(atom)?;
-        if let Value::BOOL(boolean) = value {
+        if let Variant::BOOL(boolean) = value {
             Ok(boolean)
         } else {
-            raise_error!(Some(atom.mark.clone()), "Value given is not a boolean.");
+            raise_error!(Some(atom.mark.clone()), "Variant given is not a boolean.");
         }
     }
 
     pub fn resolve_number(&mut self, atom: &Atom) -> Result<f64, Backtrace> {
         let value = self.resolve_value(atom)?;
-        if let Value::NUMBER(number) = value {
+        if let Variant::NUMBER(number) = value {
             Ok(number)
         } else {
-            raise_error!(Some(atom.mark.clone()), "Value given is not a number.");
+            raise_error!(Some(atom.mark.clone()), "Variant given is not a number.");
         }
     }
 
     pub fn resolve_strand(&mut self, atom: &Atom) -> Result<Strand, Backtrace> {
         let value = self.resolve_value(atom)?;
-        if let Value::STRAND(strand) = value {
+        if let Variant::STRAND(strand) = value {
             Ok(strand)
         } else {
-            raise_error!(Some(atom.mark.clone()), "Value given is not a string.");
+            raise_error!(Some(atom.mark.clone()), "Variant given is not a string.");
         }
     }
 
-    pub fn resolve_list(&mut self, atom: &Atom) -> Result<Vec<Value>, Backtrace> {
+    pub fn resolve_list(&mut self, atom: &Atom) -> Result<Vec<Variant>, Backtrace> {
         let value = self.resolve_value(atom)?;
-        if let Value::LIST(list) = value {
+        if let Variant::LIST(list) = value {
             Ok(list)
         } else {
-            raise_error!(Some(atom.mark.clone()), "Value given is not a list.");
+            raise_error!(Some(atom.mark.clone()), "Variant given is not a list.");
         }
     }
 
     pub fn run_command(&mut self, command: &[Atom]) -> Result<Signal, Backtrace> {
         if command.is_empty() {
-            return Ok(Signal::COMPLETE(Value::NULL(Null())));
+            return Ok(Signal::COMPLETE(Variant::NULL(Null())));
         }
         if self.scopes.len() == 0 {
             self.scopes.push(Scope::wrap_arc_mutex())
@@ -201,18 +201,18 @@ impl Context {
 
         let value = self.resolve_value(head)?;
         match value {
-            Value::COMMAND(function) => {
+            Variant::COMMAND(function) => {
                 let result = function.call(self, command);
                 return Backtrace::trace(result, &head.mark);
             }
 
-            Value::CLOSURE(closure) => {
+            Variant::CLOSURE(closure) => {
                 let mut guard = mutex_lock_unwrap!(closure, Some(head.mark.clone()));
                 let result = guard.call_mut(self, command);
                 return Backtrace::trace(result, &head.mark);
             }
 
-            Value::TABLE(table) => {
+            Variant::TABLE(table) => {
                 let signal = Backtrace::trace(self.run_commands(&command[1..], table), &head.mark)?;
                 signal_no_loop_control!(signal);
                 return Ok(signal);
@@ -233,7 +233,7 @@ impl Context {
         scope: Arc<Mutex<dyn Table>>,
     ) -> Result<Signal, Backtrace> {
         if commands.len() == 0 {
-            return Ok(Signal::COMPLETE(Value::TABLE(scope)));
+            return Ok(Signal::COMPLETE(Variant::TABLE(scope)));
         }
 
         self.scopes.push(scope);
@@ -259,10 +259,10 @@ impl Context {
             }
         }
         let scope = self.scopes.pop().unwrap();
-        Ok(Signal::COMPLETE(Value::TABLE(scope)))
+        Ok(Signal::COMPLETE(Variant::TABLE(scope)))
     }
 
-    pub fn run_code(&mut self, name: String) -> Result<Value, Backtrace> {
+    pub fn run_code(&mut self, name: String) -> Result<Variant, Backtrace> {
         let code = (self.code_request_handler)(&name)?;
         let result = tokenize(name, code)?;
         let result = generate_commands(result)?;

@@ -1,9 +1,9 @@
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
-use crate::interpreter::value::null::Null;
-use crate::interpreter::value::represent::Represent;
-use crate::interpreter::value::Value;
+use crate::interpreter::variant::null::Null;
+use crate::interpreter::variant::represent::Represent;
+use crate::interpreter::variant::Variant;
 use crate::parser::atom::Atom;
 
 pub fn print(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
@@ -11,5 +11,5 @@ pub fn print(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> 
         let value = context.resolve_value(atom)?;
         print!("{}", value.represent()?);
     }
-    Ok(Signal::COMPLETE(Value::NULL(Null())))
+    Ok(Signal::COMPLETE(Variant::NULL(Null())))
 }

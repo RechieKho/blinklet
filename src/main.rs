@@ -7,8 +7,8 @@ mod mark;
 mod parser;
 
 use interpreter::context::Context;
-use interpreter::value::strand::Strand;
-use interpreter::value::Value;
+use interpreter::variant::strand::Strand;
+use interpreter::variant::Variant;
 use std::env;
 
 fn main() {
@@ -27,7 +27,9 @@ fn main() {
     let mut context = Context::default();
 
     for arg in script_args.iter() {
-        context.slots.push(Value::STRAND(Strand::from(arg.clone())));
+        context
+            .slots
+            .push(Variant::STRAND(Strand::from(arg.clone())));
     }
 
     let result = context.run_code(String::from(path));

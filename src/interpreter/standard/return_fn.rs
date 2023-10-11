@@ -12,7 +12,7 @@ pub fn return_fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtra
     if body.len() == 1 {
         Ok(Signal::RETURN(Variant::NULL(Null()), mark.clone()))
     } else {
-        let value = context.resolve_value(&body[1])?;
+        let value = context.resolve_variant(&body[1])?;
         Ok(Signal::RETURN(value, mark.clone()))
     }
 }

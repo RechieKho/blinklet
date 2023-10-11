@@ -15,13 +15,13 @@ pub fn set(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     assert_atoms_count!(body, 3);
     let first_atom = body.first().unwrap();
     let identifier = atom_as_identifier!(&body[1]);
-    let value = context.resolve_value(&body[2])?;
+    let value = context.resolve_variant(&body[2])?;
 
     let scopes_count = context.scopes.len();
     if scopes_count == 0 {
         raise_bug!(
             Some(first_atom.mark.clone()),
-            "Empty scope should be unreachable."
+            "Empty table should be unreachable."
         );
     }
     for i in (0..scopes_count).rev() {

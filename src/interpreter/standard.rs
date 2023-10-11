@@ -6,11 +6,11 @@ pub mod div;
 pub mod list_fn;
 pub mod mul;
 pub mod print;
-pub mod rep;
+pub mod println;
 pub mod return_fn;
-pub mod scope_fn;
 pub mod set;
 pub mod sub;
+pub mod table_fn;
 pub mod var;
 
 #[macro_export]

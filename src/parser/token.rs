@@ -11,7 +11,7 @@ use std::vec::Vec;
 pub enum TokenValue {
     WORD(String),
     STRING(String),
-    NUMBER(f64),
+    FLOAT(f64),
 }
 
 #[derive(Debug)]
@@ -39,13 +39,9 @@ impl Token {
         }
     }
 
-    pub fn new_number(
-        number: f64,
-        mark_line: Arc<MarkLine>,
-        column: RangeInclusive<usize>,
-    ) -> Self {
+    pub fn new_float(float: f64, mark_line: Arc<MarkLine>, column: RangeInclusive<usize>) -> Self {
         Token {
-            value: TokenValue::NUMBER(number),
+            value: TokenValue::FLOAT(float),
             mark: Arc::new(Mark::new(mark_line, column)),
         }
     }
@@ -143,7 +139,7 @@ pub fn tokenize(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace>
                     let slice = &line[slice_start..j];
                     let parse_result = slice.parse::<f64>();
                     if parse_result.is_ok() {
-                        token_line.tokens.push(Token::new_number(
+                        token_line.tokens.push(Token::new_float(
                             parse_result.unwrap(),
                             mark_line.clone(),
                             slice_start..=j - 1,
@@ -169,7 +165,7 @@ pub fn tokenize(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace>
                     let slice = &line[slice_start..j];
                     let parse_result = slice.parse::<f64>();
                     if parse_result.is_ok() {
-                        token_line.tokens.push(Token::new_number(
+                        token_line.tokens.push(Token::new_float(
                             parse_result.unwrap(),
                             mark_line.clone(),
                             slice_start..=j,
@@ -192,7 +188,7 @@ pub fn tokenize(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace>
                     let slice = &line[slice_start..j];
                     let parse_result = slice.parse::<f64>();
                     if parse_result.is_ok() {
-                        token_line.tokens.push(Token::new_number(
+                        token_line.tokens.push(Token::new_float(
                             parse_result.unwrap(),
                             mark_line.clone(),
                             slice_start..=j,
@@ -228,7 +224,7 @@ pub fn tokenize(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace>
             let slice = &line[slice_start..line_length];
             let parse_result = slice.parse::<f64>();
             if parse_result.is_ok() {
-                token_line.tokens.push(Token::new_number(
+                token_line.tokens.push(Token::new_float(
                     parse_result.unwrap(),
                     mark_line.clone(),
                     slice_start..=line_length,

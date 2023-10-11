@@ -39,7 +39,7 @@ pub enum AtomValue {
     IDENTIFIER(String),
     BOOL(bool),
     STRING(String),
-    NUMBER(f64),
+    FLOAT(f64),
     STATEMENT(Vec<Atom>),
 }
 
@@ -78,9 +78,9 @@ impl Atom {
         }
     }
 
-    pub fn new_number(number: f64, mark: Arc<Mark>) -> Self {
+    pub fn new_float(float: f64, mark: Arc<Mark>) -> Self {
         Atom {
-            value: AtomValue::NUMBER(number),
+            value: AtomValue::FLOAT(float),
             mark,
         }
     }
@@ -107,7 +107,7 @@ impl Atom {
                 }
             }
             TokenValue::STRING(string) => Atom::new_string(string, mark),
-            TokenValue::NUMBER(number) => Atom::new_number(number, mark),
+            TokenValue::FLOAT(float) => Atom::new_float(float, mark),
         }
     }
 }
@@ -203,10 +203,10 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
                         "String as the head of a command is forbidden."
                     );
                 }
-                AtomValue::NUMBER(_) => {
+                AtomValue::FLOAT(_) => {
                     raise_error!(
                         Some(first_atom.mark.clone()),
-                        "Number as the head of a command is forbidden."
+                        "FLOAT as the head of a command is forbidden."
                     );
                 }
                 AtomValue::BOOL(_) => {

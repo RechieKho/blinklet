@@ -6,19 +6,19 @@ use super::standard::div::div;
 use super::standard::list_fn::list_fn;
 use super::standard::mul::mul;
 use super::standard::print::print;
-use super::standard::rep::rep;
+use super::standard::println::println;
 use super::standard::return_fn::return_fn;
-use super::standard::scope_fn::scope_fn;
 use super::standard::set::set;
 use super::standard::sub::sub;
+use super::standard::table_fn::table_fn;
 use super::standard::var::var;
 
 use super::signal::Signal;
 use super::variant::boolean::Boolean;
 use super::variant::command::Command;
+use super::variant::float::Float;
 use super::variant::list::List;
 use super::variant::null::Null;
-use super::variant::scope::Scope;
 use super::variant::strand::Strand;
 use super::variant::table::Table;
 use super::variant::Variant;
@@ -60,27 +60,27 @@ fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
 
 /// The runtime that runs Minky code.
 pub struct Context {
-    standard: Scope,
-    pub scopes: Vec<Arc<Mutex<dyn Table>>>,
+    standard: Table,
+    pub scopes: Vec<Arc<Mutex<Table>>>,
     pub slots: Vec<Variant>,
-    pub code_request_handler: Box<dyn Fn(&String) -> Result<String, Backtrace> + 'static>
+    pub code_request_handler: Box<dyn Fn(&String) -> Result<String, Backtrace> + 'static>,
 }
 
 impl Default for Context {
     fn default() -> Self {
-        let mut standard = Scope::default();
+        let mut standard = Table::default();
 
         standard_register_command!(standard, var);
         standard_register_command!(standard, set);
         standard_register_command!(standard, print);
-        standard_register_command!(standard, rep);
+        standard_register_command!(standard, println);
         standard_register_command!(standard, add);
         standard_register_command!(standard, sub);
         standard_register_command!(standard, mul);
         standard_register_command!(standard, div);
         standard_register_command!(standard, "list", list_fn);
         standard_register_command!(standard, "closure", closure_fn);
-        standard_register_command!(standard, "scope", scope_fn);
+        standard_register_command!(standard, "table", table_fn);
         standard_register_command!(standard, "return", return_fn);
         standard_register_command!(standard, "break", break_fn);
         standard_register_command!(standard, "continue", continue_fn);
@@ -95,7 +95,7 @@ impl Default for Context {
 }
 
 impl Context {
-    pub fn resolve_value(&mut self, atom: &Atom) -> Result<Variant, Backtrace> {
+    pub fn resolve_variant(&mut self, atom: &Atom) -> Result<Variant, Backtrace> {
         match atom.value {
             AtomValue::STATEMENT(ref command) => {
                 let signal = self.run_statement(command.as_slice())?;
@@ -112,7 +112,7 @@ impl Context {
                 let formatted = string.replace("\\n", "\n").replace("\\\\", "\\");
                 Ok(Variant::STRAND(Strand::from(formatted)))
             }
-            AtomValue::NUMBER(number) => Ok(Variant::NUMBER(number)),
+            AtomValue::FLOAT(float) => Ok(Variant::FLOAT(Float::from(float))),
             AtomValue::IDENTIFIER(ref identifier) => {
                 // Query standard.
                 let value = self.standard.get(identifier);
@@ -120,7 +120,7 @@ impl Context {
                     return Ok(value.unwrap().clone());
                 }
 
-                // Query scope.
+                // Query table.
                 let scopes_count = self.scopes.len();
                 if scopes_count == 0 {
                     raise_error!(
@@ -156,7 +156,7 @@ impl Context {
     }
 
     pub fn resolve_boolean(&mut self, atom: &Atom) -> Result<Boolean, Backtrace> {
-        let value = self.resolve_value(atom)?;
+        let value = self.resolve_variant(atom)?;
         if let Variant::BOOL(boolean) = value {
             Ok(boolean)
         } else {
@@ -164,17 +164,17 @@ impl Context {
         }
     }
 
-    pub fn resolve_number(&mut self, atom: &Atom) -> Result<f64, Backtrace> {
-        let value = self.resolve_value(atom)?;
-        if let Variant::NUMBER(number) = value {
-            Ok(number)
+    pub fn resolve_float(&mut self, atom: &Atom) -> Result<Float, Backtrace> {
+        let value = self.resolve_variant(atom)?;
+        if let Variant::FLOAT(float) = value {
+            Ok(float)
         } else {
-            raise_error!(Some(atom.mark.clone()), "Variant given is not a number.");
+            raise_error!(Some(atom.mark.clone()), "Variant given is not a float.");
         }
     }
 
     pub fn resolve_strand(&mut self, atom: &Atom) -> Result<Strand, Backtrace> {
-        let value = self.resolve_value(atom)?;
+        let value = self.resolve_variant(atom)?;
         if let Variant::STRAND(strand) = value {
             Ok(strand)
         } else {
@@ -183,7 +183,7 @@ impl Context {
     }
 
     pub fn resolve_list(&mut self, atom: &Atom) -> Result<List, Backtrace> {
-        let value = self.resolve_value(atom)?;
+        let value = self.resolve_variant(atom)?;
         if let Variant::LIST(list) = value {
             Ok(list)
         } else {
@@ -196,11 +196,11 @@ impl Context {
             return Ok(Signal::COMPLETE(Variant::NULL(Null())));
         }
         if self.scopes.len() == 0 {
-            self.scopes.push(Scope::wrap_arc_mutex())
+            self.scopes.push(Table::wrap_arc_mutex())
         }
         let head = statement.first().unwrap();
 
-        let value = self.resolve_value(head)?;
+        let value = self.resolve_variant(head)?;
         match value {
             Variant::COMMAND(command) => {
                 let result = command.call(self, statement);
@@ -228,13 +228,13 @@ impl Context {
     pub fn run_statements(
         &mut self,
         statements: &[Atom],
-        scope: Arc<Mutex<dyn Table>>,
+        table: Arc<Mutex<Table>>,
     ) -> Result<Signal, Backtrace> {
         if statements.len() == 0 {
-            return Ok(Signal::COMPLETE(Variant::TABLE(scope)));
+            return Ok(Signal::COMPLETE(Variant::TABLE(table)));
         }
 
-        self.scopes.push(scope);
+        self.scopes.push(table);
         for atom in statements.iter() {
             if let AtomValue::STATEMENT(ref statement) = atom.value {
                 let result = self.run_statement(&statement.as_slice());
@@ -264,6 +264,6 @@ impl Context {
         let code = (self.code_request_handler)(&name)?;
         let result = tokenize(name, code)?;
         let result = generate_commands(result)?;
-        self.run_statements(result.as_slice(), Scope::wrap_arc_mutex())
+        self.run_statements(result.as_slice(), Table::wrap_arc_mutex())
     }
 }

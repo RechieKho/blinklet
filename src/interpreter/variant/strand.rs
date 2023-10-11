@@ -1,56 +1,67 @@
 use super::{represent::Represent, Variant};
 use crate::{backtrace::Backtrace, raise_error};
-use std::{fmt::Debug, ops::Add, ops::Div, ops::Mul, ops::Sub};
+use super::variant_ops::{VariantAdd, VariantSub, VariantMul, VariantDiv};
+use std::sync::Arc;
+use crate::mark::Mark;
+use std::fmt::Debug;
 
 #[derive(Clone)]
 pub struct Strand(String);
 
-impl Add<Variant> for Strand {
-    type Output = Result<Variant, Backtrace>;
-
-    fn add(self, rhs: Variant) -> Self::Output {
-        Ok(Variant::STRAND(Strand::from(
-            self.0 + rhs.represent()?.as_str(),
-        )))
+impl VariantAdd for Strand {
+    fn add(&self, rhs: &Variant, _mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+        match rhs {
+            _ => {
+                Ok(Variant::STRAND(Strand::from(
+                    self.0.clone() + rhs.represent()?.as_str(),
+                )))
+            }
+        }
     }
 }
 
-impl Sub<Variant> for Strand {
-    type Output = Result<Variant, Backtrace>;
-
-    fn sub(self, rhs: Variant) -> Self::Output {
-        raise_error!(
-            None,
-            "`{}` cannot be subtracted with `{}`.",
-            self.represent()?,
-            rhs.represent()?
-        );
+impl VariantSub for Strand {
+    fn sub(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+        match rhs {
+            _ => {
+                raise_error!(
+                    mark,
+                    "`{}` cannot be subtracted with `{}`.",
+                    self.represent()?,
+                    rhs.represent()?
+                );
+            }
+        }
     }
 }
 
-impl Mul<Variant> for Strand {
-    type Output = Result<Variant, Backtrace>;
-
-    fn mul(self, rhs: Variant) -> Self::Output {
-        raise_error!(
-            None,
-            "`{}` cannot be multiplied with `{}`.",
-            self.represent()?,
-            rhs.represent()?
-        );
+impl VariantMul for Strand {
+    fn mul(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+        match rhs {
+            _ => {
+                raise_error!(
+                    mark,
+                    "`{}` cannot be multiplied with `{}`.",
+                    self.represent()?,
+                    rhs.represent()?
+                );
+            }
+        }
     }
 }
 
-impl Div<Variant> for Strand {
-    type Output = Result<Variant, Backtrace>;
-
-    fn div(self, rhs: Variant) -> Self::Output {
-        raise_error!(
-            None,
-            "`{}` cannot be divided with `{}`.",
-            self.represent()?,
-            rhs.represent()?
-        );
+impl VariantDiv for Strand {
+    fn div(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+        match rhs {
+            _ => {
+                raise_error!(
+                    mark,
+                    "`{}` cannot be divided with `{}`.",
+                    self.represent()?,
+                    rhs.represent()?
+                );
+            }
+        }
     }
 }
 

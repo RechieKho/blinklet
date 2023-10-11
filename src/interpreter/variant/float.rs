@@ -1,22 +1,27 @@
-use super::represent::Represent;
-use crate::backtrace::Backtrace;
-use crate::interpreter::context::Context;
-use crate::interpreter::signal::Signal;
-use crate::parser::atom::Atom;
-use std::fmt::Debug;
-use std::sync::Arc;
+use super::strand::Strand;
+use super::{represent::Represent, Variant};
+use crate::{backtrace::Backtrace, raise_error};
 use super::variant_ops::{VariantAdd, VariantSub, VariantMul, VariantDiv};
-use crate::raise_error;
+use std::sync::Arc;
 use crate::mark::Mark;
-use super::Variant;
+use std::fmt::Debug;
 
-pub struct Command {
-    callable: Box<dyn Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace>>,
-}
+#[derive(Clone, Copy)]
+pub struct Float(f64);
 
-impl VariantAdd for Command {
+impl VariantAdd for Float {
     fn add(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
         match rhs {
+            Variant::FLOAT(float) => {
+                let rhs_float : f64 = float.clone().into();
+                Ok(Variant::FLOAT(Float::from(self.0 + rhs_float)))
+            }
+            Variant::STRAND(strand) => {
+                let mut self_string = self.represent()?;
+                let mut rhs_string: String = strand.clone().into();
+                self_string.push_str(&mut rhs_string);
+                Ok(Variant::STRAND(Strand::from(self_string)))
+            }
             _ => {
                 raise_error!(
                     mark,
@@ -29,9 +34,13 @@ impl VariantAdd for Command {
     }
 }
 
-impl VariantSub for Command {
+impl VariantSub for Float {
     fn sub(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
         match rhs {
+            Variant::FLOAT(float) => {
+                let rhs_float : f64 = float.clone().into();
+                Ok(Variant::FLOAT(Float::from(self.0 - rhs_float)))
+            }
             _ => {
                 raise_error!(
                     mark,
@@ -44,9 +53,13 @@ impl VariantSub for Command {
     }
 }
 
-impl VariantMul for Command {
+impl VariantMul for Float {
     fn mul(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
         match rhs {
+            Variant::FLOAT(float) => {
+                let rhs_float : f64 = float.clone().into();
+                Ok(Variant::FLOAT(Float::from(self.0 * rhs_float)))
+            }
             _ => {
                 raise_error!(
                     mark,
@@ -59,9 +72,13 @@ impl VariantMul for Command {
     }
 }
 
-impl VariantDiv for Command {
+impl VariantDiv for Float {
     fn div(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
         match rhs {
+            Variant::FLOAT(float) => {
+                let rhs_float : f64 = float.clone().into();
+                Ok(Variant::FLOAT(Float::from(self.0 / rhs_float)))
+            }
             _ => {
                 raise_error!(
                     mark,
@@ -74,29 +91,32 @@ impl VariantDiv for Command {
     }
 }
 
-impl Debug for Command {
+impl Debug for Float {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("command") // TODO
+        f.write_fmt(format_args!("{:?}", self.0))
     }
 }
 
-impl Represent for Command {
+impl Represent for Float {
     fn represent(&self) -> Result<String, Backtrace> {
-        Ok(String::from("command")) // TODO
+        Ok(format!("{}", self.0))
     }
 }
 
-impl Command {
-    pub fn wrap_arc<T>(callable: T) -> Arc<Self>
-    where
-        T: Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace> + 'static,
-    {
-        Arc::new(Command {
-            callable: Box::new(callable),
-        })
+impl Into<f64> for Float {
+    fn into(self) -> f64 {
+        self.0
     }
+}
 
-    pub fn call(&self, context: &mut Context, atoms: &[Atom]) -> Result<Signal, Backtrace> {
-        (self.callable)(context, atoms)
+impl From<f64> for Float {
+    fn from(value: f64) -> Self {
+        Float(value)
+    }
+}
+
+impl Float {
+    pub fn is_sign_negative(&self) -> bool {
+        self.0.is_sign_negative()
     }
 }

@@ -9,7 +9,7 @@ pub fn list_fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace
     let mut values: Vec<Variant> = Vec::new();
 
     for atom in body.iter().skip(1) {
-        let value = context.resolve_value(atom)?;
+        let value = context.resolve_variant(atom)?;
         values.push(value);
     }
 

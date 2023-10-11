@@ -33,18 +33,18 @@ use std::fs;
 use std::sync::Arc;
 use std::sync::Mutex;
 
-macro_rules! standard_register_function {
-    ($standard:expr, $function:expr) => {{
+macro_rules! standard_register_command {
+    ($standard:expr, $command:expr) => {{
         $standard.insert(
-            String::from(stringify!($function)),
-            Variant::COMMAND(Command::wrap_arc($function)),
+            String::from(stringify!($command)),
+            Variant::COMMAND(Command::wrap_arc($command)),
         );
     }};
 
-    ($standard:expr, $string:expr, $function:expr) => {{
+    ($standard:expr, $string:expr, $command:expr) => {{
         $standard.insert(
             String::from($string),
-            Variant::COMMAND(Command::wrap_arc($function)),
+            Variant::COMMAND(Command::wrap_arc($command)),
         );
     }};
 }
@@ -72,20 +72,20 @@ impl Default for Context {
     fn default() -> Self {
         let mut standard = Scope::default();
 
-        standard_register_function!(standard, var);
-        standard_register_function!(standard, set);
-        standard_register_function!(standard, print);
-        standard_register_function!(standard, rep);
-        standard_register_function!(standard, add);
-        standard_register_function!(standard, sub);
-        standard_register_function!(standard, mul);
-        standard_register_function!(standard, div);
-        standard_register_function!(standard, "list", list_fn);
-        standard_register_function!(standard, "closure", closure_fn);
-        standard_register_function!(standard, "scope", scope_fn);
-        standard_register_function!(standard, "return", return_fn);
-        standard_register_function!(standard, "break", break_fn);
-        standard_register_function!(standard, "continue", continue_fn);
+        standard_register_command!(standard, var);
+        standard_register_command!(standard, set);
+        standard_register_command!(standard, print);
+        standard_register_command!(standard, rep);
+        standard_register_command!(standard, add);
+        standard_register_command!(standard, sub);
+        standard_register_command!(standard, mul);
+        standard_register_command!(standard, div);
+        standard_register_command!(standard, "list", list_fn);
+        standard_register_command!(standard, "closure", closure_fn);
+        standard_register_command!(standard, "scope", scope_fn);
+        standard_register_command!(standard, "return", return_fn);
+        standard_register_command!(standard, "break", break_fn);
+        standard_register_command!(standard, "continue", continue_fn);
 
         Context {
             standard,
@@ -193,29 +193,29 @@ impl Context {
         }
     }
 
-    pub fn run_statement(&mut self, command: &[Atom]) -> Result<Signal, Backtrace> {
-        if command.is_empty() {
+    pub fn run_statement(&mut self, statement: &[Atom]) -> Result<Signal, Backtrace> {
+        if statement.is_empty() {
             return Ok(Signal::COMPLETE(Variant::NULL(Null())));
         }
         if self.scopes.len() == 0 {
             self.scopes.push(Scope::wrap_arc_mutex())
         }
-        let head = command.first().unwrap();
+        let head = statement.first().unwrap();
 
         let value = self.resolve_value(head)?;
         match value {
-            Variant::COMMAND(function) => {
-                let result = function.call(self, command);
+            Variant::COMMAND(command) => {
+                let result = command.call(self, statement);
                 return Backtrace::trace(result, &head.mark);
             }
 
             Variant::CLOSURE(closure) => {
                 let mut guard = mutex_lock_unwrap!(closure, Some(head.mark.clone()));
-                return Backtrace::trace(guard.call_mut(self, command), &head.mark);
+                return Backtrace::trace(guard.call_mut(self, statement), &head.mark);
             }
 
             Variant::TABLE(table) => {
-                return Backtrace::trace(self.run_statements(&command[1..], table), &head.mark);
+                return Backtrace::trace(self.run_statements(&statement[1..], table), &head.mark);
             }
 
             _ => {
@@ -229,17 +229,17 @@ impl Context {
 
     pub fn run_statements(
         &mut self,
-        commands: &[Atom],
+        statements: &[Atom],
         scope: Arc<Mutex<dyn Table>>,
     ) -> Result<Signal, Backtrace> {
-        if commands.len() == 0 {
+        if statements.len() == 0 {
             return Ok(Signal::COMPLETE(Variant::TABLE(scope)));
         }
 
         self.scopes.push(scope);
-        for atom in commands.iter() {
-            if let AtomValue::STATEMENT(ref command) = atom.value {
-                let result = self.run_statement(command.as_slice());
+        for atom in statements.iter() {
+            if let AtomValue::STATEMENT(ref statement) = atom.value {
+                let result = self.run_statement(&statement.as_slice());
                 if result.is_err() {
                     self.scopes.pop();
                     return result;

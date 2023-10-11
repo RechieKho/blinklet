@@ -49,8 +49,6 @@ macro_rules! standard_register_command {
     }};
 }
 
-pub type CodeRequestHandler = fn(name: &String) -> Result<String, Backtrace>;
-
 fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
     let result = fs::read_to_string(name);
     if result.is_err() {
@@ -65,7 +63,7 @@ pub struct Context {
     standard: Scope,
     pub scopes: Vec<Arc<Mutex<dyn Table>>>,
     pub slots: Vec<Variant>,
-    pub code_request_handler: CodeRequestHandler,
+    pub code_request_handler: Box<dyn Fn(&String) -> Result<String, Backtrace> + 'static>
 }
 
 impl Default for Context {
@@ -91,7 +89,7 @@ impl Default for Context {
             standard,
             scopes: Vec::new(),
             slots: Vec::new(),
-            code_request_handler: default_code_request_handler,
+            code_request_handler: Box::new(default_code_request_handler),
         }
     }
 }

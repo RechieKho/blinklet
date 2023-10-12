@@ -4,6 +4,7 @@ pub mod closure_fn;
 pub mod continue_fn;
 pub mod div;
 pub mod list_fn;
+pub mod list_pop;
 pub mod list_push;
 pub mod mul;
 pub mod print;

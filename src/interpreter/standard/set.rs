@@ -6,7 +6,6 @@ use crate::interpreter::signal::Signal;
 use crate::interpreter::variant::null::Null;
 use crate::interpreter::variant::Variant;
 use crate::parser::atom::Atom;
-use crate::parser::atom::AtomValue;
 use crate::raise_bug;
 use crate::raise_error;
 

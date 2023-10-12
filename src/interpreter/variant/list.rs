@@ -1,3 +1,4 @@
+use super::null::Null;
 use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 use super::{represent::Represent, Variant};
 use crate::mark::Mark;
@@ -100,5 +101,15 @@ impl List {
         let mut guard = mutex_lock_unwrap!(self.0, None);
         guard.push(variant);
         Ok(())
+    }
+
+    pub fn pop(&mut self) -> Result<Variant, Backtrace> {
+        let mut guard = mutex_lock_unwrap!(self.0, None);
+        let variant = guard.pop();
+        Ok(if variant.is_none() {
+            Variant::NULL(Null::new())
+        } else {
+            variant.unwrap()
+        })
     }
 }

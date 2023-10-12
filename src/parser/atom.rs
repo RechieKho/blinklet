@@ -13,10 +13,10 @@ const FALSE_STR: &'static str = "false";
 #[macro_export]
 macro_rules! atom_as_identifier {
     ($atom: expr) => {
-        if let AtomValue::IDENTIFIER(ref identifier) = $atom.value {
+        if let crate::parser::atom::AtomValue::IDENTIFIER(ref identifier) = $atom.value {
             identifier
         } else {
-            raise_error!(Some($atom.mark.clone()), "Expecting an identifier.");
+            crate::raise_error!(Some($atom.mark.clone()), "Expecting an identifier.");
         }
     };
 }
@@ -24,10 +24,10 @@ macro_rules! atom_as_identifier {
 #[macro_export]
 macro_rules! atom_as_command {
     ($atom: expr) => {
-        if let AtomValue::STATEMENT(ref command) = $atom.value {
+        if let crate::parser::atom::AtomValue::STATEMENT(ref command) = $atom.value {
             command
         } else {
-            raise_error!(Some($atom.mark.clone()), "Expecting a command.");
+            crate::raise_error!(Some($atom.mark.clone()), "Expecting a command.");
         }
     };
 }

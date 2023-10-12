@@ -78,3 +78,9 @@ impl Represent for Null {
         Ok(String::from("null"))
     }
 }
+
+impl Null {
+    pub fn new() -> Null {
+        Null()
+    }
+}

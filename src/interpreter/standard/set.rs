@@ -5,7 +5,6 @@ use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::interpreter::variant::null::Null;
 use crate::interpreter::variant::Variant;
-use crate::mutex_lock_unwrap;
 use crate::parser::atom::Atom;
 use crate::parser::atom::AtomValue;
 use crate::raise_bug;
@@ -30,9 +29,10 @@ pub fn set(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
             continue;
         }
         let table = table.unwrap();
-        let mut table = mutex_lock_unwrap!(table, Some(first_atom.mark.clone()));
-        if table.contains_key(identifier) {
-            table.insert(identifier.clone(), value).unwrap();
+        if table.contains_key(identifier, Some(first_atom.mark.clone()))? {
+            table
+                .insert(identifier.clone(), value, Some(first_atom.mark.clone()))
+                .unwrap();
             return Ok(Signal::COMPLETE(Variant::NULL(Null())));
         }
     }

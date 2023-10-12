@@ -3,7 +3,7 @@ use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 use crate::backtrace::Backtrace;
 use crate::interpreter::variant::Variant;
 use crate::mark::Mark;
-use crate::raise_error;
+use crate::{mutex_lock_unwrap, raise_error};
 use hashbrown::HashMap;
 use std::{
     fmt::Debug,
@@ -11,11 +11,11 @@ use std::{
 };
 
 #[derive(Clone)]
-pub struct Table(HashMap<String, Variant>);
+pub struct Table(Arc<Mutex<HashMap<String, Variant>>>);
 
 impl Default for Table {
     fn default() -> Self {
-        Table(HashMap::default())
+        Table(Arc::new(Mutex::new(HashMap::default())))
     }
 }
 
@@ -92,23 +92,37 @@ impl Represent for Table {
 }
 
 impl Table {
-    pub fn insert(&mut self, key: String, value: Variant) -> Option<Variant> {
-        self.0.insert(key, value)
+    pub fn insert(
+        &mut self,
+        key: String,
+        value: Variant,
+        mark: Option<Mark>,
+    ) -> Result<Option<Variant>, Backtrace> {
+        let mut guard = mutex_lock_unwrap!(self.0, mark);
+        Ok(guard.insert(key, value))
     }
 
-    pub fn remove(&mut self, key: &String) -> Option<Variant> {
-        self.0.remove(key)
+    pub fn remove(
+        &mut self,
+        key: &String,
+        mark: Option<Mark>,
+    ) -> Result<Option<Variant>, Backtrace> {
+        let mut guard = mutex_lock_unwrap!(self.0, mark);
+        Ok(guard.remove(key))
     }
 
-    pub fn get<'a>(&'a self, key: &String) -> Option<&'a Variant> {
-        self.0.get(key)
+    pub fn get(&self, key: &String, mark: Option<Mark>) -> Result<Option<Variant>, Backtrace> {
+        let guard = mutex_lock_unwrap!(self.0, mark);
+        let variant = guard.get(key);
+        Ok(if variant.is_none() {
+            None
+        } else {
+            Some(variant.unwrap().clone())
+        })
     }
 
-    pub fn contains_key(&self, key: &String) -> bool {
-        self.0.contains_key(key)
-    }
-
-    pub fn wrap_arc_mutex() -> Arc<Mutex<Self>> {
-        Arc::new(Mutex::new(Table::default()))
+    pub fn contains_key(&self, key: &String, mark: Option<Mark>) -> Result<bool, Backtrace> {
+        let guard = mutex_lock_unwrap!(self.0, mark);
+        Ok(guard.contains_key(key))
     }
 }

@@ -2,6 +2,7 @@ use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::interpreter::variant::closure::Closure;
+use crate::interpreter::variant::Variant;
 use crate::parser::atom::Atom;
 
 pub fn closure_fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
@@ -12,5 +13,5 @@ pub fn closure_fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtr
         commands.to_vec(),
         context.scopes.clone(),
     );
-    Ok(Signal::COMPLETE(value))
+    Ok(Signal::COMPLETE(Variant::CLOSURE(value)))
 }

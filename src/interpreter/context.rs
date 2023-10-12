@@ -24,31 +24,13 @@ use super::variant::table::Table;
 use super::variant::Variant;
 use crate::backtrace::Backtrace;
 use crate::log::Log;
-use crate::mutex_lock_unwrap;
 use crate::parser::atom::generate_commands;
 use crate::parser::atom::Atom;
 use crate::parser::atom::AtomValue;
 use crate::parser::token::tokenize;
 use crate::raise_error;
+use hashbrown::HashMap;
 use std::fs;
-use std::sync::Arc;
-use std::sync::Mutex;
-
-macro_rules! standard_register_command {
-    ($standard:expr, $command:expr) => {{
-        $standard.insert(
-            String::from(stringify!($command)),
-            Variant::COMMAND(Command::wrap_arc($command)),
-        );
-    }};
-
-    ($standard:expr, $string:expr, $command:expr) => {{
-        $standard.insert(
-            String::from($string),
-            Variant::COMMAND(Command::wrap_arc($command)),
-        );
-    }};
-}
 
 fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
     let result = fs::read_to_string(name);
@@ -61,30 +43,30 @@ fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
 
 /// The runtime that runs Minky code.
 pub struct Context {
-    standard: Table,
-    pub scopes: Vec<Arc<Mutex<Table>>>,
+    standard: HashMap<&'static str, Variant>,
+    pub scopes: Vec<Table>,
     pub slots: Vec<Variant>,
     pub code_request_handler: Box<dyn Fn(&String) -> Result<String, Backtrace> + 'static>,
 }
 
 impl Default for Context {
     fn default() -> Self {
-        let mut standard = Table::default();
-
-        standard_register_command!(standard, var);
-        standard_register_command!(standard, set);
-        standard_register_command!(standard, print);
-        standard_register_command!(standard, println);
-        standard_register_command!(standard, add);
-        standard_register_command!(standard, sub);
-        standard_register_command!(standard, mul);
-        standard_register_command!(standard, div);
-        standard_register_command!(standard, "list", list_fn);
-        standard_register_command!(standard, "closure", closure_fn);
-        standard_register_command!(standard, "table", table_fn);
-        standard_register_command!(standard, "return", return_fn);
-        standard_register_command!(standard, "break", break_fn);
-        standard_register_command!(standard, "continue", continue_fn);
+        let standard: HashMap<&'static str, Variant> = HashMap::from([
+            ("var", Variant::COMMAND(Command::new(var))),
+            ("set", Variant::COMMAND(Command::new(set))),
+            ("add", Variant::COMMAND(Command::new(add))),
+            ("sub", Variant::COMMAND(Command::new(sub))),
+            ("mul", Variant::COMMAND(Command::new(mul))),
+            ("div", Variant::COMMAND(Command::new(div))),
+            ("print", Variant::COMMAND(Command::new(print))),
+            ("println", Variant::COMMAND(Command::new(println))),
+            ("list", Variant::COMMAND(Command::new(list_fn))),
+            ("closure", Variant::COMMAND(Command::new(closure_fn))),
+            ("table", Variant::COMMAND(Command::new(table_fn))),
+            ("return", Variant::COMMAND(Command::new(return_fn))),
+            ("break", Variant::COMMAND(Command::new(break_fn))),
+            ("continue", Variant::COMMAND(Command::new(continue_fn))),
+        ]);
 
         Context {
             standard,
@@ -116,7 +98,7 @@ impl Context {
             AtomValue::FLOAT(float) => Ok(Variant::FLOAT(Float::from(float))),
             AtomValue::IDENTIFIER(ref identifier) => {
                 // Query standard.
-                let value = self.standard.get(identifier);
+                let value = self.standard.get(identifier.as_str());
                 if value.is_some() {
                     return Ok(value.unwrap().clone());
                 }
@@ -137,14 +119,11 @@ impl Context {
                         continue;
                     }
                     let table = table.unwrap();
-                    let table = mutex_lock_unwrap!(table, Some(atom.mark.clone()));
-
-                    let value = table.get(identifier);
+                    let value = table.get(identifier, Some(atom.mark.clone()))?;
                     if value.is_none() {
                         continue;
                     }
-                    let value = value.unwrap();
-                    return Ok(value.clone());
+                    return Ok(value.unwrap());
                 }
 
                 raise_error!(
@@ -197,7 +176,7 @@ impl Context {
             return Ok(Signal::COMPLETE(Variant::NULL(Null())));
         }
         if self.scopes.len() == 0 {
-            self.scopes.push(Table::wrap_arc_mutex())
+            self.scopes.push(Table::default())
         }
         let head = statement.first().unwrap();
 
@@ -214,9 +193,8 @@ impl Context {
                 Err(backtrace)
             }
 
-            Variant::CLOSURE(closure) => {
-                let mut guard = mutex_lock_unwrap!(closure, Some(head.mark.clone()));
-                let result = guard.call_mut(self, statement);
+            Variant::CLOSURE(mut closure) => {
+                let result = closure.call_mut(self, statement);
                 if result.is_ok() {
                     return result;
                 }
@@ -249,7 +227,7 @@ impl Context {
     pub fn run_statements(
         &mut self,
         statements: &[Atom],
-        table: Arc<Mutex<Table>>,
+        table: Table,
     ) -> Result<Signal, Backtrace> {
         if statements.len() == 0 {
             return Ok(Signal::COMPLETE(Variant::TABLE(table)));
@@ -285,6 +263,6 @@ impl Context {
         let code = (self.code_request_handler)(&name)?;
         let result = tokenize(name, code)?;
         let result = generate_commands(result)?;
-        self.run_statements(result.as_slice(), Table::wrap_arc_mutex())
+        self.run_statements(result.as_slice(), Table::default())
     }
 }

@@ -10,13 +10,12 @@ use crate::parser::atom::Atom;
 use crate::raise_error;
 use std::fmt::Debug;
 use std::mem;
-use std::sync::Arc;
-use std::sync::Mutex;
 
+#[derive(Clone)]
 pub struct Closure {
     pub mark: Mark,
     pub commands: Vec<Atom>,
-    pub parent_scopes: Vec<Arc<Mutex<Table>>>,
+    pub parent_scopes: Vec<Table>,
 }
 
 impl VariantAdd for Closure {
@@ -102,17 +101,16 @@ impl Closure {
         let mut closure_context = Context::default();
         closure_context.slots = slots;
         mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);
-        let result = closure_context.run_statements(&self.commands, Table::wrap_arc_mutex());
+        let result = closure_context.run_statements(&self.commands, Table::default());
         mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);
         result
     }
 
-    pub fn new(mark: Mark, commands: Vec<Atom>, parent_scopes: Vec<Arc<Mutex<Table>>>) -> Variant {
-        let closure = Arc::new(Mutex::new(Closure {
+    pub fn new(mark: Mark, commands: Vec<Atom>, parent_scopes: Vec<Table>) -> Self {
+        Closure {
             mark,
             commands,
             parent_scopes,
-        }));
-        Variant::CLOSURE(closure)
+        }
     }
 }

@@ -10,8 +10,9 @@ use crate::raise_error;
 use std::fmt::Debug;
 use std::sync::Arc;
 
+#[derive(Clone)]
 pub struct Command {
-    callable: Box<dyn Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace>>,
+    callable: Arc<dyn Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace>>,
 }
 
 impl VariantAdd for Command {
@@ -87,13 +88,13 @@ impl Represent for Command {
 }
 
 impl Command {
-    pub fn wrap_arc<T>(callable: T) -> Arc<Self>
+    pub fn new<T>(callable: T) -> Self
     where
         T: Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace> + 'static,
     {
-        Arc::new(Command {
-            callable: Box::new(callable),
-        })
+        Command {
+            callable: Arc::new(callable),
+        }
     }
 
     pub fn call(&self, context: &mut Context, atoms: &[Atom]) -> Result<Signal, Backtrace> {

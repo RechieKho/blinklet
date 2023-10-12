@@ -19,8 +19,6 @@ use list::List;
 use null::Null;
 use represent::Represent;
 use std::fmt::Debug;
-use std::sync::Arc;
-use std::sync::Mutex;
 use strand::Strand;
 use table::Table;
 use variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
@@ -44,9 +42,9 @@ pub enum Variant {
     FLOAT(Float),
     STRAND(Strand),
     LIST(List),
-    TABLE(Arc<Mutex<Table>>),
-    COMMAND(Arc<Command>),
-    CLOSURE(Arc<Mutex<Closure>>),
+    TABLE(Table),
+    COMMAND(Command),
+    CLOSURE(Closure),
 }
 
 impl VariantAdd for Variant {
@@ -57,15 +55,9 @@ impl VariantAdd for Variant {
             Variant::FLOAT(float) => float.add(rhs, mark),
             Variant::STRAND(strand) => strand.add(rhs, mark),
             Variant::LIST(list) => list.add(rhs, mark),
-            Variant::TABLE(table) => {
-                let guard = mutex_lock_unwrap!(table, mark);
-                guard.add(rhs, mark)
-            }
+            Variant::TABLE(table) => table.add(rhs, mark),
             Variant::COMMAND(command) => command.add(rhs, mark),
-            Variant::CLOSURE(closure) => {
-                let guard = mutex_lock_unwrap!(closure, mark);
-                guard.add(rhs, mark)
-            }
+            Variant::CLOSURE(closure) => closure.add(rhs, mark),
         }
     }
 }
@@ -78,15 +70,9 @@ impl VariantSub for Variant {
             Variant::FLOAT(float) => float.sub(rhs, mark),
             Variant::STRAND(strand) => strand.sub(rhs, mark),
             Variant::LIST(list) => list.sub(rhs, mark),
-            Variant::TABLE(table) => {
-                let guard = mutex_lock_unwrap!(table, mark);
-                guard.sub(rhs, mark)
-            }
+            Variant::TABLE(table) => table.sub(rhs, mark),
             Variant::COMMAND(command) => command.sub(rhs, mark),
-            Variant::CLOSURE(closure) => {
-                let guard = mutex_lock_unwrap!(closure, mark);
-                guard.sub(rhs, mark)
-            }
+            Variant::CLOSURE(closure) => closure.sub(rhs, mark),
         }
     }
 }
@@ -99,15 +85,9 @@ impl VariantMul for Variant {
             Variant::FLOAT(float) => float.mul(rhs, mark),
             Variant::STRAND(strand) => strand.mul(rhs, mark),
             Variant::LIST(list) => list.mul(rhs, mark),
-            Variant::TABLE(table) => {
-                let guard = mutex_lock_unwrap!(table, mark);
-                guard.mul(rhs, mark)
-            }
+            Variant::TABLE(table) => table.mul(rhs, mark),
             Variant::COMMAND(command) => command.mul(rhs, mark),
-            Variant::CLOSURE(closure) => {
-                let guard = mutex_lock_unwrap!(closure, mark);
-                guard.mul(rhs, mark)
-            }
+            Variant::CLOSURE(closure) => closure.mul(rhs, mark),
         }
     }
 }
@@ -120,15 +100,9 @@ impl VariantDiv for Variant {
             Variant::FLOAT(float) => float.div(rhs, mark),
             Variant::STRAND(strand) => strand.div(rhs, mark),
             Variant::LIST(list) => list.div(rhs, mark),
-            Variant::TABLE(table) => {
-                let guard = mutex_lock_unwrap!(table, mark);
-                guard.div(rhs, mark)
-            }
+            Variant::TABLE(table) => table.div(rhs, mark),
             Variant::COMMAND(command) => command.div(rhs, mark),
-            Variant::CLOSURE(closure) => {
-                let guard = mutex_lock_unwrap!(closure, mark);
-                guard.div(rhs, mark)
-            }
+            Variant::CLOSURE(closure) => closure.div(rhs, mark),
         }
     }
 }
@@ -156,15 +130,9 @@ impl Represent for Variant {
             Variant::FLOAT(float) => float.represent(),
             Variant::STRAND(strand) => strand.represent(),
             Variant::LIST(list) => list.represent(),
-            Variant::TABLE(table) => {
-                let table = mutex_lock_unwrap!(table, None);
-                table.represent()
-            }
+            Variant::TABLE(table) => table.represent(),
             Variant::COMMAND(command) => command.represent(),
-            Variant::CLOSURE(closure) => {
-                let closure = mutex_lock_unwrap!(closure, None);
-                closure.represent()
-            }
+            Variant::CLOSURE(closure) => closure.represent(),
         }
     }
 }

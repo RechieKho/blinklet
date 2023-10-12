@@ -1,0 +1,70 @@
+# This is a comment
+
+# Minky is a Parenthesesless indent-based lisp.
+
+# These are variables
+var string_var 'Hello world' # Fun fact: it is called `Strand` in the codebase to avoid conflict with String.
+var number_var 1234.024
+var boolean_var true
+var null_var null
+var list_var
+    list 1 23 54 623 243
+
+# Print hello world
+println 'Hello world'
+
+# You can do string interpolation
+println 'list_var: `list_var`'
+
+# This is the `If` statment
+when true
+    println 'I must run this as it is true.'
+
+when false
+    println 'I must not be ran.'
+
+# This is the table, you can see it as a dictionary
+var table_var
+    table
+        var member_1 'Member 1 value.'
+        var member_2 2
+
+# You can retrieve value from table.
+var member_1
+    table_var
+        return member_1
+
+# You can create closure, function that saves parent scope.
+var closure_var
+    closure
+        println 'I am a closure'
+
+# Call the closure
+closure_var
+
+# You can make something like a counter
+var make_counter
+    closure
+        var counter 0
+        return
+            closure
+                set counter
+                    add counter 1
+                return counter
+
+var counter
+    make_counter
+
+println
+    counter # 1
+println
+    counter # 2
+println
+    counter # 3
+
+# Here is the while loop
+while i
+    counter
+    println i # 4
+    break # You can break.
+

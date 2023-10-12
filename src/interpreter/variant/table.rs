@@ -102,15 +102,6 @@ impl Table {
         Ok(guard.insert(key, value))
     }
 
-    pub fn remove(
-        &mut self,
-        key: &String,
-        mark: Option<Mark>,
-    ) -> Result<Option<Variant>, Backtrace> {
-        let mut guard = mutex_lock_unwrap!(self.0, mark);
-        Ok(guard.remove(key))
-    }
-
     pub fn get(&self, key: &String, mark: Option<Mark>) -> Result<Option<Variant>, Backtrace> {
         let guard = mutex_lock_unwrap!(self.0, mark);
         let variant = guard.get(key);

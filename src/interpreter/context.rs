@@ -173,24 +173,6 @@ impl Context {
         }
     }
 
-    pub fn resolve_float(&mut self, atom: &Atom) -> Result<Float, Backtrace> {
-        let value = self.resolve_variant(atom)?;
-        if let Variant::FLOAT(float) = value {
-            Ok(float)
-        } else {
-            raise_error!(Some(atom.mark.clone()), "Variant given is not a float.");
-        }
-    }
-
-    pub fn resolve_strand(&mut self, atom: &Atom) -> Result<Strand, Backtrace> {
-        let value = self.resolve_variant(atom)?;
-        if let Variant::STRAND(strand) = value {
-            Ok(strand)
-        } else {
-            raise_error!(Some(atom.mark.clone()), "Variant given is not a string.");
-        }
-    }
-
     pub fn resolve_list(&mut self, atom: &Atom) -> Result<List, Backtrace> {
         let value = self.resolve_variant(atom)?;
         if let Variant::LIST(list) = value {

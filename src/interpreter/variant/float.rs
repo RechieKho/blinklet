@@ -113,9 +113,3 @@ impl From<f64> for Float {
         Float(value)
     }
 }
-
-impl Float {
-    pub fn is_sign_negative(&self) -> bool {
-        self.0.is_sign_negative()
-    }
-}

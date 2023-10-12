@@ -22,7 +22,6 @@ use super::variant::null::Null;
 use super::variant::strand::Strand;
 use super::variant::table::Table;
 use super::variant::Variant;
-use crate::backtrace;
 use crate::backtrace::Backtrace;
 use crate::log::Log;
 use crate::mutex_lock_unwrap;

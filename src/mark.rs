@@ -11,7 +11,7 @@ pub struct MarkLine {
 
 #[derive(Debug, Clone)]
 pub struct Mark {
-    pub line: Arc<MarkLine>,
+    pub line: MarkLine,
     pub column: RangeInclusive<usize>,
 }
 
@@ -22,7 +22,7 @@ impl MarkLine {
 }
 
 impl Mark {
-    pub fn new(line: Arc<MarkLine>, column: RangeInclusive<usize>) -> Mark {
+    pub fn new(line: MarkLine, column: RangeInclusive<usize>) -> Mark {
         Mark { line, column }
     }
 }

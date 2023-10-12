@@ -17,39 +17,35 @@ pub enum TokenValue {
 #[derive(Debug)]
 pub struct Token {
     pub value: TokenValue,
-    pub mark: Arc<Mark>,
+    pub mark: Mark,
 }
 
 impl Token {
-    pub fn new_word(word: String, mark_line: Arc<MarkLine>, column: RangeInclusive<usize>) -> Self {
+    pub fn new_word(word: String, mark_line: MarkLine, column: RangeInclusive<usize>) -> Self {
         Token {
             value: TokenValue::WORD(word),
-            mark: Arc::new(Mark::new(mark_line, column)),
+            mark: Mark::new(mark_line, column),
         }
     }
 
-    pub fn new_string(
-        string: String,
-        mark_line: Arc<MarkLine>,
-        column: RangeInclusive<usize>,
-    ) -> Self {
+    pub fn new_string(string: String, mark_line: MarkLine, column: RangeInclusive<usize>) -> Self {
         Token {
             value: TokenValue::STRING(string),
-            mark: Arc::new(Mark::new(mark_line, column)),
+            mark: Mark::new(mark_line, column),
         }
     }
 
-    pub fn new_float(float: f64, mark_line: Arc<MarkLine>, column: RangeInclusive<usize>) -> Self {
+    pub fn new_float(float: f64, mark_line: MarkLine, column: RangeInclusive<usize>) -> Self {
         Token {
             value: TokenValue::FLOAT(float),
-            mark: Arc::new(Mark::new(mark_line, column)),
+            mark: Mark::new(mark_line, column),
         }
     }
 }
 
 #[derive(Debug)]
 pub struct TokenLine {
-    pub mark_line: Arc<MarkLine>,
+    pub mark_line: MarkLine,
     pub tokens: Vec<Token>,
     pub indent_count: usize,
 }
@@ -65,7 +61,7 @@ pub fn tokenize(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace>
             continue;
         }
 
-        let mark_line = Arc::new(MarkLine::new(name.clone(), Arc::new(String::from(line)), i));
+        let mark_line = MarkLine::new(name.clone(), Arc::new(String::from(line)), i);
 
         let mut token_line: TokenLine = TokenLine {
             mark_line: mark_line.clone(),
@@ -85,7 +81,7 @@ pub fn tokenize(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace>
                     }
                     if current_char != indent_char {
                         raise_error!(
-                            Some(Arc::new(Mark::new(mark_line, 0..=j))),
+                            Some(Mark::new(mark_line, 0..=j)),
                             "Inconsistent indentation character."
                         );
                     }
@@ -101,7 +97,7 @@ pub fn tokenize(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace>
                         // We are not using else to consider the value change.
                         if token_line.indent_count % indent_factor != 0 {
                             raise_error!(
-                                Some(Arc::new(Mark::new(mark_line, 0..=j))),
+                                Some(Mark::new(mark_line, 0..=j)),
                                 "Inconsistent indentation factor."
                             );
                         }
@@ -129,7 +125,7 @@ pub fn tokenize(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace>
                 // Check if unterminated string literal.
                 if string_char != '\0' {
                     raise_error!(
-                        Some(Arc::new(Mark::new(mark_line, slice_start..=j - 1,))),
+                        Some(Mark::new(mark_line, slice_start..=j - 1,)),
                         "unterminated string."
                     );
                 }
@@ -211,10 +207,7 @@ pub fn tokenize(name: String, code: String) -> Result<Vec<TokenLine>, Backtrace>
         // Check if unterminated string literal.
         if string_char != '\0' {
             raise_error!(
-                Some(Arc::new(Mark::new(
-                    mark_line,
-                    slice_start..=(line_length - 1),
-                ))),
+                Some(Mark::new(mark_line, slice_start..=(line_length - 1),)),
                 "unterminated string."
             );
         }

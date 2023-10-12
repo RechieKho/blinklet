@@ -1,15 +1,14 @@
+use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 use super::{represent::Represent, Variant};
+use crate::mark::Mark;
 use crate::{backtrace::Backtrace, raise_error};
 use std::fmt::Debug;
-use super::variant_ops::{VariantAdd, VariantSub, VariantMul, VariantDiv};
-use std::sync::Arc;
-use crate::mark::Mark;
 
 #[derive(Clone, Copy)]
 pub struct Boolean(bool);
 
 impl VariantAdd for Boolean {
-    fn add(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn add(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -24,7 +23,7 @@ impl VariantAdd for Boolean {
 }
 
 impl VariantSub for Boolean {
-    fn sub(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn sub(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -39,7 +38,7 @@ impl VariantSub for Boolean {
 }
 
 impl VariantMul for Boolean {
-    fn mul(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn mul(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -54,7 +53,7 @@ impl VariantMul for Boolean {
 }
 
 impl VariantDiv for Boolean {
-    fn div(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn div(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(

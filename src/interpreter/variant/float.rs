@@ -1,19 +1,18 @@
 use super::strand::Strand;
+use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 use super::{represent::Represent, Variant};
-use crate::{backtrace::Backtrace, raise_error};
-use super::variant_ops::{VariantAdd, VariantSub, VariantMul, VariantDiv};
-use std::sync::Arc;
 use crate::mark::Mark;
+use crate::{backtrace::Backtrace, raise_error};
 use std::fmt::Debug;
 
 #[derive(Clone, Copy)]
 pub struct Float(f64);
 
 impl VariantAdd for Float {
-    fn add(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn add(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             Variant::FLOAT(float) => {
-                let rhs_float : f64 = float.clone().into();
+                let rhs_float: f64 = float.clone().into();
                 Ok(Variant::FLOAT(Float::from(self.0 + rhs_float)))
             }
             Variant::STRAND(strand) => {
@@ -35,10 +34,10 @@ impl VariantAdd for Float {
 }
 
 impl VariantSub for Float {
-    fn sub(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn sub(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             Variant::FLOAT(float) => {
-                let rhs_float : f64 = float.clone().into();
+                let rhs_float: f64 = float.clone().into();
                 Ok(Variant::FLOAT(Float::from(self.0 - rhs_float)))
             }
             _ => {
@@ -54,10 +53,10 @@ impl VariantSub for Float {
 }
 
 impl VariantMul for Float {
-    fn mul(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn mul(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             Variant::FLOAT(float) => {
-                let rhs_float : f64 = float.clone().into();
+                let rhs_float: f64 = float.clone().into();
                 Ok(Variant::FLOAT(Float::from(self.0 * rhs_float)))
             }
             _ => {
@@ -73,10 +72,10 @@ impl VariantMul for Float {
 }
 
 impl VariantDiv for Float {
-    fn div(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn div(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             Variant::FLOAT(float) => {
-                let rhs_float : f64 = float.clone().into();
+                let rhs_float: f64 = float.clone().into();
                 Ok(Variant::FLOAT(Float::from(self.0 / rhs_float)))
             }
             _ => {

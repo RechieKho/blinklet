@@ -1,26 +1,26 @@
 use super::represent::Represent;
 use super::table::Table;
+use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 use super::Variant;
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::mark::Mark;
 use crate::parser::atom::Atom;
+use crate::raise_error;
 use std::fmt::Debug;
 use std::mem;
 use std::sync::Arc;
 use std::sync::Mutex;
-use super::variant_ops::{VariantAdd, VariantSub, VariantMul, VariantDiv};
-use crate::raise_error;
 
 pub struct Closure {
-    pub mark: Arc<Mark>,
+    pub mark: Mark,
     pub commands: Vec<Atom>,
     pub parent_scopes: Vec<Arc<Mutex<Table>>>,
 }
 
 impl VariantAdd for Closure {
-    fn add(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn add(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -35,7 +35,7 @@ impl VariantAdd for Closure {
 }
 
 impl VariantSub for Closure {
-    fn sub(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn sub(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -50,7 +50,7 @@ impl VariantSub for Closure {
 }
 
 impl VariantMul for Closure {
-    fn mul(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn mul(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -65,7 +65,7 @@ impl VariantMul for Closure {
 }
 
 impl VariantDiv for Closure {
-    fn div(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn div(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -78,7 +78,6 @@ impl VariantDiv for Closure {
         }
     }
 }
-
 
 impl Debug for Closure {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -108,11 +107,7 @@ impl Closure {
         result
     }
 
-    pub fn new(
-        mark: Arc<Mark>,
-        commands: Vec<Atom>,
-        parent_scopes: Vec<Arc<Mutex<Table>>>,
-    ) -> Variant {
+    pub fn new(mark: Mark, commands: Vec<Atom>, parent_scopes: Vec<Arc<Mutex<Table>>>) -> Variant {
         let closure = Arc::new(Mutex::new(Closure {
             mark,
             commands,

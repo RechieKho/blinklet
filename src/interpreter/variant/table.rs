@@ -1,14 +1,14 @@
 use super::represent::Represent;
+use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 use crate::backtrace::Backtrace;
 use crate::interpreter::variant::Variant;
+use crate::mark::Mark;
+use crate::raise_error;
 use hashbrown::HashMap;
 use std::{
     fmt::Debug,
     sync::{Arc, Mutex},
 };
-use super::variant_ops::{VariantAdd, VariantSub, VariantMul, VariantDiv};
-use crate::mark::Mark;
-use crate::raise_error;
 
 #[derive(Clone)]
 pub struct Table(HashMap<String, Variant>);
@@ -20,7 +20,7 @@ impl Default for Table {
 }
 
 impl VariantAdd for Table {
-    fn add(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn add(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -35,7 +35,7 @@ impl VariantAdd for Table {
 }
 
 impl VariantSub for Table {
-    fn sub(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn sub(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -50,7 +50,7 @@ impl VariantSub for Table {
 }
 
 impl VariantMul for Table {
-    fn mul(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn mul(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -65,7 +65,7 @@ impl VariantMul for Table {
 }
 
 impl VariantDiv for Table {
-    fn div(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn div(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -78,7 +78,6 @@ impl VariantDiv for Table {
         }
     }
 }
-
 
 impl Debug for Table {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

@@ -1,21 +1,21 @@
 use super::represent::Represent;
+use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
+use super::Variant;
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
+use crate::mark::Mark;
 use crate::parser::atom::Atom;
+use crate::raise_error;
 use std::fmt::Debug;
 use std::sync::Arc;
-use super::variant_ops::{VariantAdd, VariantSub, VariantMul, VariantDiv};
-use crate::raise_error;
-use crate::mark::Mark;
-use super::Variant;
 
 pub struct Command {
     callable: Box<dyn Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace>>,
 }
 
 impl VariantAdd for Command {
-    fn add(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn add(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -30,7 +30,7 @@ impl VariantAdd for Command {
 }
 
 impl VariantSub for Command {
-    fn sub(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn sub(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -45,7 +45,7 @@ impl VariantSub for Command {
 }
 
 impl VariantMul for Command {
-    fn mul(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn mul(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -60,7 +60,7 @@ impl VariantMul for Command {
 }
 
 impl VariantDiv for Command {
-    fn div(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn div(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(

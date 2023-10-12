@@ -10,6 +10,7 @@ pub mod table;
 pub mod variant_ops;
 
 use crate::backtrace::Backtrace;
+use crate::mark::Mark;
 use boolean::Boolean;
 use closure::Closure;
 use command::Command;
@@ -22,8 +23,7 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use strand::Strand;
 use table::Table;
-use variant_ops::{VariantAdd, VariantSub, VariantMul, VariantDiv};
-use crate::mark::Mark;
+use variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 
 #[macro_export]
 macro_rules! mutex_lock_unwrap {
@@ -50,7 +50,7 @@ pub enum Variant {
 }
 
 impl VariantAdd for Variant {
-    fn add(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn add(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match self {
             Variant::NULL(null) => null.add(rhs, mark),
             Variant::BOOL(boolean) => boolean.add(rhs, mark),
@@ -71,7 +71,7 @@ impl VariantAdd for Variant {
 }
 
 impl VariantSub for Variant {
-    fn sub(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn sub(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match self {
             Variant::NULL(null) => null.sub(rhs, mark),
             Variant::BOOL(boolean) => boolean.sub(rhs, mark),
@@ -92,7 +92,7 @@ impl VariantSub for Variant {
 }
 
 impl VariantMul for Variant {
-    fn mul(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn mul(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match self {
             Variant::NULL(null) => null.mul(rhs, mark),
             Variant::BOOL(boolean) => boolean.mul(rhs, mark),
@@ -113,7 +113,7 @@ impl VariantMul for Variant {
 }
 
 impl VariantDiv for Variant {
-    fn div(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn div(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match self {
             Variant::NULL(null) => null.div(rhs, mark),
             Variant::BOOL(boolean) => boolean.div(rhs, mark),

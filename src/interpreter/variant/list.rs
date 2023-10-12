@@ -1,15 +1,14 @@
+use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 use super::{represent::Represent, Variant};
-use crate::{backtrace::Backtrace, raise_error};
-use super::variant_ops::{VariantAdd, VariantSub, VariantMul, VariantDiv};
 use crate::mark::Mark;
-use std::sync::Arc;
+use crate::{backtrace::Backtrace, raise_error};
 use std::fmt::Debug;
 
 #[derive(Clone)]
 pub struct List(Vec<Variant>);
 
 impl VariantAdd for List {
-    fn add(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn add(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -24,7 +23,7 @@ impl VariantAdd for List {
 }
 
 impl VariantSub for List {
-    fn sub(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn sub(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -39,7 +38,7 @@ impl VariantSub for List {
 }
 
 impl VariantMul for List {
-    fn mul(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn mul(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(
@@ -54,7 +53,7 @@ impl VariantMul for List {
 }
 
 impl VariantDiv for List {
-    fn div(&self, rhs: &Variant, mark: Option<Arc<Mark>>) -> Result<Variant, Backtrace> {
+    fn div(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => {
                 raise_error!(

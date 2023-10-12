@@ -4,6 +4,7 @@ use super::standard::closure_fn::closure_fn;
 use super::standard::continue_fn::continue_fn;
 use super::standard::div::div;
 use super::standard::list_fn::list_fn;
+use super::standard::list_push::list_push;
 use super::standard::mul::mul;
 use super::standard::print::print;
 use super::standard::println::println;
@@ -62,6 +63,7 @@ impl Default for Context {
             ("print", Variant::COMMAND(Command::new(print))),
             ("println", Variant::COMMAND(Command::new(println))),
             ("list", Variant::COMMAND(Command::new(list_fn))),
+            ("list_push", Variant::COMMAND(Command::new(list_push))),
             ("closure", Variant::COMMAND(Command::new(closure_fn))),
             ("table", Variant::COMMAND(Command::new(table_fn))),
             ("return", Variant::COMMAND(Command::new(return_fn))),

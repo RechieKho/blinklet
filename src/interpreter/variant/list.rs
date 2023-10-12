@@ -1,11 +1,13 @@
 use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 use super::{represent::Represent, Variant};
 use crate::mark::Mark;
+use crate::mutex_lock_unwrap;
 use crate::{backtrace::Backtrace, raise_error};
 use std::fmt::Debug;
+use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
-pub struct List(Vec<Variant>);
+pub struct List(Arc<Mutex<Vec<Variant>>>);
 
 impl VariantAdd for List {
     fn add(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
@@ -75,8 +77,8 @@ impl Debug for List {
 
 impl Represent for List {
     fn represent(&self) -> Result<String, Backtrace> {
-        let representations = self
-            .0
+        let guard = mutex_lock_unwrap!(self.0, None);
+        let representations = guard
             .iter()
             .map(|x| match x {
                 Variant::STRAND(strand) => Ok(format!("\"{}\"", strand.as_str())),
@@ -87,14 +89,16 @@ impl Represent for List {
     }
 }
 
-impl Into<Vec<Variant>> for List {
-    fn into(self) -> Vec<Variant> {
-        self.0
+impl From<Vec<Variant>> for List {
+    fn from(value: Vec<Variant>) -> Self {
+        List(Arc::new(Mutex::new(value)))
     }
 }
 
-impl From<Vec<Variant>> for List {
-    fn from(value: Vec<Variant>) -> Self {
-        List(value)
+impl List {
+    pub fn push(&mut self, variant: Variant) -> Result<(), Backtrace> {
+        let mut guard = mutex_lock_unwrap!(self.0, None);
+        guard.push(variant);
+        Ok(())
     }
 }

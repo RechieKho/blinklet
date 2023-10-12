@@ -4,6 +4,7 @@ pub mod closure_fn;
 pub mod continue_fn;
 pub mod div;
 pub mod list_fn;
+pub mod list_push;
 pub mod mul;
 pub mod print;
 pub mod println;
@@ -12,6 +13,7 @@ pub mod set;
 pub mod sub;
 pub mod table_fn;
 pub mod var;
+
 #[macro_export]
 macro_rules! assert_atoms_count {
     ($atoms:expr, $count:expr) => {

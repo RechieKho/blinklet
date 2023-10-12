@@ -22,7 +22,9 @@ use super::variant::null::Null;
 use super::variant::strand::Strand;
 use super::variant::table::Table;
 use super::variant::Variant;
+use crate::backtrace;
 use crate::backtrace::Backtrace;
+use crate::log::Log;
 use crate::mutex_lock_unwrap;
 use crate::parser::atom::generate_commands;
 use crate::parser::atom::Atom;
@@ -204,16 +206,36 @@ impl Context {
         match value {
             Variant::COMMAND(command) => {
                 let result = command.call(self, statement);
-                return Backtrace::trace(result, &head.mark);
+                if result.is_ok() {
+                    return result;
+                }
+
+                let mut backtrace = result.unwrap_err();
+                backtrace.push(Log::trace(head.mark.clone()));
+                Err(backtrace)
             }
 
             Variant::CLOSURE(closure) => {
                 let mut guard = mutex_lock_unwrap!(closure, Some(head.mark.clone()));
-                return Backtrace::trace(guard.call_mut(self, statement), &head.mark);
+                let result = guard.call_mut(self, statement);
+                if result.is_ok() {
+                    return result;
+                }
+
+                let mut backtrace = result.unwrap_err();
+                backtrace.push(Log::trace(head.mark.clone()));
+                Err(backtrace)
             }
 
             Variant::TABLE(table) => {
-                return Backtrace::trace(self.run_statements(&statement[1..], table), &head.mark);
+                let result = self.run_statements(&statement[1..], table);
+                if result.is_ok() {
+                    return result;
+                }
+
+                let mut backtrace = result.unwrap_err();
+                backtrace.push(Log::trace(head.mark.clone()));
+                Err(backtrace)
             }
 
             _ => {

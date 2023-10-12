@@ -1,8 +1,5 @@
-use crate::{log::Log, mark::Mark};
-use std::{
-    fmt::{Debug, Display},
-    sync::Arc,
-};
+use crate::log::Log;
+use std::fmt::{Debug, Display};
 
 #[macro_export]
 macro_rules! raise_error {
@@ -28,19 +25,6 @@ impl Backtrace {
 
     pub fn push(&mut self, log: Log) {
         self.0.push(log);
-    }
-
-    pub fn trace<T>(result: Result<T, Backtrace>, mark: &Arc<Mark>) -> Result<T, Backtrace>
-    where
-        T: Debug,
-    {
-        if result.is_ok() {
-            return result;
-        }
-
-        let mut backtrace = result.unwrap_err();
-        backtrace.push(Log::trace(mark.clone()));
-        Err(backtrace)
     }
 }
 

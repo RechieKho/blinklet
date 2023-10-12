@@ -19,6 +19,7 @@ use super::variant::command::Command;
 use super::variant::float::Float;
 use super::variant::list::List;
 use super::variant::null::Null;
+use super::variant::represent::Represent;
 use super::variant::strand::Strand;
 use super::variant::table::Table;
 use super::variant::Variant;
@@ -92,8 +93,30 @@ impl Context {
             AtomValue::BOOL(boolean) => Ok(Variant::BOOL(Boolean::from(boolean))),
             AtomValue::NULL => Ok(Variant::NULL(Null())),
             AtomValue::STRING(ref string) => {
-                let formatted = string.replace("\\n", "\n").replace("\\\\", "\\");
-                Ok(Variant::STRAND(Strand::from(formatted)))
+                let mut result = String::new();
+                let replaced = string.replace("\\n", "\n").replace("\\\\", "\\");
+                let splitted: Vec<&str> = replaced.split('`').collect();
+                if splitted.len() % 2 == 0 {
+                    raise_error!(Some(atom.mark.clone()), "Unterminated '`' in string.");
+                }
+                for (i, slice) in splitted.iter().enumerate() {
+                    if i % 2 == 0 {
+                        // Even index; Outside the pair of '`'.
+                        result.push_str(slice);
+                    } else {
+                        // Odd index; Between a pair of '`'.
+                        if slice.len() == 0 {
+                            result.push_str("``");
+                        } else {
+                            let variant = self.resolve_variant(&Atom::new_identifier(
+                                slice.trim().to_string(),
+                                atom.mark.clone(),
+                            ))?;
+                            result.push_str(variant.represent()?.as_str());
+                        }
+                    }
+                }
+                Ok(Variant::STRAND(Strand::from(result)))
             }
             AtomValue::FLOAT(float) => Ok(Variant::FLOAT(Float::from(float))),
             AtomValue::IDENTIFIER(ref identifier) => {

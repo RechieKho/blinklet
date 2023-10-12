@@ -14,6 +14,7 @@ use super::standard::set::set;
 use super::standard::sub::sub;
 use super::standard::table_fn::table_fn;
 use super::standard::var::var;
+use super::standard::when::when;
 
 use super::signal::Signal;
 use super::variant::boolean::Boolean;
@@ -63,6 +64,7 @@ impl Default for Context {
             ("div", Variant::COMMAND(Command::new(div))),
             ("print", Variant::COMMAND(Command::new(print))),
             ("println", Variant::COMMAND(Command::new(println))),
+            ("when", Variant::COMMAND(Command::new(when))),
             ("list", Variant::COMMAND(Command::new(list_fn))),
             ("list_push", Variant::COMMAND(Command::new(list_push))),
             ("list_pop", Variant::COMMAND(Command::new(list_pop))),

@@ -123,16 +123,16 @@ impl Debug for Variant {
 }
 
 impl Represent for Variant {
-    fn represent(&self) -> Result<String, Backtrace> {
+    fn represent(&self, mark: Option<Mark>) -> Result<String, Backtrace> {
         match self {
-            Variant::NULL(null) => null.represent(),
-            Variant::BOOL(boolean) => boolean.represent(),
-            Variant::FLOAT(float) => float.represent(),
-            Variant::STRAND(strand) => strand.represent(),
-            Variant::LIST(list) => list.represent(),
-            Variant::TABLE(table) => table.represent(),
-            Variant::COMMAND(command) => command.represent(),
-            Variant::CLOSURE(closure) => closure.represent(),
+            Variant::NULL(null) => null.represent(mark),
+            Variant::BOOL(boolean) => boolean.represent(mark),
+            Variant::FLOAT(float) => float.represent(mark),
+            Variant::STRAND(strand) => strand.represent(mark),
+            Variant::LIST(list) => list.represent(mark),
+            Variant::TABLE(table) => table.represent(mark),
+            Variant::COMMAND(command) => command.represent(mark),
+            Variant::CLOSURE(closure) => closure.represent(mark),
         }
     }
 }

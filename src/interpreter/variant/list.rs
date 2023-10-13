@@ -15,10 +15,10 @@ impl VariantAdd for List {
         match rhs {
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be added with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -30,10 +30,10 @@ impl VariantSub for List {
         match rhs {
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be subtracted with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -45,10 +45,10 @@ impl VariantMul for List {
         match rhs {
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be multiplied with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -60,10 +60,10 @@ impl VariantDiv for List {
         match rhs {
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be divided with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -77,13 +77,13 @@ impl Debug for List {
 }
 
 impl Represent for List {
-    fn represent(&self) -> Result<String, Backtrace> {
-        let guard = mutex_lock_unwrap!(self.0, None);
+    fn represent(&self, mark: Option<Mark>) -> Result<String, Backtrace> {
+        let guard = mutex_lock_unwrap!(self.0, mark.clone());
         let representations = guard
             .iter()
             .map(|x| match x {
                 Variant::STRAND(strand) => Ok(format!("\"{}\"", strand.as_str())),
-                _ => x.represent(),
+                _ => x.represent(mark.clone()),
             })
             .collect::<Result<Vec<String>, Backtrace>>()?;
         Ok(format!("[{}]", representations.join(", ")))
@@ -97,14 +97,14 @@ impl From<Vec<Variant>> for List {
 }
 
 impl List {
-    pub fn push(&mut self, variant: Variant) -> Result<(), Backtrace> {
-        let mut guard = mutex_lock_unwrap!(self.0, None);
+    pub fn push(&mut self, variant: Variant, mark: Option<Mark>) -> Result<(), Backtrace> {
+        let mut guard = mutex_lock_unwrap!(self.0, mark);
         guard.push(variant);
         Ok(())
     }
 
-    pub fn pop(&mut self) -> Result<Variant, Backtrace> {
-        let mut guard = mutex_lock_unwrap!(self.0, None);
+    pub fn pop(&mut self, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        let mut guard = mutex_lock_unwrap!(self.0, mark);
         let variant = guard.pop();
         Ok(if variant.is_none() {
             Variant::NULL(Null::new())

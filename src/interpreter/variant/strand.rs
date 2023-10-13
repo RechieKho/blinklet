@@ -8,10 +8,10 @@ use std::fmt::Debug;
 pub struct Strand(String);
 
 impl VariantAdd for Strand {
-    fn add(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn add(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
             _ => Ok(Variant::STRAND(Strand::from(
-                self.0.clone() + rhs.represent()?.as_str(),
+                self.0.clone() + rhs.represent(mark)?.as_str(),
             ))),
         }
     }
@@ -22,10 +22,10 @@ impl VariantSub for Strand {
         match rhs {
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be subtracted with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -37,10 +37,10 @@ impl VariantMul for Strand {
         match rhs {
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be multiplied with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -52,10 +52,10 @@ impl VariantDiv for Strand {
         match rhs {
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be divided with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -69,7 +69,7 @@ impl Debug for Strand {
 }
 
 impl Represent for Strand {
-    fn represent(&self) -> Result<String, Backtrace> {
+    fn represent(&self, _mark: Option<Mark>) -> Result<String, Backtrace> {
         Ok(self.0.clone())
     }
 }

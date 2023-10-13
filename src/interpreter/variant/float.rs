@@ -16,17 +16,17 @@ impl VariantAdd for Float {
                 Ok(Variant::FLOAT(Float::from(self.0 + rhs_float)))
             }
             Variant::STRAND(strand) => {
-                let mut self_string = self.represent()?;
+                let mut self_string = self.represent(mark)?;
                 let mut rhs_string: String = strand.clone().into();
                 self_string.push_str(&mut rhs_string);
                 Ok(Variant::STRAND(Strand::from(self_string)))
             }
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be added with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -42,10 +42,10 @@ impl VariantSub for Float {
             }
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be subtracted with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -61,10 +61,10 @@ impl VariantMul for Float {
             }
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be multiplied with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -80,10 +80,10 @@ impl VariantDiv for Float {
             }
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be divided with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -97,7 +97,7 @@ impl Debug for Float {
 }
 
 impl Represent for Float {
-    fn represent(&self) -> Result<String, Backtrace> {
+    fn represent(&self, _mark: Option<Mark>) -> Result<String, Backtrace> {
         Ok(format!("{}", self.0))
     }
 }

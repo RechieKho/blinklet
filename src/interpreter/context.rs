@@ -120,7 +120,7 @@ impl Context {
                                 slice.trim().to_string(),
                                 atom.mark.clone(),
                             ))?;
-                            result.push_str(variant.represent()?.as_str());
+                            result.push_str(variant.represent(Some(atom.mark.clone()))?.as_str());
                         }
                     }
                 }

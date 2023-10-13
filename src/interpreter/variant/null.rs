@@ -12,10 +12,10 @@ impl VariantAdd for Null {
         match rhs {
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be added with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -27,10 +27,10 @@ impl VariantSub for Null {
         match rhs {
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be subtracted with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -42,10 +42,10 @@ impl VariantMul for Null {
         match rhs {
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be multiplied with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -57,10 +57,10 @@ impl VariantDiv for Null {
         match rhs {
             _ => {
                 raise_error!(
-                    mark,
+                    mark.clone(),
                     "`{}` cannot be divided with `{}`.",
-                    self.represent()?,
-                    rhs.represent()?
+                    self.represent(mark.clone())?,
+                    rhs.represent(mark.clone())?
                 );
             }
         }
@@ -74,7 +74,7 @@ impl Debug for Null {
 }
 
 impl Represent for Null {
-    fn represent(&self) -> Result<String, Backtrace> {
+    fn represent(&self, _mark: Option<Mark>) -> Result<String, Backtrace> {
         Ok(String::from("null"))
     }
 }

@@ -14,7 +14,7 @@ pub fn list_push_fn(
     let mut list = context.resolve_list(&body[0])?;
     for atom in body.iter().skip(1) {
         let element = context.resolve_variant(atom)?;
-        list.push(element)?;
+        list.push(element, Some(head.mark.clone()))?;
     }
     Ok(Signal::COMPLETE(Variant::LIST(list)))
 }

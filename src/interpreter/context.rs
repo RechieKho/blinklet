@@ -16,6 +16,11 @@ use super::standard::table_fn::table_fn;
 use super::standard::var_fn::var_fn;
 use super::standard::when_fn::when_fn;
 use super::standard::while_fn::while_fn;
+use super::standard::eq_fn::eq_fn;
+use super::standard::ge_fn::ge_fn;
+use super::standard::g_fn::g_fn;
+use super::standard::le_fn::le_fn;
+use super::standard::l_fn::l_fn;
 
 use super::signal::Signal;
 use super::variant::boolean::Boolean;
@@ -75,6 +80,11 @@ impl Default for Context {
             ("return", Variant::COMMAND(Command::new(return_fn))),
             ("break", Variant::COMMAND(Command::new(break_fn))),
             ("continue", Variant::COMMAND(Command::new(continue_fn))),
+            ("==", Variant::COMMAND(Command::new(eq_fn))),
+            (">=", Variant::COMMAND(Command::new(ge_fn))),
+            (">", Variant::COMMAND(Command::new(g_fn))),
+            ("<=", Variant::COMMAND(Command::new(le_fn))),
+            ("<", Variant::COMMAND(Command::new(l_fn))),
         ]);
 
         Context {

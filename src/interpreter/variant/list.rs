@@ -1,5 +1,6 @@
+use super::boolean::Boolean;
 use super::null::Null;
-use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
+use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub, VariantGe, VariantEq, VariantG, VariantLe, VariantL};
 use super::{represent::Represent, Variant};
 use crate::mark::Mark;
 use crate::mutex_lock_unwrap;
@@ -66,6 +67,151 @@ impl VariantDiv for List {
                     rhs.represent(mark.clone())?
                 );
             }
+        }
+    }
+}
+
+impl VariantEq for List {
+    fn eq(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            Variant::LIST(list) => {
+                let self_guard = mutex_lock_unwrap!(self.0, mark.clone());
+                let other_guard = mutex_lock_unwrap!(list.0, mark.clone());
+
+                if self_guard.len() != other_guard.len() {
+                    return Ok(Variant::BOOL(Boolean::from(false)));
+                }
+
+                for i in 0..self_guard.len() {
+                    let self_element = self_guard.get(i).unwrap();
+                    let other_element = other_guard.get(i).unwrap();
+                    match self_element.eq(other_element, mark.clone())? {
+                        Variant::BOOL(boolean) => if !boolean.is_true() {
+                            return Ok(Variant::BOOL(Boolean::from(false)));
+                        }
+                        _ => ()
+                    }
+                }
+
+                Ok(Variant::BOOL(Boolean::from(true)))
+            }
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantGe for List {
+    fn ge(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            Variant::LIST(list) => {
+                let self_guard = mutex_lock_unwrap!(self.0, mark.clone());
+                let other_guard = mutex_lock_unwrap!(list.0, mark.clone());
+
+                if self_guard.len() != other_guard.len() {
+                    return Ok(Variant::BOOL(Boolean::from(false)));
+                }
+
+                for i in 0..self_guard.len() {
+                    let self_element = self_guard.get(i).unwrap();
+                    let other_element = other_guard.get(i).unwrap();
+                    match self_element.ge(other_element, mark.clone())? {
+                        Variant::BOOL(boolean) => if !boolean.is_true() {
+                            return Ok(Variant::BOOL(Boolean::from(false)));
+                        }
+                        _ => ()
+                    }
+                }
+
+                Ok(Variant::BOOL(Boolean::from(true)))
+            }
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantG for List {
+    fn g(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            Variant::LIST(list) => {
+                let self_guard = mutex_lock_unwrap!(self.0, mark.clone());
+                let other_guard = mutex_lock_unwrap!(list.0, mark.clone());
+
+                if self_guard.len() != other_guard.len() {
+                    return Ok(Variant::BOOL(Boolean::from(false)));
+                }
+
+                for i in 0..self_guard.len() {
+                    let self_element = self_guard.get(i).unwrap();
+                    let other_element = other_guard.get(i).unwrap();
+                    match self_element.g(other_element, mark.clone())? {
+                        Variant::BOOL(boolean) => if !boolean.is_true() {
+                            return Ok(Variant::BOOL(Boolean::from(false)));
+                        }
+                        _ => ()
+                    }
+                }
+
+                Ok(Variant::BOOL(Boolean::from(true)))
+            }
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantLe for List {
+    fn le(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            Variant::LIST(list) => {
+                let self_guard = mutex_lock_unwrap!(self.0, mark.clone());
+                let other_guard = mutex_lock_unwrap!(list.0, mark.clone());
+
+                if self_guard.len() != other_guard.len() {
+                    return Ok(Variant::BOOL(Boolean::from(false)));
+                }
+
+                for i in 0..self_guard.len() {
+                    let self_element = self_guard.get(i).unwrap();
+                    let other_element = other_guard.get(i).unwrap();
+                    match self_element.le(other_element, mark.clone())? {
+                        Variant::BOOL(boolean) => if !boolean.is_true() {
+                            return Ok(Variant::BOOL(Boolean::from(false)));
+                        }
+                        _ => ()
+                    }
+                }
+
+                Ok(Variant::BOOL(Boolean::from(true)))
+            }
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantL for List {
+    fn l(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            Variant::LIST(list) => {
+                let self_guard = mutex_lock_unwrap!(self.0, mark.clone());
+                let other_guard = mutex_lock_unwrap!(list.0, mark.clone());
+
+                if self_guard.len() != other_guard.len() {
+                    return Ok(Variant::BOOL(Boolean::from(false)));
+                }
+
+                for i in 0..self_guard.len() {
+                    let self_element = self_guard.get(i).unwrap();
+                    let other_element = other_guard.get(i).unwrap();
+                    match self_element.l(other_element, mark.clone())? {
+                        Variant::BOOL(boolean) => if !boolean.is_true() {
+                            return Ok(Variant::BOOL(Boolean::from(false)));
+                        }
+                        _ => ()
+                    }
+                }
+
+                Ok(Variant::BOOL(Boolean::from(true)))
+            }
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
         }
     }
 }

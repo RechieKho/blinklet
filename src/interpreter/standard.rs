@@ -16,6 +16,11 @@ pub mod table_fn;
 pub mod var_fn;
 pub mod when_fn;
 pub mod while_fn;
+pub mod eq_fn;
+pub mod ge_fn;
+pub mod g_fn;
+pub mod le_fn;
+pub mod l_fn;
 
 #[macro_export]
 macro_rules! context_get_current_scope {

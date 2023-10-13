@@ -2,14 +2,14 @@ use std::fmt::Display;
 use std::ops::RangeInclusive;
 use std::sync::Arc;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MarkLine {
     pub name: Arc<String>,
     pub content: Arc<String>,
     pub row: usize,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Mark {
     pub line: MarkLine,
     pub column: RangeInclusive<usize>,

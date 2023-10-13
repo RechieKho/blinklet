@@ -1,6 +1,7 @@
+use super::boolean::Boolean;
 use super::represent::Represent;
 use super::table::Table;
-use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
+use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub, VariantGe, VariantG, VariantLe, VariantL, VariantEq};
 use super::Variant;
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
@@ -74,6 +75,49 @@ impl VariantDiv for Closure {
                     rhs.represent(mark.clone())?
                 );
             }
+        }
+    }
+}
+
+impl VariantEq for Closure {
+    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            Variant::CLOSURE(closure) => Ok(Variant::BOOL(Boolean::from(self.mark == closure.mark))),
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantGe for Closure {
+    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            Variant::CLOSURE(closure) => Ok(Variant::BOOL(Boolean::from(self.mark == closure.mark))),
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantG for Closure {
+    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantLe for Closure {
+    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            Variant::CLOSURE(closure) => Ok(Variant::BOOL(Boolean::from(self.mark == closure.mark))),
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantL for Closure {
+    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
         }
     }
 }

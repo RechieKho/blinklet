@@ -1,5 +1,6 @@
+use super::boolean::Boolean;
 use super::represent::Represent;
-use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
+use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub, VariantEq, VariantGe, VariantG, VariantLe, VariantL};
 use crate::backtrace::Backtrace;
 use crate::interpreter::variant::Variant;
 use crate::mark::Mark;
@@ -75,6 +76,46 @@ impl VariantDiv for Table {
                     rhs.represent(mark.clone())?
                 );
             }
+        }
+    }
+}
+
+impl VariantEq for Table {
+    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantGe for Table {
+    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantG for Table {
+    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantLe for Table {
+    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
+        }
+    }
+}
+
+impl VariantL for Table {
+    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match rhs {
+            _ => Ok(Variant::BOOL(Boolean::from(false)))
         }
     }
 }

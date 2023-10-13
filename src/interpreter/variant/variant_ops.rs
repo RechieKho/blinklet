@@ -17,3 +17,23 @@ pub trait VariantMul {
 pub trait VariantDiv {
     fn div(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
 }
+
+pub trait VariantEq {
+    fn eq(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+}
+
+pub trait VariantGe {
+    fn ge(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+}
+
+pub trait VariantG {
+    fn g(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+}
+
+pub trait VariantLe {
+    fn le(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+}
+
+pub trait VariantL{
+    fn l(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+}

@@ -23,6 +23,8 @@ use strand::Strand;
 use table::Table;
 use variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 
+use self::variant_ops::{VariantEq, VariantGe, VariantG, VariantLe, VariantL};
+
 #[macro_export]
 macro_rules! mutex_lock_unwrap {
     ($mutex:expr, $mark:expr) => {
@@ -103,6 +105,81 @@ impl VariantDiv for Variant {
             Variant::TABLE(table) => table.div(rhs, mark),
             Variant::COMMAND(command) => command.div(rhs, mark),
             Variant::CLOSURE(closure) => closure.div(rhs, mark),
+        }
+    }
+}
+
+impl VariantEq for Variant {
+    fn eq(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match self {
+            Variant::NULL(null) => null.eq(rhs, mark),
+            Variant::BOOL(boolean) => boolean.eq(rhs, mark),
+            Variant::FLOAT(float) => float.eq(rhs, mark),
+            Variant::STRAND(strand) => strand.eq(rhs, mark),
+            Variant::LIST(list) => list.eq(rhs, mark),
+            Variant::TABLE(table) => table.eq(rhs, mark),
+            Variant::COMMAND(command) => command.eq(rhs, mark),
+            Variant::CLOSURE(closure) => closure.eq(rhs, mark),
+        }
+    }
+}
+
+impl VariantGe for Variant {
+    fn ge(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match self {
+            Variant::NULL(null) => null.ge(rhs, mark),
+            Variant::BOOL(boolean) => boolean.ge(rhs, mark),
+            Variant::FLOAT(float) => float.ge(rhs, mark),
+            Variant::STRAND(strand) => strand.ge(rhs, mark),
+            Variant::LIST(list) => list.ge(rhs, mark),
+            Variant::TABLE(table) => table.ge(rhs, mark),
+            Variant::COMMAND(command) => command.ge(rhs, mark),
+            Variant::CLOSURE(closure) => closure.ge(rhs, mark),
+        }
+    }
+}
+
+impl VariantG for Variant {
+    fn g(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match self {
+            Variant::NULL(null) => null.g(rhs, mark),
+            Variant::BOOL(boolean) => boolean.g(rhs, mark),
+            Variant::FLOAT(float) => float.g(rhs, mark),
+            Variant::STRAND(strand) => strand.g(rhs, mark),
+            Variant::LIST(list) => list.g(rhs, mark),
+            Variant::TABLE(table) => table.g(rhs, mark),
+            Variant::COMMAND(command) => command.g(rhs, mark),
+            Variant::CLOSURE(closure) => closure.g(rhs, mark),
+        }
+    }
+}
+
+impl VariantLe for Variant {
+    fn le(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match self {
+            Variant::NULL(null) => null.le(rhs, mark),
+            Variant::BOOL(boolean) => boolean.le(rhs, mark),
+            Variant::FLOAT(float) => float.le(rhs, mark),
+            Variant::STRAND(strand) => strand.le(rhs, mark),
+            Variant::LIST(list) => list.le(rhs, mark),
+            Variant::TABLE(table) => table.le(rhs, mark),
+            Variant::COMMAND(command) => command.le(rhs, mark),
+            Variant::CLOSURE(closure) => closure.le(rhs, mark),
+        }
+    }
+}
+
+impl VariantL for Variant {
+    fn l(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match self {
+            Variant::NULL(null) => null.l(rhs, mark),
+            Variant::BOOL(boolean) => boolean.l(rhs, mark),
+            Variant::FLOAT(float) => float.l(rhs, mark),
+            Variant::STRAND(strand) => strand.l(rhs, mark),
+            Variant::LIST(list) => list.l(rhs, mark),
+            Variant::TABLE(table) => table.l(rhs, mark),
+            Variant::COMMAND(command) => command.l(rhs, mark),
+            Variant::CLOSURE(closure) => closure.l(rhs, mark),
         }
     }
 }

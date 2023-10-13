@@ -48,6 +48,9 @@ var make_counter
         var counter 0
         return
             closure
+                when
+                    >= counter 20
+                    return false # return false after reaching 20
                 set counter
                     add counter 1
                 return counter
@@ -64,7 +67,8 @@ println
 
 # Here is the while loop
 while i
-    counter
-    println i # 4
-    break # You can break.
+    counter # repeat till counter reaches 20
+    println i
+    # break # you can break
+    # continue # you can also continue
 

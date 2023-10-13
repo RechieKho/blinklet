@@ -1,20 +1,20 @@
-pub mod add;
+pub mod add_fn;
 pub mod break_fn;
 pub mod closure_fn;
 pub mod continue_fn;
-pub mod div;
+pub mod div_fn;
 pub mod list_fn;
-pub mod list_pop;
-pub mod list_push;
-pub mod mul;
-pub mod print;
-pub mod println;
+pub mod list_pop_fn;
+pub mod list_push_fn;
+pub mod mul_fn;
+pub mod print_fn;
+pub mod println_fn;
 pub mod return_fn;
-pub mod set;
-pub mod sub;
+pub mod set_fn;
+pub mod sub_fn;
 pub mod table_fn;
-pub mod var;
-pub mod when;
+pub mod var_fn;
+pub mod when_fn;
 pub mod while_fn;
 
 #[macro_export]

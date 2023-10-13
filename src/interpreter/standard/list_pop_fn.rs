@@ -6,7 +6,7 @@ use crate::parser::atom::Atom;
 use crate::raise_bug;
 use crate::{assert_atoms_count_min, atom_as_identifier};
 
-pub fn list_pop(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
+pub fn list_pop_fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
     assert_atoms_count_min!(body, 3);
     let first_atom = body.first().unwrap();
     let mut list = context.resolve_list(&body[1])?;

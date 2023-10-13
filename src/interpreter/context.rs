@@ -1,20 +1,20 @@
-use super::standard::add::add;
+use super::standard::add_fn::add_fn;
 use super::standard::break_fn::break_fn;
 use super::standard::closure_fn::closure_fn;
 use super::standard::continue_fn::continue_fn;
-use super::standard::div::div;
+use super::standard::div_fn::div_fn;
 use super::standard::list_fn::list_fn;
-use super::standard::list_pop::list_pop;
-use super::standard::list_push::list_push;
-use super::standard::mul::mul;
-use super::standard::print::print;
-use super::standard::println::println;
+use super::standard::list_pop_fn::list_pop_fn;
+use super::standard::list_push_fn::list_push_fn;
+use super::standard::mul_fn::mul_fn;
+use super::standard::print_fn::print_fn;
+use super::standard::println_fn::println_fn;
 use super::standard::return_fn::return_fn;
-use super::standard::set::set;
-use super::standard::sub::sub;
+use super::standard::set_fn::set_fn;
+use super::standard::sub_fn::sub_fn;
 use super::standard::table_fn::table_fn;
-use super::standard::var::var;
-use super::standard::when::when;
+use super::standard::var_fn::var_fn;
+use super::standard::when_fn::when_fn;
 use super::standard::while_fn::while_fn;
 
 use super::signal::Signal;
@@ -57,19 +57,19 @@ pub struct Context {
 impl Default for Context {
     fn default() -> Self {
         let standard: HashMap<&'static str, Variant> = HashMap::from([
-            ("var", Variant::COMMAND(Command::new(var))),
-            ("set", Variant::COMMAND(Command::new(set))),
-            ("add", Variant::COMMAND(Command::new(add))),
-            ("sub", Variant::COMMAND(Command::new(sub))),
-            ("mul", Variant::COMMAND(Command::new(mul))),
-            ("div", Variant::COMMAND(Command::new(div))),
-            ("print", Variant::COMMAND(Command::new(print))),
-            ("println", Variant::COMMAND(Command::new(println))),
-            ("when", Variant::COMMAND(Command::new(when))),
+            ("var", Variant::COMMAND(Command::new(var_fn))),
+            ("set", Variant::COMMAND(Command::new(set_fn))),
+            ("add", Variant::COMMAND(Command::new(add_fn))),
+            ("sub", Variant::COMMAND(Command::new(sub_fn))),
+            ("mul", Variant::COMMAND(Command::new(mul_fn))),
+            ("div", Variant::COMMAND(Command::new(div_fn))),
+            ("print", Variant::COMMAND(Command::new(print_fn))),
+            ("println", Variant::COMMAND(Command::new(println_fn))),
+            ("when", Variant::COMMAND(Command::new(when_fn))),
             ("while", Variant::COMMAND(Command::new(while_fn))),
             ("list", Variant::COMMAND(Command::new(list_fn))),
-            ("list_push", Variant::COMMAND(Command::new(list_push))),
-            ("list_pop", Variant::COMMAND(Command::new(list_pop))),
+            ("list_push", Variant::COMMAND(Command::new(list_push_fn))),
+            ("list_pop", Variant::COMMAND(Command::new(list_pop_fn))),
             ("closure", Variant::COMMAND(Command::new(closure_fn))),
             ("table", Variant::COMMAND(Command::new(table_fn))),
             ("return", Variant::COMMAND(Command::new(return_fn))),

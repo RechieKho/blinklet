@@ -1,6 +1,9 @@
 use super::boolean::Boolean;
 use super::represent::Represent;
-use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub, VariantEq, VariantGe, VariantG, VariantLe, VariantL};
+use super::variant_ops::{
+    VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
+    VariantSub,
+};
 use crate::backtrace::Backtrace;
 use crate::interpreter::variant::Variant;
 use crate::mark::Mark;
@@ -83,7 +86,7 @@ impl VariantDiv for Table {
 impl VariantEq for Table {
     fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -91,7 +94,7 @@ impl VariantEq for Table {
 impl VariantGe for Table {
     fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -99,7 +102,7 @@ impl VariantGe for Table {
 impl VariantG for Table {
     fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -107,7 +110,7 @@ impl VariantG for Table {
 impl VariantLe for Table {
     fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -115,20 +118,28 @@ impl VariantLe for Table {
 impl VariantL for Table {
     fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
 
 impl Debug for Table {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("table") // TODO
+        f.write_str("<Table>")
     }
 }
 
 impl Represent for Table {
-    fn represent(&self, _mark: Option<Mark>) -> Result<String, Backtrace> {
-        Ok(String::from("table")) // TODO
+    fn represent(&self, mark: Option<Mark>) -> Result<String, Backtrace> {
+        let guard = mutex_lock_unwrap!(self.0, mark.clone());
+        let representations = guard
+            .iter()
+            .map(|(key, variant)| match variant {
+                Variant::STRAND(strand) => Ok(format!("{}: \"{}\"", key, strand.as_str())),
+                _ => Ok(format!("{}: {}", key, variant.represent(mark.clone())?)),
+            })
+            .collect::<Result<Vec<String>, Backtrace>>()?;
+        Ok(format!("<Table {{{}}}", representations.join(", ")))
     }
 }
 

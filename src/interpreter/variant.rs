@@ -23,7 +23,7 @@ use strand::Strand;
 use table::Table;
 use variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 
-use self::variant_ops::{VariantEq, VariantGe, VariantG, VariantLe, VariantL};
+use self::variant_ops::{VariantEq, VariantG, VariantGe, VariantL, VariantLe};
 
 #[macro_export]
 macro_rules! mutex_lock_unwrap {

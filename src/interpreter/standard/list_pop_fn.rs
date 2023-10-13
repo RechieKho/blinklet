@@ -12,7 +12,11 @@ pub fn list_pop_fn(context: &mut Context, head: &Atom, body: &[Atom]) -> Result<
     let table = context_get_current_scope!(context, Some(head.mark.clone()));
     for atom in body.iter().skip(1) {
         let identifier = atom_as_identifier!(atom);
-        table.insert(identifier.clone(), list.pop(Some(head.mark.clone()))?, Some(atom.mark.clone()))?;
+        table.insert(
+            identifier.clone(),
+            list.pop(Some(head.mark.clone()))?,
+            Some(atom.mark.clone()),
+        )?;
     }
     Ok(Signal::COMPLETE(Variant::LIST(list)))
 }

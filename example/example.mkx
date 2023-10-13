@@ -34,6 +34,8 @@ var member_1
     table_var
         return member_1
 
+println 'table_var: `table_var`'
+
 # You can create closure, function that saves parent scope.
 var closure_var
     closure

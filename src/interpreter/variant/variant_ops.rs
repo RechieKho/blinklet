@@ -34,6 +34,6 @@ pub trait VariantLe {
     fn le(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
 }
 
-pub trait VariantL{
+pub trait VariantL {
     fn l(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
 }

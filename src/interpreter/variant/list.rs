@@ -1,6 +1,9 @@
 use super::boolean::Boolean;
 use super::null::Null;
-use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub, VariantGe, VariantEq, VariantG, VariantLe, VariantL};
+use super::variant_ops::{
+    VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
+    VariantSub,
+};
 use super::{represent::Represent, Variant};
 use crate::mark::Mark;
 use crate::mutex_lock_unwrap;
@@ -86,16 +89,18 @@ impl VariantEq for List {
                     let self_element = self_guard.get(i).unwrap();
                     let other_element = other_guard.get(i).unwrap();
                     match self_element.eq(other_element, mark.clone())? {
-                        Variant::BOOL(boolean) => if !boolean.is_true() {
-                            return Ok(Variant::BOOL(Boolean::from(false)));
+                        Variant::BOOL(boolean) => {
+                            if !boolean.is_true() {
+                                return Ok(Variant::BOOL(Boolean::from(false)));
+                            }
                         }
-                        _ => ()
+                        _ => (),
                     }
                 }
 
                 Ok(Variant::BOOL(Boolean::from(true)))
             }
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -115,16 +120,18 @@ impl VariantGe for List {
                     let self_element = self_guard.get(i).unwrap();
                     let other_element = other_guard.get(i).unwrap();
                     match self_element.ge(other_element, mark.clone())? {
-                        Variant::BOOL(boolean) => if !boolean.is_true() {
-                            return Ok(Variant::BOOL(Boolean::from(false)));
+                        Variant::BOOL(boolean) => {
+                            if !boolean.is_true() {
+                                return Ok(Variant::BOOL(Boolean::from(false)));
+                            }
                         }
-                        _ => ()
+                        _ => (),
                     }
                 }
 
                 Ok(Variant::BOOL(Boolean::from(true)))
             }
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -144,16 +151,18 @@ impl VariantG for List {
                     let self_element = self_guard.get(i).unwrap();
                     let other_element = other_guard.get(i).unwrap();
                     match self_element.g(other_element, mark.clone())? {
-                        Variant::BOOL(boolean) => if !boolean.is_true() {
-                            return Ok(Variant::BOOL(Boolean::from(false)));
+                        Variant::BOOL(boolean) => {
+                            if !boolean.is_true() {
+                                return Ok(Variant::BOOL(Boolean::from(false)));
+                            }
                         }
-                        _ => ()
+                        _ => (),
                     }
                 }
 
                 Ok(Variant::BOOL(Boolean::from(true)))
             }
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -173,16 +182,18 @@ impl VariantLe for List {
                     let self_element = self_guard.get(i).unwrap();
                     let other_element = other_guard.get(i).unwrap();
                     match self_element.le(other_element, mark.clone())? {
-                        Variant::BOOL(boolean) => if !boolean.is_true() {
-                            return Ok(Variant::BOOL(Boolean::from(false)));
+                        Variant::BOOL(boolean) => {
+                            if !boolean.is_true() {
+                                return Ok(Variant::BOOL(Boolean::from(false)));
+                            }
                         }
-                        _ => ()
+                        _ => (),
                     }
                 }
 
                 Ok(Variant::BOOL(Boolean::from(true)))
             }
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -202,16 +213,18 @@ impl VariantL for List {
                     let self_element = self_guard.get(i).unwrap();
                     let other_element = other_guard.get(i).unwrap();
                     match self_element.l(other_element, mark.clone())? {
-                        Variant::BOOL(boolean) => if !boolean.is_true() {
-                            return Ok(Variant::BOOL(Boolean::from(false)));
+                        Variant::BOOL(boolean) => {
+                            if !boolean.is_true() {
+                                return Ok(Variant::BOOL(Boolean::from(false)));
+                            }
                         }
-                        _ => ()
+                        _ => (),
                     }
                 }
 
                 Ok(Variant::BOOL(Boolean::from(true)))
             }
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }

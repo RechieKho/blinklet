@@ -1,6 +1,9 @@
 use super::boolean::Boolean;
 use super::represent::Represent;
-use super::variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub, VariantL, VariantLe, VariantG, VariantGe, VariantEq};
+use super::variant_ops::{
+    VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
+    VariantSub,
+};
 use super::Variant;
 use crate::backtrace::Backtrace;
 use crate::interpreter::context::Context;
@@ -79,8 +82,11 @@ impl VariantDiv for Command {
 impl VariantEq for Command {
     fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
-            Variant::COMMAND(command) => Ok(Variant::BOOL(Boolean::from(Arc::ptr_eq(&self.callable, &command.callable)))),
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            Variant::COMMAND(command) => Ok(Variant::BOOL(Boolean::from(Arc::ptr_eq(
+                &self.callable,
+                &command.callable,
+            )))),
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -88,8 +94,11 @@ impl VariantEq for Command {
 impl VariantGe for Command {
     fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
-            Variant::COMMAND(command) => Ok(Variant::BOOL(Boolean::from(Arc::ptr_eq(&self.callable, &command.callable)))),
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            Variant::COMMAND(command) => Ok(Variant::BOOL(Boolean::from(Arc::ptr_eq(
+                &self.callable,
+                &command.callable,
+            )))),
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -97,7 +106,7 @@ impl VariantGe for Command {
 impl VariantG for Command {
     fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -105,8 +114,11 @@ impl VariantG for Command {
 impl VariantLe for Command {
     fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
-            Variant::COMMAND(command) => Ok(Variant::BOOL(Boolean::from(Arc::ptr_eq(&self.callable, &command.callable)))),
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            Variant::COMMAND(command) => Ok(Variant::BOOL(Boolean::from(Arc::ptr_eq(
+                &self.callable,
+                &command.callable,
+            )))),
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
@@ -114,20 +126,20 @@ impl VariantLe for Command {
 impl VariantL for Command {
     fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false)))
+            _ => Ok(Variant::BOOL(Boolean::from(false))),
         }
     }
 }
 
 impl Debug for Command {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("command") // TODO
+        f.write_str("<Command>")
     }
 }
 
 impl Represent for Command {
     fn represent(&self, _mark: Option<Mark>) -> Result<String, Backtrace> {
-        Ok(String::from("command")) // TODO
+        Ok(String::from("<Command>"))
     }
 }
 

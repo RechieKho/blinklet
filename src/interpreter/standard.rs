@@ -18,12 +18,23 @@ pub mod when_fn;
 pub mod while_fn;
 
 #[macro_export]
+macro_rules! context_get_current_scope {
+    ($context:expr, $mark:expr) => {
+        match $context.scopes.last_mut() {
+            Some(table) => table,
+            None => {
+                crate::raise_bug!($mark, "Empty scopes should be unreachable.");
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! assert_atoms_count {
-    ($atoms:expr, $count:expr) => {
-        let atom = $atoms.first().unwrap();
+    ($atoms:expr, $mark:expr, $count:expr) => {
         if $atoms.len() != $count {
             crate::raise_error!(
-                Some(atom.mark.clone()),
+                $mark,
                 "Argument count exceeds maximum, which is {}.",
                 $count
             );
@@ -33,28 +44,18 @@ macro_rules! assert_atoms_count {
 
 #[macro_export]
 macro_rules! assert_atoms_count_max {
-    ($atoms:expr, $max:expr) => {
-        let atom = $atoms.first().unwrap();
+    ($atoms:expr, $mark:expr, $max:expr) => {
         if $atoms.len() > $max {
-            crate::raise_error!(
-                Some(atom.mark.clone()),
-                "Argument count exceeds maximum, which is {}.",
-                $max
-            );
+            crate::raise_error!($mark, "Argument count exceeds maximum, which is {}.", $max);
         }
     };
 }
 
 #[macro_export]
 macro_rules! assert_atoms_count_min {
-    ($atoms:expr, $min:expr) => {
-        let atom = $atoms.first().unwrap();
+    ($atoms:expr, $mark:expr, $min:expr) => {
         if $atoms.len() < $min {
-            crate::raise_error!(
-                Some(atom.mark.clone()),
-                "Argument count recede minimum, which is {}.",
-                $min
-            );
+            crate::raise_error!($mark, "Argument count recede minimum, which is {}.", $min);
         }
     };
 }

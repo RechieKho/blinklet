@@ -6,8 +6,8 @@ use crate::interpreter::variant::represent::Represent;
 use crate::interpreter::variant::Variant;
 use crate::parser::atom::Atom;
 
-pub fn println_fn(context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
-    for atom in body.iter().skip(1) {
+pub fn println_fn(context: &mut Context, _head: &Atom, body: &[Atom]) -> Result<Signal, Backtrace> {
+    for atom in body.iter() {
         let value = context.resolve_variant(atom)?;
         print!("{}", value.represent()?);
     }

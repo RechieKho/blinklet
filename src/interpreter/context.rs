@@ -192,11 +192,12 @@ impl Context {
             self.scopes.push(Table::default())
         }
         let head = statement.first().unwrap();
+        let body = &statement[1..];
 
         let value = self.resolve_variant(head)?;
         match value {
             Variant::COMMAND(command) => {
-                let result = command.call(self, statement);
+                let result = command.call(self, head, body);
                 if result.is_ok() {
                     return result;
                 }
@@ -207,7 +208,7 @@ impl Context {
             }
 
             Variant::CLOSURE(mut closure) => {
-                let result = closure.call_mut(self, statement);
+                let result = closure.call_mut(self, body);
                 if result.is_ok() {
                     return result;
                 }

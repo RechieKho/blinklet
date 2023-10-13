@@ -30,7 +30,7 @@ impl Mark {
 impl Display for Mark {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let header = format!("In code '{}':", self.line.name);
-        let leader = format!("{:>5} |", self.line.row);
+        let leader = format!("{:>5} |", self.line.row + 1);
         let line = self.line.content.as_ref();
         let (start, end) = self.column.clone().into_inner();
         let underline = format!(

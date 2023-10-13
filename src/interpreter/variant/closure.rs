@@ -93,16 +93,15 @@ impl Represent for Closure {
 impl Closure {
     pub fn call_mut(&mut self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         let mut slots: Vec<Variant> = Vec::new();
-        for atom in body.iter().skip(1) {
+        for atom in body.iter() {
             let value = context.resolve_variant(atom)?;
             slots.push(value);
         }
-
         let mut closure_context = Context::default();
         closure_context.slots = slots;
-        mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);
+        mem::swap(&mut closure_context.scopes, &mut self.parent_scopes); // Install parent scopes into the context.
         let result = closure_context.run_statements(&self.commands, Table::default());
-        mem::swap(&mut closure_context.scopes, &mut self.parent_scopes);
+        mem::swap(&mut closure_context.scopes, &mut self.parent_scopes); // Retrieve parent scopes back.
         result
     }
 

@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Command {
-    callable: Arc<dyn Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace>>,
+    callable: Arc<dyn Fn(&mut Context, &Atom, &[Atom]) -> Result<Signal, Backtrace>>,
 }
 
 impl VariantAdd for Command {
@@ -90,14 +90,19 @@ impl Represent for Command {
 impl Command {
     pub fn new<T>(callable: T) -> Self
     where
-        T: Fn(&mut Context, &[Atom]) -> Result<Signal, Backtrace> + 'static,
+        T: Fn(&mut Context, &Atom, &[Atom]) -> Result<Signal, Backtrace> + 'static,
     {
         Command {
             callable: Arc::new(callable),
         }
     }
 
-    pub fn call(&self, context: &mut Context, atoms: &[Atom]) -> Result<Signal, Backtrace> {
-        (self.callable)(context, atoms)
+    pub fn call(
+        &self,
+        context: &mut Context,
+        head: &Atom,
+        atoms: &[Atom],
+    ) -> Result<Signal, Backtrace> {
+        (self.callable)(context, head, atoms)
     }
 }

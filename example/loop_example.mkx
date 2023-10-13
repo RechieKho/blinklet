@@ -1,0 +1,19 @@
+# Loop example
+var make_counter
+    closure
+        var counter 0
+        return
+            closure
+                when
+                    >= counter 10000
+                    return false # return false after reaching 10000
+                set counter
+                    add counter 1
+                return counter
+
+var counter
+    make_counter
+
+while i
+    counter
+    println i

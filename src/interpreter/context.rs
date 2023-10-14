@@ -9,6 +9,7 @@ use super::standard::ge_fn::ge_fn;
 use super::standard::l_fn::l_fn;
 use super::standard::le_fn::le_fn;
 use super::standard::list_fn::list_fn;
+use super::standard::list_length_fn::list_length_fn;
 use super::standard::list_pop_fn::list_pop_fn;
 use super::standard::list_push_fn::list_push_fn;
 use super::standard::mul_fn::mul_fn;
@@ -76,6 +77,10 @@ impl Default for Context {
             ("list", Variant::COMMAND(Command::new(list_fn))),
             ("list-push", Variant::COMMAND(Command::new(list_push_fn))),
             ("list-pop", Variant::COMMAND(Command::new(list_pop_fn))),
+            (
+                "list-length",
+                Variant::COMMAND(Command::new(list_length_fn)),
+            ),
             ("closure", Variant::COMMAND(Command::new(closure_fn))),
             ("parameter", Variant::COMMAND(Command::new(parameter_fn))),
             ("table", Variant::COMMAND(Command::new(table_fn))),

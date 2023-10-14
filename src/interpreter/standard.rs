@@ -9,6 +9,7 @@ pub mod ge_fn;
 pub mod l_fn;
 pub mod le_fn;
 pub mod list_fn;
+pub mod list_length_fn;
 pub mod list_pop_fn;
 pub mod list_push_fn;
 pub mod mul_fn;

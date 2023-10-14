@@ -12,6 +12,7 @@ pub mod list_fn;
 pub mod list_pop_fn;
 pub mod list_push_fn;
 pub mod mul_fn;
+pub mod parameter_fn;
 pub mod print_fn;
 pub mod println_fn;
 pub mod return_fn;

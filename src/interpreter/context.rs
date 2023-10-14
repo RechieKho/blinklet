@@ -12,6 +12,7 @@ use super::standard::list_fn::list_fn;
 use super::standard::list_pop_fn::list_pop_fn;
 use super::standard::list_push_fn::list_push_fn;
 use super::standard::mul_fn::mul_fn;
+use super::standard::parameter_fn::parameter_fn;
 use super::standard::print_fn::print_fn;
 use super::standard::println_fn::println_fn;
 use super::standard::return_fn::return_fn;
@@ -76,6 +77,7 @@ impl Default for Context {
             ("list-push", Variant::COMMAND(Command::new(list_push_fn))),
             ("list-pop", Variant::COMMAND(Command::new(list_pop_fn))),
             ("closure", Variant::COMMAND(Command::new(closure_fn))),
+            ("parameter", Variant::COMMAND(Command::new(parameter_fn))),
             ("table", Variant::COMMAND(Command::new(table_fn))),
             ("return", Variant::COMMAND(Command::new(return_fn))),
             ("break", Variant::COMMAND(Command::new(break_fn))),

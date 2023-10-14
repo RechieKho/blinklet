@@ -1,18 +1,19 @@
 # Loop example
 var make_counter
     closure
+        parameter max
         var counter 0
         return
             closure
                 when
-                    >= counter 10000
-                    return false # return false after reaching 10000
+                    >= counter max
+                    return false # return false after reaching `max`
                 set counter
                     add counter 1
                 return counter
 
 var counter
-    make_counter
+    make_counter 10000
 
 while i
     counter

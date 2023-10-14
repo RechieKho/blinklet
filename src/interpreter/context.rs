@@ -57,7 +57,7 @@ fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
 /// The runtime that runs Minky code.
 pub struct Context {
     standard: HashMap<&'static str, Variant>,
-    pub scopes: Vec<Table>,
+    pub(super) scopes: Vec<Table>,
     pub slots: Vec<Variant>,
     pub code_request_handler: Box<dyn Fn(&String) -> Result<String, Backtrace> + 'static>,
 }

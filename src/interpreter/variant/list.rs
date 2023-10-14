@@ -1,5 +1,4 @@
 use super::boolean::Boolean;
-use super::null::Null;
 use super::variant_ops::{
     VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
     VariantSub,
@@ -266,7 +265,7 @@ impl List {
         let mut guard = mutex_lock_unwrap!(self.0, mark);
         let variant = guard.pop();
         Ok(if variant.is_none() {
-            Variant::NULL(Null::new())
+            raise_error!(mark.clone(), "List given is empty.");
         } else {
             variant.unwrap()
         })

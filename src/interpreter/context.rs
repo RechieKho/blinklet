@@ -6,6 +6,7 @@ use super::standard::div_fn::div_fn;
 use super::standard::eq_fn::eq_fn;
 use super::standard::g_fn::g_fn;
 use super::standard::ge_fn::ge_fn;
+use super::standard::import_fn::import_fn;
 use super::standard::l_fn::l_fn;
 use super::standard::le_fn::le_fn;
 use super::standard::list_fn::list_fn;
@@ -87,6 +88,7 @@ impl Default for Context {
             ("return", Variant::COMMAND(Command::new(return_fn))),
             ("break", Variant::COMMAND(Command::new(break_fn))),
             ("continue", Variant::COMMAND(Command::new(continue_fn))),
+            ("import", Variant::COMMAND(Command::new(import_fn))),
             ("=", Variant::COMMAND(Command::new(eq_fn))),
             (">=", Variant::COMMAND(Command::new(ge_fn))),
             (">", Variant::COMMAND(Command::new(g_fn))),

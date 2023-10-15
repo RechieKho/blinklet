@@ -7,9 +7,9 @@ use crate::parser::atom::Atom;
 use crate::{assert_atoms_count_min, atom_as_identifier, raise_error};
 
 pub fn list_pop_fn(context: &mut Context, head: &Atom, body: &[Atom]) -> Result<Signal, Backtrace> {
-    assert_atoms_count_min!(body, Some(head.mark.clone()), 2);
+    assert_atoms_count_min!(body, 2);
     let mut list = context.resolve_list(&body[0])?;
-    let table = context_get_current_scope!(context, Some(head.mark.clone()));
+    let table = context_get_current_scope!(context);
     for atom in body.iter().skip(1) {
         let identifier = atom_as_identifier!(atom);
         let variant = table.insert(

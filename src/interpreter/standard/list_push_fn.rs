@@ -10,7 +10,7 @@ pub fn list_push_fn(
     head: &Atom,
     body: &[Atom],
 ) -> Result<Signal, Backtrace> {
-    assert_atoms_count_min!(body, Some(head.mark.clone()), 2);
+    assert_atoms_count_min!(body, 2);
     let mut list = context.resolve_list(&body[0])?;
     for atom in body.iter().skip(1) {
         let element = context.resolve_variant(atom)?;

@@ -7,8 +7,8 @@ use crate::interpreter::variant::Variant;
 use crate::parser::atom::Atom;
 use crate::{assert_atoms_count_min, atom_as_identifier};
 
-pub fn while_fn(context: &mut Context, head: &Atom, body: &[Atom]) -> Result<Signal, Backtrace> {
-    assert_atoms_count_min!(body, Some(head.mark.clone()), 2);
+pub fn while_fn(context: &mut Context, _head: &Atom, body: &[Atom]) -> Result<Signal, Backtrace> {
+    assert_atoms_count_min!(body, 2);
     let identifier = atom_as_identifier!(&body[0]);
     loop {
         let variant = context.resolve_variant(&body[1])?;

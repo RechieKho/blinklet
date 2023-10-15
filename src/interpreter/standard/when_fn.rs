@@ -7,8 +7,8 @@ use crate::interpreter::variant::table::Table;
 use crate::interpreter::variant::Variant;
 use crate::parser::atom::Atom;
 
-pub fn when_fn(context: &mut Context, head: &Atom, body: &[Atom]) -> Result<Signal, Backtrace> {
-    assert_atoms_count_min!(body, Some(head.mark.clone()), 1);
+pub fn when_fn(context: &mut Context, _head: &Atom, body: &[Atom]) -> Result<Signal, Backtrace> {
+    assert_atoms_count_min!(body, 1);
     let boolean = context.resolve_boolean(&body[0])?;
     if boolean.into() {
         context.run_statements(&body[1..], Table::default())

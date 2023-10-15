@@ -10,10 +10,10 @@ use crate::parser::atom::Atom;
 use crate::raise_error;
 
 pub fn var_fn(context: &mut Context, head: &Atom, body: &[Atom]) -> Result<Signal, Backtrace> {
-    assert_atoms_count!(body, Some(head.mark.clone()), 2);
+    assert_atoms_count!(body, 2);
     let identifier = atom_as_identifier!(&body[0]);
     let variant = context.resolve_variant(&body[1])?;
-    let table = context_get_current_scope!(context, Some(head.mark.clone()));
+    let table = context_get_current_scope!(context);
     let popped = table.insert(identifier.clone(), variant, Some(head.mark.clone()))?;
     if popped.is_some() {
         raise_error!(

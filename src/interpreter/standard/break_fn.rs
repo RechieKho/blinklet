@@ -5,6 +5,6 @@ use crate::interpreter::signal::Signal;
 use crate::parser::atom::Atom;
 
 pub fn break_fn(_context: &mut Context, head: &Atom, body: &[Atom]) -> Result<Signal, Backtrace> {
-    assert_atoms_count!(body, Some(head.mark.clone()), 0);
+    assert_atoms_count!(body, 0);
     Ok(Signal::BREAK(head.mark.clone()))
 }

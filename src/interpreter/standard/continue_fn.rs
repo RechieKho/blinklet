@@ -9,6 +9,6 @@ pub fn continue_fn(
     head: &Atom,
     body: &[Atom],
 ) -> Result<Signal, Backtrace> {
-    assert_atoms_count!(body, Some(head.mark.clone()), 0);
+    assert_atoms_count!(body, 0);
     Ok(Signal::CONTINUE(head.mark.clone()))
 }

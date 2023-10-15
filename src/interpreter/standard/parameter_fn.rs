@@ -11,7 +11,7 @@ pub fn parameter_fn(
     head: &Atom,
     body: &[Atom],
 ) -> Result<Signal, Backtrace> {
-    let table = context_get_current_scope!(context, Some(head.mark.clone()));
+    let table = context_get_current_scope!(context);
     for atom in body.iter() {
         let identifier = atom_as_identifier!(atom);
         let argument = context.slots.pop();

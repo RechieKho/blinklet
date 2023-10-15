@@ -1,3 +1,6 @@
+use super::resource::system_resource::SystemResource;
+use super::resource::Resource;
+use super::resource::ResourcePath;
 use super::standard::add_fn::add_fn;
 use super::standard::break_fn::break_fn;
 use super::standard::closure_fn::closure_fn;
@@ -43,23 +46,13 @@ use crate::parser::atom::AtomValue;
 use crate::parser::token::tokenize;
 use crate::raise_error;
 use hashbrown::HashMap;
-use std::fs;
-
-fn default_code_request_handler(name: &String) -> Result<String, Backtrace> {
-    let result = fs::read_to_string(name);
-    if result.is_err() {
-        raise_error!(None, "Unable to fetch code '{}'.", name);
-    } else {
-        Ok(result.unwrap())
-    }
-}
 
 /// The runtime that runs Minky code.
 pub struct Context {
     standard: HashMap<&'static str, Variant>,
     pub(super) scopes: Vec<Table>,
     pub slots: Vec<Variant>,
-    pub code_request_handler: Box<dyn Fn(&String) -> Result<String, Backtrace> + 'static>,
+    pub resource: Box<dyn Resource>,
 }
 
 impl Default for Context {
@@ -100,7 +93,7 @@ impl Default for Context {
             standard,
             scopes: Vec::new(),
             slots: Vec::new(),
-            code_request_handler: Box::new(default_code_request_handler),
+            resource: Box::new(SystemResource::default()),
         }
     }
 }
@@ -292,10 +285,17 @@ impl Context {
         Ok(Signal::COMPLETE(Variant::TABLE(table)))
     }
 
-    pub fn run_code(&mut self, name: String) -> Result<Signal, Backtrace> {
-        let code = (self.code_request_handler)(&name)?;
-        let result = tokenize(name, code)?;
+    pub fn run_code(&mut self, mut path: ResourcePath) -> Result<Signal, Backtrace> {
+        let module_name: String = path.clone().into();
+        let previous_prefix = self.resource.get_prefix().clone();
+        let mut new_prefix = self.resource.get_prefix().clone();
+        let _ = new_prefix.append(&mut path.remove_parent_path());
+        self.resource.set_prefix(new_prefix);
+        let code = self.resource.get_code(path)?;
+        let result = tokenize(module_name, code)?;
         let result = generate_commands(result)?;
-        self.run_statements(result.as_slice(), Table::default())
+        let result = self.run_statements(result.as_slice(), Table::default());
+        self.resource.set_prefix(previous_prefix);
+        result
     }
 }

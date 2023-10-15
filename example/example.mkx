@@ -2,6 +2,9 @@
 
 # Minky is a Parenthesesless indent-based lisp.
 
+println
+    import module.mkx # Import module.
+
 # These are variables
 var string_var 'Hello world' # Fun fact: it is called `Strand` in the codebase to avoid conflict with String.
 var number_var 1234.024
@@ -73,4 +76,3 @@ while i
     println i
     # break # you can break
     # continue # you can also continue
-

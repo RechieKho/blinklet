@@ -139,7 +139,7 @@ impl Represent for Table {
                 _ => Ok(format!("{}: {}", key, variant.represent(mark.clone())?)),
             })
             .collect::<Result<Vec<String>, Backtrace>>()?;
-        Ok(format!("<Table {{{}}}", representations.join(", ")))
+        Ok(format!("<Table {{{}}}>", representations.join(", ")))
     }
 }
 

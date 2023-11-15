@@ -1,6 +1,7 @@
 pub mod add_fn;
 pub mod break_fn;
 pub mod closure_fn;
+pub mod console_fn;
 pub mod continue_fn;
 pub mod div_fn;
 pub mod eq_fn;

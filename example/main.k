@@ -61,3 +61,10 @@ var better-person
 
 better-person
     be-good
+
+# Execute console command
+var console_output 
+    console
+        echo 'Hello, this is from a console.'
+
+println 'console output: `console_output`'

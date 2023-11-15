@@ -306,3 +306,11 @@ table @commands
 ```
 
 Create a table and execute command on it, return the result of execution.
+
+#### `console`
+
+```
+console @commands
+```
+
+Execute commands in system console. The values passed into the system commands are evaluated.

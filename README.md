@@ -211,6 +211,14 @@ list-push {list} {...elements}
 
 Push the `elements` at the back of the `list`.
 
+#### `make-list-iter`
+
+```
+make-list-iter {list}
+```
+
+Make an iterator for the `list`.
+
 #### `import`
 
 ```

@@ -32,17 +32,29 @@ fn main() {
     let path = path.unwrap();
 
     let script_args = &args[2..];
-    let mut context = Context::default();
+    let context = Context::new();
+
+    let mut context = match context {
+        Ok(context) => context,
+        Err(error) => {
+            println!("\n\n{error}");
+            return;
+        }
+    };
+
     for arg in script_args.iter() {
         context
             .slots
             .push(Variant::STRAND(Strand::from(arg.clone())));
     }
 
-    let result = context.run_code(path);
-    if result.is_err() {
-        let error = result.unwrap_err();
-        println!("\n\n{error}");
-        return;
-    }
+    let result = context.run_resource(path);
+
+    match result {
+        Ok(_) => (),
+        Err(error) => {
+            println!("\n\n{error}");
+            return;
+        }
+    };
 }

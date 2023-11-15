@@ -156,7 +156,7 @@ impl Closure {
             let value = context.resolve_variant(atom)?;
             slots.push(value);
         }
-        let mut closure_context = Context::default();
+        let mut closure_context = Context::new()?;
         closure_context.slots = slots;
         mem::swap(&mut closure_context.scopes, &mut self.parent_scopes); // Install parent scopes into the context.
         let result = closure_context.run_statements(&self.commands, Table::default());

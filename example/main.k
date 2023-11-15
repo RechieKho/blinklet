@@ -33,6 +33,14 @@ var 7th-element
 
 println '7th element of the numbers: `7th-element`'
 
+var numbers-iter
+    make-list-iter numbers
+
+while number
+    numbers-iter
+
+    println 'number: `number`'
+
 # Table
 var person
     table

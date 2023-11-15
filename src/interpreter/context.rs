@@ -57,8 +57,8 @@ pub struct Context {
     pub resource: Box<dyn Resource>,
 }
 
-impl Default for Context {
-    fn default() -> Self {
+impl Context {
+    pub fn new() -> Result<Self, Backtrace> {
         let standard: HashMap<&'static str, Variant> = HashMap::from([
             ("var", Variant::COMMAND(Command::new(var_fn))),
             ("set", Variant::COMMAND(Command::new(set_fn))),
@@ -93,20 +93,23 @@ impl Default for Context {
             ("console", Variant::COMMAND(Command::new(console_fn))),
         ]);
 
-        Context {
+        let mut context = Context {
             standard,
             scopes: Vec::new(),
             slots: Vec::new(),
             resource: Box::new(SystemResource::default()),
-        }
-    }
-}
+        };
 
-impl Context {
+        let make_list_iter_fn_code = include_str!("./standard/make_list_iter_fn.k");
+        context.install_code("make-list-iter", String::from(make_list_iter_fn_code))?;
+
+        Ok(context)
+    }
+
     pub fn resolve_variant(&mut self, atom: &Atom) -> Result<Variant, Backtrace> {
         match atom.value {
-            AtomValue::STATEMENT(ref command) => {
-                let signal = self.run_statement(command.as_slice())?;
+            AtomValue::STATEMENT(ref statement) => {
+                let signal = self.run_statement(statement.as_slice())?;
                 match signal {
                     Signal::RETURN(value, _) | Signal::COMPLETE(value) => Ok(value),
                     _ => {
@@ -291,24 +294,37 @@ impl Context {
                 }
             } else {
                 self.scopes.pop();
-                raise_error!(Some(atom.mark.clone()), "Expecting command.");
+                raise_error!(Some(atom.mark.clone()), "Expecting statement.");
             }
         }
         let table = self.scopes.pop().unwrap();
         Ok(Signal::COMPLETE(Variant::TABLE(table)))
     }
 
-    pub fn run_code(&mut self, mut path: ResourcePath) -> Result<Signal, Backtrace> {
+    pub fn run_resource(&mut self, mut path: ResourcePath) -> Result<Signal, Backtrace> {
         let module_name: String = path.clone().into();
         let previous_prefix = self.resource.get_prefix().clone();
         let mut new_prefix = self.resource.get_prefix().clone();
         let _ = new_prefix.append(&mut path.remove_parent_path());
         self.resource.set_prefix(new_prefix);
         let code = self.resource.get_code(path)?;
-        let result = tokenize(module_name, code)?;
-        let result = generate_commands(result)?;
-        let result = self.run_statements(result.as_slice(), Table::default());
+        let result = self.run_code(module_name, code);
         self.resource.set_prefix(previous_prefix);
         result
+    }
+
+    pub fn run_code(&mut self, name: String, code: String) -> Result<Signal, Backtrace> {
+        let result = tokenize(name, code)?;
+        let result = generate_commands(result)?;
+        self.run_statements(result.as_slice(), Table::default())
+    }
+
+    pub fn install_code(&mut self, name: &'static str, code: String) -> Result<(), Backtrace> {
+        let signal = self.run_code(String::from(name), code)?;
+        match signal {
+            Signal::COMPLETE(value) | Signal::RETURN(value, _) => self.standard.insert(name, value),
+            _ => None,
+        };
+        Ok(())
     }
 }

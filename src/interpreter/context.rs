@@ -14,6 +14,7 @@ use super::standard::import_fn::import_fn;
 use super::standard::l_fn::l_fn;
 use super::standard::le_fn::le_fn;
 use super::standard::list_fn::list_fn;
+use super::standard::list_get_fn::list_get_fn;
 use super::standard::list_length_fn::list_length_fn;
 use super::standard::list_pop_fn::list_pop_fn;
 use super::standard::list_push_fn::list_push_fn;
@@ -70,6 +71,7 @@ impl Default for Context {
             ("when", Variant::COMMAND(Command::new(when_fn))),
             ("while", Variant::COMMAND(Command::new(while_fn))),
             ("list", Variant::COMMAND(Command::new(list_fn))),
+            ("list-get", Variant::COMMAND(Command::new(list_get_fn))),
             ("list-push", Variant::COMMAND(Command::new(list_push_fn))),
             ("list-pop", Variant::COMMAND(Command::new(list_pop_fn))),
             (
@@ -195,6 +197,15 @@ impl Context {
             Ok(list)
         } else {
             raise_error!(Some(atom.mark.clone()), "Variant given is not a list.");
+        }
+    }
+
+    pub fn resolve_float(&mut self, atom: &Atom) -> Result<Float, Backtrace> {
+        let value = self.resolve_variant(atom)?;
+        if let Variant::FLOAT(float) = value {
+            Ok(float)
+        } else {
+            raise_error!(Some(atom.mark.clone()), "Variant given is not a float.");
         }
     }
 

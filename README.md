@@ -179,6 +179,14 @@ list [...elements]
 
 Make a list out of the elements given.
 
+#### `list-get`
+
+```
+list-get {list} {index}
+```
+
+Return the `index`th element of the `list`.
+
 #### `list-length`
 
 ```

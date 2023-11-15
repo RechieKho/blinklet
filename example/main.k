@@ -28,6 +28,11 @@ var length-of-numbers
 
 println 'Length of numbers: `length-of-numbers`'
 
+var 7th-element
+    list-get numbers 6
+
+println '7th element of the numbers: `7th-element`'
+
 # Table
 var person
     table

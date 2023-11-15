@@ -276,4 +276,14 @@ impl List {
         let guard = mutex_lock_unwrap!(self.0, mark);
         Ok(Variant::FLOAT(Float::from(guard.len() as f64)))
     }
+
+    pub fn get(&self, index: Float, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        let guard = mutex_lock_unwrap!(self.0, mark);
+        let element = guard.get(Into::<f64>::into(index) as usize);
+        if element.is_none() {
+            raise_error!(mark, "Accessing index out of bound.");
+        }
+        let element = element.unwrap();
+        Ok(element.clone())
+    }
 }

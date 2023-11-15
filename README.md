@@ -2,58 +2,70 @@
 
 ![logo](graphics/logo.png)
 
-> Nested paranthesis in lisp is too distracting! I should make one without it.
-> -- RechieKho
+A simple interpreted language written in Rust.
 
-A paranthesis-less indent-based object-oriented lisp.
+```bash
+# This is a comment.
 
-```
-println 'Hello world' # Print hello world!
-```
+# Let's start with a hello world.
+println 'Hello world'
 
-## Concept
-If you know lisp, then you already know pretty much how this language's syntax works.
-To invoke a function in lisp, you write as bellow:
+# Declaring variables
+var text 'Some text.'
+var number 41
+var bool true
+var nothing null
 
-```lisp
-(function arg1 arg2 arg3)
-```
+# Print out the variables
+println 'number: `number`'
 
-In Minky, we don't have the concept of operators (for real).
-The above lisp code will translate into Minky as bellow:
+# Conditional statements
+when true
+    println 'It is true! The code executes.'
 
-```
-function arg1 arg2 arg3
-```
+when false
+    println 'It is false! The code will not execute.'
 
-Let's say `arg1` is a function, and we want to invoke it and pass the returned value as argument.
-In lisp, 
+# List
+var numbers
+    list 1 2 3 4 5 6 7
 
-```lisp
-(function 
-    (arg1) 
-    arg2 arg3
-)
-```
+var length-of-numbers
+    list-length numbers
 
-While in Minky, we just use indentation.
+println 'Length of numbers: `length-of-numbers`'
 
-```
-function 
-    arg1 
-    | arg2 arg3
-```
+# Table
+var person
+    table
+        var name 'Mr. Krab'
+        var age 29
 
-In a sense, each indentation adds a paranthesis arounds the words, 
-and if it is leading with `|`, it will not add paranthesis.
+println 'person: `person`'
 
-## Example
-The example is in [`example`](example/) directory.
+var person-age
+    person
+        return age
 
-## Build from source
-This is a pure rust project, so just:
-```sh
-git clone https://github.com/RechieKho/minky # Clone the directory.
-cd minky # Enter the project.
-cargo run -- example/example.mkx # Build and run the example.
+println 'person age: `person-age`'
+
+# Closure
+var say-hello
+    closure
+        println 'Hi guys!'
+
+say-hello
+
+# Extending table
+var better-person
+    person
+        set name 'Better Mr. Krab'
+        set age 30
+
+        var be-good
+            closure
+                println 'I am definitely a good guy!'
+
+better-person
+    be-good
 ```

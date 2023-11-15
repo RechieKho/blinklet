@@ -86,15 +86,16 @@ Here is an example:
 command <identifier> <...identifiers> {mandatory-value} {...mandatory-values} [optional-value] [...optional-values] @commands
 ```
 
-| Entity | Description | In example |
-| Literal text | A literal text in which the coder _follows exactly_ as the notation given. | `command` |
-| Identifier | A name given by the coder. | `<identifier>` |
-| Multiple identifiers | Names given by the coder. | `<...identifiers>` |
-| Mandatory value | A value in which it must be provided by the coder. | `{madatory-value}` |
-| Multiple mandatory values | 1 or more values must be provided by the coder. | `{...mandatory-values}` |
-| Optional value | A value that doesn't need to be provided by the coder. | `{optional-value}` |
-| Multiple optional values | 0 or more values optionally provided by the coder. | `{...optional-values}` |
-| Series of commands (`@commands`) | A series of commands. | `@commands` |
+| Entity                           | Description                                                                | In example              |
+| -------------------------------- | -------------------------------------------------------------------------- | ----------------------- |
+| Literal text                     | A literal text in which the coder _follows exactly_ as the notation given. | `command`               |
+| Identifier                       | A name given by the coder.                                                 | `<identifier>`          |
+| Multiple identifiers             | Names given by the coder.                                                  | `<...identifiers>`      |
+| Mandatory value                  | A value in which it must be provided by the coder.                         | `{madatory-value}`      |
+| Multiple mandatory values        | 1 or more values must be provided by the coder.                            | `{...mandatory-values}` |
+| Optional value                   | A value that doesn't need to be provided by the coder.                     | `{optional-value}`      |
+| Multiple optional values         | 0 or more values optionally provided by the coder.                         | `{...optional-values}`  |
+| Series of commands (`@commands`) | A series of commands.                                                      | `@commands`             |
 
 ### Commands
 

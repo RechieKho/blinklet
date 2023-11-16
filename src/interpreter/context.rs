@@ -47,7 +47,7 @@ use crate::parser::atom::Atom;
 use crate::parser::atom::AtomValue;
 use crate::parser::token::tokenize;
 use crate::raise_error;
-use hashbrown::HashMap;
+use std::collections::HashMap;
 
 /// The runtime that runs Minky code.
 pub struct Context {

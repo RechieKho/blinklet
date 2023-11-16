@@ -8,7 +8,7 @@ use crate::backtrace::Backtrace;
 use crate::interpreter::variant::Variant;
 use crate::mark::Mark;
 use crate::{mutex_lock_unwrap, raise_error};
-use hashbrown::HashMap;
+use std::collections::HashMap;
 use std::{
     fmt::Debug,
     sync::{Arc, Mutex},

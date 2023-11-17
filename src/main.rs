@@ -13,23 +13,30 @@ use interpreter::variant::Variant;
 use std::env;
 use std::path::PathBuf;
 
+macro_rules! print_error {
+    ($error:expr) => {
+        eprintln!("\n\n{:-^1$}", "Error", 60);
+        eprintln!("{}", $error);
+    };
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() == 1 {
-        println!(
+        eprintln!(
             "usage: {} {{script_path}} [script_arguments...]",
             args.first().unwrap()
         );
         return;
     }
 
-    let path = ResourcePath::try_from(PathBuf::from(&args[1]));
-    if path.is_err() {
-        let error = path.unwrap_err();
-        println!("\n\n{error}");
-        return;
-    }
-    let path = path.unwrap();
+    let path = match ResourcePath::try_from(PathBuf::from(&args[1])) {
+        Ok(path) => path,
+        Err(error) => {
+            print_error!(error);
+            return;
+        }
+    };
 
     let script_args = &args[2..];
     let context = Context::new();
@@ -37,7 +44,7 @@ fn main() {
     let mut context = match context {
         Ok(context) => context,
         Err(error) => {
-            println!("\n\n{error}");
+            print_error!(error);
             return;
         }
     };
@@ -48,12 +55,10 @@ fn main() {
             .push(Variant::STRAND(Strand::from(arg.clone())));
     }
 
-    let result = context.run_resource(path);
-
-    match result {
-        Ok(_) => (),
+    let _ = match context.run_resource(path) {
+        Ok(signal) => signal,
         Err(error) => {
-            println!("\n\n{error}");
+            print_error!(error);
             return;
         }
     };

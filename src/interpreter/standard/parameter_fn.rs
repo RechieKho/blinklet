@@ -12,7 +12,7 @@ pub fn parameter_fn(
     body: &[Atom],
 ) -> Result<Signal, Backtrace> {
     let table = context_get_current_scope!(context);
-    for atom in body.iter() {
+    for atom in body.iter().rev() {
         let identifier = atom_as_identifier!(atom);
         let argument = context.slots.pop();
         match argument {

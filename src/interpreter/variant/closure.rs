@@ -152,7 +152,7 @@ impl Represent for Closure {
 impl Closure {
     pub fn call_mut(&mut self, context: &mut Context, body: &[Atom]) -> Result<Signal, Backtrace> {
         let mut slots: Vec<Variant> = Vec::new();
-        for atom in body.iter().rev() {
+        for atom in body.iter() {
             let value = context.resolve_variant(atom)?;
             slots.push(value);
         }

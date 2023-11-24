@@ -49,16 +49,8 @@ use crate::parser::token::tokenize;
 use crate::raise_error;
 use std::collections::HashMap;
 
-/// The runtime that runs Minky code.
-pub struct Context {
-    standard: HashMap<&'static str, Variant>,
-    pub(super) scopes: Vec<Table>,
-    pub slots: Vec<Variant>,
-    pub resource: Box<dyn Resource>,
-}
-
-impl Context {
-    pub fn new() -> Result<Self, Backtrace> {
+lazy_static::lazy_static! {
+    static ref STANDARD: HashMap<&'static str, Variant> = {
         let standard: HashMap<&'static str, Variant> = HashMap::from([
             ("var", Variant::COMMAND(Command::new(var_fn))),
             ("set", Variant::COMMAND(Command::new(set_fn))),
@@ -92,10 +84,26 @@ impl Context {
             ("<", Variant::COMMAND(Command::new(l_fn))),
             ("console", Variant::COMMAND(Command::new(console_fn))),
         ]);
+        standard
+    };
+}
 
+/// The runtime that runs Minky code.
+pub struct Context {
+    pub(super) scopes: Vec<Table>,
+    /// Extra variants in the global scope. Check out [`Self::install_code`].
+    pub supplement: HashMap<&'static str, Variant>,
+    /// Variants passed into script as parameters. The script can retrieve it with `parameter` command.
+    pub slots: Vec<Variant>,
+    /// Resource to retrieve scripts from, defaulted to [`crate::interpreter::resource::SystemResource`].
+    pub resource: Box<dyn Resource>,
+}
+
+impl Context {
+    pub fn new() -> Result<Self, Backtrace> {
         let mut context = Context {
-            standard,
             scopes: Vec::new(),
+            supplement: HashMap::new(),
             slots: Vec::new(),
             resource: Box::new(SystemResource::default()),
         };
@@ -148,7 +156,13 @@ impl Context {
             AtomValue::FLOAT(float) => Ok(Variant::FLOAT(Float::from(float))),
             AtomValue::IDENTIFIER(ref identifier) => {
                 // Query standard.
-                let value = self.standard.get(identifier.as_str());
+                let value = STANDARD.get(identifier.as_str());
+                if value.is_some() {
+                    return Ok(value.unwrap().clone());
+                }
+
+                // Query suppliment.
+                let value = self.supplement.get(identifier.as_str());
                 if value.is_some() {
                     return Ok(value.unwrap().clone());
                 }
@@ -322,7 +336,9 @@ impl Context {
     pub fn install_code(&mut self, name: &'static str, code: String) -> Result<(), Backtrace> {
         let signal = self.run_code(String::from(name), code)?;
         match signal {
-            Signal::COMPLETE(value) | Signal::RETURN(value, _) => self.standard.insert(name, value),
+            Signal::COMPLETE(value) | Signal::RETURN(value, _) => {
+                self.supplement.insert(name, value)
+            }
             _ => None,
         };
         Ok(())

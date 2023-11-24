@@ -19,6 +19,9 @@ pub struct Command {
     callable: Arc<dyn Fn(&mut Context, &Atom, &[Atom]) -> Result<Signal, Backtrace>>,
 }
 
+unsafe impl Sync for Command {}
+unsafe impl Send for Command {}
+
 impl VariantAdd for Command {
     fn add(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
         match rhs {

@@ -1,12 +1,14 @@
-# Minky
+# Blinklet
 
-![logo](graphics/logo.png)
+<p align="center">
+  <img width="500" height="500" src="graphics/logo.svg">
+</p>
 
 A simple interpreted language written in Rust.
 
 ## Example
 
-Here is an example for Minky script, you can also find it in [`example/main.k`](./example/main.k):
+Here is an example for Blinklet script, you can also find it in [`example/main.k`](./example/main.k):
 
 ```bash
 # This is a comment.
@@ -78,7 +80,7 @@ better-person
 
 ### Command notations
 
-Command is essentially builtin function for Minky. Here demonstrates the notation for explaining command that will be used throughout the wiki.
+Command is essentially builtin function for Blinklet. Here demonstrates the notation for explaining command that will be used throughout the wiki.
 
 Here is an example:
 

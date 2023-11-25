@@ -20,7 +20,7 @@ impl Display for Log {
             LogMessage::TRACE => format!("Traceback: \n"),
             LogMessage::ERROR(ref error) => format!("Error: {}\n", error.clone()),
             LogMessage::BUG(ref bug) => format!(
-                "Internal Bug: {} (Please report to https://github.com/RechieKho/minky/issues/new)\n",
+                "Internal Bug: {} (Please report to https://github.com/RechieKho/blinklet/issues/new)\n",
                 bug.clone()
             ),
         };

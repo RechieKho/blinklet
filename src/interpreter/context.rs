@@ -88,7 +88,7 @@ lazy_static::lazy_static! {
     };
 }
 
-/// The runtime that runs Minky code.
+/// The runtime that runs Blinklet code.
 pub struct Context {
     pub(super) scopes: Vec<Table>,
     /// Extra variants in the global scope. Check out [`Self::install_code`].

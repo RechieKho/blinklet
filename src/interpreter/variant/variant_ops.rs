@@ -19,21 +19,21 @@ pub trait VariantDiv {
 }
 
 pub trait VariantEq {
-    fn eq(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+    fn eq(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace>;
 }
 
 pub trait VariantGe {
-    fn ge(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+    fn ge(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace>;
 }
 
 pub trait VariantG {
-    fn g(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+    fn g(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace>;
 }
 
 pub trait VariantLe {
-    fn le(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+    fn le(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace>;
 }
 
 pub trait VariantL {
-    fn l(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+    fn l(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace>;
 }

@@ -71,44 +71,44 @@ impl VariantDiv for Boolean {
 }
 
 impl VariantEq for Boolean {
-    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::BOOL(boolean) => Ok(Variant::BOOL(Boolean::from(self.0 == boolean.0))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::BOOL(boolean) => Ok(self.0 == boolean.0),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantGe for Boolean {
-    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::BOOL(boolean) => Ok(Variant::BOOL(Boolean::from(self.0 == boolean.0))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::BOOL(boolean) => Ok(self.0 == boolean.0),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantG for Boolean {
-    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantLe for Boolean {
-    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::BOOL(boolean) => Ok(Variant::BOOL(Boolean::from(self.0 == boolean.0))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::BOOL(boolean) => Ok(self.0 == boolean.0),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantL for Boolean {
-    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            _ => Ok(false),
         }
     }
 }

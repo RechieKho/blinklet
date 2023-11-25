@@ -1,4 +1,3 @@
-use super::boolean::Boolean;
 use super::represent::Represent;
 use super::variant_ops::{
     VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
@@ -84,41 +83,146 @@ impl VariantDiv for Table {
 }
 
 impl VariantEq for Table {
-    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn eq(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::TABLE(table) => {
+                let other_guard = mutex_lock_unwrap!(table.0, mark);
+                let self_guard = mutex_lock_unwrap!(self.0, mark);
+
+                if self_guard.len() != other_guard.len() {
+                    return Ok(false);
+                }
+
+                for key in other_guard.keys() {
+                    let self_element = self_guard.get(key);
+                    if self_element.is_none() {
+                        return Ok(false);
+                    }
+                    let self_element = self_element.unwrap();
+                    let table_element = other_guard.get(key).unwrap();
+                    if !self_element.eq(table_element, mark.clone())? {
+                        return Ok(false);
+                    }
+                }
+                Ok(true)
+            }
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantGe for Table {
-    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn ge(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::TABLE(table) => {
+                let other_guard = mutex_lock_unwrap!(table.0, mark);
+                let self_guard = mutex_lock_unwrap!(self.0, mark);
+
+                if self_guard.len() != other_guard.len() {
+                    return Ok(false);
+                }
+
+                for key in other_guard.keys() {
+                    let self_element = self_guard.get(key);
+                    if self_element.is_none() {
+                        return Ok(false);
+                    }
+                    let self_element = self_element.unwrap();
+                    let table_element = other_guard.get(key).unwrap();
+                    if !self_element.ge(table_element, mark.clone())? {
+                        return Ok(false);
+                    }
+                }
+                Ok(true)
+            }
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantG for Table {
-    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn g(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::TABLE(table) => {
+                let other_guard = mutex_lock_unwrap!(table.0, mark);
+                let self_guard = mutex_lock_unwrap!(self.0, mark);
+
+                if self_guard.len() != other_guard.len() {
+                    return Ok(false);
+                }
+
+                for key in other_guard.keys() {
+                    let self_element = self_guard.get(key);
+                    if self_element.is_none() {
+                        return Ok(false);
+                    }
+                    let self_element = self_element.unwrap();
+                    let table_element = other_guard.get(key).unwrap();
+                    if !self_element.g(table_element, mark.clone())? {
+                        return Ok(false);
+                    }
+                }
+                Ok(true)
+            }
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantLe for Table {
-    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn le(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::TABLE(table) => {
+                let other_guard = mutex_lock_unwrap!(table.0, mark);
+                let self_guard = mutex_lock_unwrap!(self.0, mark);
+
+                if self_guard.len() != other_guard.len() {
+                    return Ok(false);
+                }
+
+                for key in other_guard.keys() {
+                    let self_element = self_guard.get(key);
+                    if self_element.is_none() {
+                        return Ok(false);
+                    }
+                    let self_element = self_element.unwrap();
+                    let table_element = other_guard.get(key).unwrap();
+                    if !self_element.le(table_element, mark.clone())? {
+                        return Ok(false);
+                    }
+                }
+                Ok(true)
+            }
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantL for Table {
-    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn l(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::TABLE(table) => {
+                let other_guard = mutex_lock_unwrap!(table.0, mark);
+                let self_guard = mutex_lock_unwrap!(self.0, mark);
+
+                if self_guard.len() != other_guard.len() {
+                    return Ok(false);
+                }
+
+                for key in other_guard.keys() {
+                    let self_element = self_guard.get(key);
+                    if self_element.is_none() {
+                        return Ok(false);
+                    }
+                    let self_element = self_element.unwrap();
+                    let table_element = other_guard.get(key).unwrap();
+                    if !self_element.l(table_element, mark.clone())? {
+                        return Ok(false);
+                    }
+                }
+                Ok(true)
+            }
+            _ => Ok(false),
         }
     }
 }

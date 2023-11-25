@@ -1,4 +1,3 @@
-use super::boolean::Boolean;
 use super::strand::Strand;
 use super::variant_ops::{
     VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
@@ -95,46 +94,46 @@ impl VariantDiv for Float {
 }
 
 impl VariantEq for Float {
-    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::FLOAT(float) => Ok(Variant::BOOL(Boolean::from(self.0 == float.0))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::FLOAT(float) => Ok(self.0 == float.0),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantGe for Float {
-    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::FLOAT(float) => Ok(Variant::BOOL(Boolean::from(self.0 >= float.0))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::FLOAT(float) => Ok(self.0 >= float.0),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantG for Float {
-    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::FLOAT(float) => Ok(Variant::BOOL(Boolean::from(self.0 > float.0))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::FLOAT(float) => Ok(self.0 > float.0),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantLe for Float {
-    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::FLOAT(float) => Ok(Variant::BOOL(Boolean::from(self.0 <= float.0))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::FLOAT(float) => Ok(self.0 <= float.0),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantL for Float {
-    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::FLOAT(float) => Ok(Variant::BOOL(Boolean::from(self.0 < float.0))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::FLOAT(float) => Ok(self.0 < float.0),
+            _ => Ok(false),
         }
     }
 }

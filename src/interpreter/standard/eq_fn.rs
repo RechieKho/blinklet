@@ -12,13 +12,9 @@ pub fn eq_fn(context: &mut Context, _head: &Atom, body: &[Atom]) -> Result<Signa
     let variant = context.resolve_variant(&body[0])?;
     for atom in body.iter().skip(1) {
         let rhs = context.resolve_variant(atom)?;
-        match variant.eq(&rhs, Some(atom.mark.clone()))? {
-            Variant::BOOL(boolean) => {
-                if !boolean.is_true() {
-                    return Ok(Signal::COMPLETE(Variant::BOOL(Boolean::from(false))));
-                }
-            }
-            _ => (),
+
+        if !variant.eq(&rhs, Some(atom.mark.clone()))? {
+            return Ok(Signal::COMPLETE(Variant::BOOL(Boolean::from(false))));
         }
     }
     Ok(Signal::COMPLETE(Variant::BOOL(Boolean::from(true))))

@@ -1,4 +1,3 @@
-use super::boolean::Boolean;
 use super::variant_ops::{
     VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
     VariantSub,
@@ -72,44 +71,44 @@ impl VariantDiv for Null {
 }
 
 impl VariantEq for Null {
-    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::NULL(_) => Ok(Variant::BOOL(Boolean::from(true))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::NULL(_) => Ok(true),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantGe for Null {
-    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::NULL(_) => Ok(Variant::BOOL(Boolean::from(true))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::NULL(_) => Ok(true),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantG for Null {
-    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantLe for Null {
-    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::NULL(_) => Ok(Variant::BOOL(Boolean::from(true))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::NULL(_) => Ok(true),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantL for Null {
-    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            _ => Ok(false),
         }
     }
 }

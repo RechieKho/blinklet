@@ -1,4 +1,3 @@
-use super::boolean::Boolean;
 use super::represent::Represent;
 use super::variant_ops::{
     VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
@@ -83,53 +82,44 @@ impl VariantDiv for Command {
 }
 
 impl VariantEq for Command {
-    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::COMMAND(command) => Ok(Variant::BOOL(Boolean::from(Arc::ptr_eq(
-                &self.callable,
-                &command.callable,
-            )))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::COMMAND(command) => Ok(Arc::ptr_eq(&self.callable, &command.callable)),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantGe for Command {
-    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::COMMAND(command) => Ok(Variant::BOOL(Boolean::from(Arc::ptr_eq(
-                &self.callable,
-                &command.callable,
-            )))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::COMMAND(command) => Ok(Arc::ptr_eq(&self.callable, &command.callable)),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantG for Command {
-    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantLe for Command {
-    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::COMMAND(command) => Ok(Variant::BOOL(Boolean::from(Arc::ptr_eq(
-                &self.callable,
-                &command.callable,
-            )))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::COMMAND(command) => Ok(Arc::ptr_eq(&self.callable, &command.callable)),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantL for Command {
-    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            _ => Ok(false),
         }
     }
 }

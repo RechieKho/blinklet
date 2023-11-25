@@ -110,7 +110,7 @@ impl VariantDiv for Variant {
 }
 
 impl VariantEq for Variant {
-    fn eq(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn eq(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match self {
             Variant::NULL(null) => null.eq(rhs, mark),
             Variant::BOOL(boolean) => boolean.eq(rhs, mark),
@@ -125,7 +125,7 @@ impl VariantEq for Variant {
 }
 
 impl VariantGe for Variant {
-    fn ge(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn ge(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match self {
             Variant::NULL(null) => null.ge(rhs, mark),
             Variant::BOOL(boolean) => boolean.ge(rhs, mark),
@@ -140,7 +140,7 @@ impl VariantGe for Variant {
 }
 
 impl VariantG for Variant {
-    fn g(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn g(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match self {
             Variant::NULL(null) => null.g(rhs, mark),
             Variant::BOOL(boolean) => boolean.g(rhs, mark),
@@ -155,7 +155,7 @@ impl VariantG for Variant {
 }
 
 impl VariantLe for Variant {
-    fn le(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn le(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match self {
             Variant::NULL(null) => null.le(rhs, mark),
             Variant::BOOL(boolean) => boolean.le(rhs, mark),
@@ -170,7 +170,7 @@ impl VariantLe for Variant {
 }
 
 impl VariantL for Variant {
-    fn l(&self, rhs: &Variant, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn l(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match self {
             Variant::NULL(null) => null.l(rhs, mark),
             Variant::BOOL(boolean) => boolean.l(rhs, mark),

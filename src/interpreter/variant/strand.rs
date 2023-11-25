@@ -1,4 +1,3 @@
-use super::boolean::Boolean;
 use super::variant_ops::{
     VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
     VariantSub,
@@ -67,44 +66,44 @@ impl VariantDiv for Strand {
 }
 
 impl VariantEq for Strand {
-    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::STRAND(strand) => Ok(Variant::BOOL(Boolean::from(self.0 == strand.0))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::STRAND(strand) => Ok(self.0 == strand.0),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantGe for Strand {
-    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::STRAND(strand) => Ok(Variant::BOOL(Boolean::from(self.0 == strand.0))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::STRAND(strand) => Ok(self.0 == strand.0),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantG for Strand {
-    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantLe for Strand {
-    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::STRAND(strand) => Ok(Variant::BOOL(Boolean::from(self.0 == strand.0))),
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::STRAND(strand) => Ok(self.0 == strand.0),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantL for Strand {
-    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            _ => Ok(false),
         }
     }
 }

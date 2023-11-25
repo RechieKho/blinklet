@@ -1,4 +1,3 @@
-use super::boolean::Boolean;
 use super::represent::Represent;
 use super::table::Table;
 use super::variant_ops::{
@@ -83,50 +82,44 @@ impl VariantDiv for Closure {
 }
 
 impl VariantEq for Closure {
-    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::CLOSURE(closure) => {
-                Ok(Variant::BOOL(Boolean::from(self.mark == closure.mark)))
-            }
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::CLOSURE(closure) => Ok(self.mark == closure.mark),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantGe for Closure {
-    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::CLOSURE(closure) => {
-                Ok(Variant::BOOL(Boolean::from(self.mark == closure.mark)))
-            }
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::CLOSURE(closure) => Ok(self.mark == closure.mark),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantG for Closure {
-    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn g(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantLe for Closure {
-    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::CLOSURE(closure) => {
-                Ok(Variant::BOOL(Boolean::from(self.mark == closure.mark)))
-            }
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            Variant::CLOSURE(closure) => Ok(self.mark == closure.mark),
+            _ => Ok(false),
         }
     }
 }
 
 impl VariantL for Closure {
-    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn l(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            _ => Ok(Variant::BOOL(Boolean::from(false))),
+            _ => Ok(false),
         }
     }
 }

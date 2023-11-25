@@ -12,13 +12,8 @@ pub fn le_fn(context: &mut Context, _head: &Atom, body: &[Atom]) -> Result<Signa
     let mut variant = context.resolve_variant(&body[0])?;
     for atom in body.iter().skip(1) {
         let rhs = context.resolve_variant(atom)?;
-        match variant.le(&rhs, Some(atom.mark.clone()))? {
-            Variant::BOOL(boolean) => {
-                if !boolean.is_true() {
-                    return Ok(Signal::COMPLETE(Variant::BOOL(Boolean::from(false))));
-                }
-            }
-            _ => (),
+        if !variant.le(&rhs, Some(atom.mark.clone()))? {
+            return Ok(Signal::COMPLETE(Variant::BOOL(Boolean::from(false))));
         }
         variant = rhs;
     }

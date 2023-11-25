@@ -85,27 +85,7 @@ impl VariantDiv for Table {
 impl VariantEq for Table {
     fn eq(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::TABLE(table) => {
-                let other_guard = mutex_lock_unwrap!(table.0, mark);
-                let self_guard = mutex_lock_unwrap!(self.0, mark);
-
-                if self_guard.len() != other_guard.len() {
-                    return Ok(false);
-                }
-
-                for key in other_guard.keys() {
-                    let self_element = self_guard.get(key);
-                    if self_element.is_none() {
-                        return Ok(false);
-                    }
-                    let self_element = self_element.unwrap();
-                    let table_element = other_guard.get(key).unwrap();
-                    if !self_element.eq(table_element, mark.clone())? {
-                        return Ok(false);
-                    }
-                }
-                Ok(true)
-            }
+            Variant::TABLE(table) => self.is_table_eq(table, mark),
             _ => Ok(false),
         }
     }
@@ -284,5 +264,27 @@ impl Table {
     pub fn contains_key(&self, key: &String, mark: Option<Mark>) -> Result<bool, Backtrace> {
         let guard = mutex_lock_unwrap!(self.0, mark);
         Ok(guard.contains_key(key))
+    }
+
+    pub fn is_table_eq(&self, other: &Self, mark: Option<Mark>) -> Result<bool, Backtrace> {
+        let other_guard = mutex_lock_unwrap!(other.0, mark);
+        let self_guard = mutex_lock_unwrap!(self.0, mark);
+
+        if self_guard.len() != other_guard.len() {
+            return Ok(false);
+        }
+
+        for key in other_guard.keys() {
+            let self_element = self_guard.get(key);
+            if self_element.is_none() {
+                return Ok(false);
+            }
+            let self_element = self_element.unwrap();
+            let table_element = other_guard.get(key).unwrap();
+            if !self_element.eq(table_element, mark.clone())? {
+                return Ok(false);
+            }
+        }
+        Ok(true)
     }
 }

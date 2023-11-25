@@ -82,18 +82,18 @@ impl VariantDiv for Closure {
 }
 
 impl VariantEq for Closure {
-    fn eq(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
+    fn eq(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::CLOSURE(closure) => Ok(self.mark == closure.mark),
+            Variant::CLOSURE(closure) => self.is_closure_eq(closure, mark),
             _ => Ok(false),
         }
     }
 }
 
 impl VariantGe for Closure {
-    fn ge(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
+    fn ge(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::CLOSURE(closure) => Ok(self.mark == closure.mark),
+            Variant::CLOSURE(closure) => self.is_closure_eq(closure, mark),
             _ => Ok(false),
         }
     }
@@ -108,9 +108,9 @@ impl VariantG for Closure {
 }
 
 impl VariantLe for Closure {
-    fn le(&self, rhs: &Variant, _mark: Option<Mark>) -> Result<bool, Backtrace> {
+    fn le(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace> {
         match rhs {
-            Variant::CLOSURE(closure) => Ok(self.mark == closure.mark),
+            Variant::CLOSURE(closure) => self.is_closure_eq(closure, mark),
             _ => Ok(false),
         }
     }
@@ -178,5 +178,22 @@ impl Closure {
             commands,
             parent_scopes,
         }
+    }
+
+    pub fn is_closure_eq(&self, other: &Self, mark: Option<Mark>) -> Result<bool, Backtrace> {
+        // Comparing parent scope.
+        if self.parent_scopes.len() != other.parent_scopes.len() {
+            return Ok(false);
+        }
+
+        for i in 0..self.parent_scopes.len() {
+            let self_element = self.parent_scopes.get(i).unwrap();
+            let other_element = self.parent_scopes.get(i).unwrap();
+            if !self_element.is_table_eq(other_element, mark.clone())? {
+                return Ok(false);
+            }
+        }
+
+        Ok(self.mark == other.mark)
     }
 }

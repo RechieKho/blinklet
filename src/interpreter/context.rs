@@ -7,6 +7,7 @@ use super::standard::closure_fn::closure_fn;
 use super::standard::console_fn::console_fn;
 use super::standard::continue_fn::continue_fn;
 use super::standard::div_fn::div_fn;
+use super::standard::duplicate_fn::duplicate_fn;
 use super::standard::eq_fn::eq_fn;
 use super::standard::g_fn::g_fn;
 use super::standard::ge_fn::ge_fn;
@@ -83,6 +84,7 @@ lazy_static::lazy_static! {
             ("le", Variant::COMMAND(Command::new(le_fn))),
             ("l", Variant::COMMAND(Command::new(l_fn))),
             ("console", Variant::COMMAND(Command::new(console_fn))),
+            ("duplicate", Variant::COMMAND(Command::new(duplicate_fn))),
         ]);
         standard
     };

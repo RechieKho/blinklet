@@ -1,7 +1,7 @@
 use super::strand::Strand;
 use super::variant_ops::{
-    VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
-    VariantSub,
+    VariantAdd, VariantDiv, VariantDuplicate, VariantEq, VariantG, VariantGe, VariantL, VariantLe,
+    VariantMul, VariantSub,
 };
 use super::{represent::Represent, Variant};
 use crate::mark::Mark;
@@ -135,6 +135,12 @@ impl VariantL for Float {
             Variant::FLOAT(float) => Ok(self.0 < float.0),
             _ => Ok(false),
         }
+    }
+}
+
+impl VariantDuplicate for Float {
+    fn duplicate(&self, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        Ok(Variant::FLOAT(self.clone()))
     }
 }
 

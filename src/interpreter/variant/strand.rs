@@ -1,6 +1,6 @@
 use super::variant_ops::{
-    VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
-    VariantSub,
+    VariantAdd, VariantDiv, VariantDuplicate, VariantEq, VariantG, VariantGe, VariantL, VariantLe,
+    VariantMul, VariantSub,
 };
 use super::{represent::Represent, Variant};
 use crate::mark::Mark;
@@ -105,6 +105,12 @@ impl VariantL for Strand {
         match rhs {
             _ => Ok(false),
         }
+    }
+}
+
+impl VariantDuplicate for Strand {
+    fn duplicate(&self, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        Ok(Variant::STRAND(self.clone()))
     }
 }
 

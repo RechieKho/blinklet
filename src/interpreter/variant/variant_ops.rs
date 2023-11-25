@@ -37,3 +37,7 @@ pub trait VariantLe {
 pub trait VariantL {
     fn l(&self, rhs: &Variant, mark: Option<Mark>) -> Result<bool, Backtrace>;
 }
+
+pub trait VariantDuplicate {
+    fn duplicate(&self, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+}

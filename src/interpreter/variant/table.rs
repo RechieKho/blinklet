@@ -1,7 +1,7 @@
 use super::represent::Represent;
 use super::variant_ops::{
-    VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
-    VariantSub,
+    VariantAdd, VariantDiv, VariantDuplicate, VariantEq, VariantG, VariantGe, VariantL, VariantLe,
+    VariantMul, VariantSub,
 };
 use crate::backtrace::Backtrace;
 use crate::interpreter::variant::Variant;
@@ -227,6 +227,13 @@ impl VariantL for Table {
     }
 }
 
+impl VariantDuplicate for Table {
+    fn duplicate(&self, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        let guard = mutex_lock_unwrap!(self.0, mark);
+        Ok(Variant::TABLE(Table::from(guard.clone())))
+    }
+}
+
 impl Debug for Table {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("<Table>")
@@ -244,6 +251,12 @@ impl Represent for Table {
             })
             .collect::<Result<Vec<String>, Backtrace>>()?;
         Ok(format!("<Table {{{}}}>", representations.join(", ")))
+    }
+}
+
+impl From<HashMap<String, Variant>> for Table {
+    fn from(value: HashMap<String, Variant>) -> Self {
+        Table(Arc::new(Mutex::new(value)))
     }
 }
 

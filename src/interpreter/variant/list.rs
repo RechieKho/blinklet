@@ -1,7 +1,7 @@
 use super::float::Float;
 use super::variant_ops::{
-    VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
-    VariantSub,
+    VariantAdd, VariantDiv, VariantDuplicate, VariantEq, VariantG, VariantGe, VariantL, VariantLe,
+    VariantMul, VariantSub,
 };
 use super::{represent::Represent, Variant};
 use crate::mark::Mark;
@@ -200,6 +200,13 @@ impl VariantL for List {
             }
             _ => Ok(false),
         }
+    }
+}
+
+impl VariantDuplicate for List {
+    fn duplicate(&self, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        let guard = mutex_lock_unwrap!(self.0, mark);
+        Ok(Variant::LIST(List::from(guard.clone())))
     }
 }
 

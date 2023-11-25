@@ -4,6 +4,7 @@ pub mod closure_fn;
 pub mod console_fn;
 pub mod continue_fn;
 pub mod div_fn;
+pub mod duplicate_fn;
 pub mod eq_fn;
 pub mod g_fn;
 pub mod ge_fn;

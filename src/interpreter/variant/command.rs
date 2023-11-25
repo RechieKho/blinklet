@@ -1,7 +1,7 @@
 use super::represent::Represent;
 use super::variant_ops::{
-    VariantAdd, VariantDiv, VariantEq, VariantG, VariantGe, VariantL, VariantLe, VariantMul,
-    VariantSub,
+    VariantAdd, VariantDiv, VariantDuplicate, VariantEq, VariantG, VariantGe, VariantL, VariantLe,
+    VariantMul, VariantSub,
 };
 use super::Variant;
 use crate::backtrace::Backtrace;
@@ -121,6 +121,12 @@ impl VariantL for Command {
         match rhs {
             _ => Ok(false),
         }
+    }
+}
+
+impl VariantDuplicate for Command {
+    fn duplicate(&self, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        Ok(Variant::COMMAND(self.clone()))
     }
 }
 

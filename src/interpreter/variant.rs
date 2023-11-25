@@ -23,7 +23,7 @@ use strand::Strand;
 use table::Table;
 use variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 
-use self::variant_ops::{VariantEq, VariantG, VariantGe, VariantL, VariantLe};
+use self::variant_ops::{VariantDuplicate, VariantEq, VariantG, VariantGe, VariantL, VariantLe};
 
 #[macro_export]
 macro_rules! mutex_lock_unwrap {
@@ -180,6 +180,21 @@ impl VariantL for Variant {
             Variant::TABLE(table) => table.l(rhs, mark),
             Variant::COMMAND(command) => command.l(rhs, mark),
             Variant::CLOSURE(closure) => closure.l(rhs, mark),
+        }
+    }
+}
+
+impl VariantDuplicate for Variant {
+    fn duplicate(&self, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+        match self {
+            Variant::NULL(null) => null.duplicate(mark),
+            Variant::BOOL(boolean) => boolean.duplicate(mark),
+            Variant::FLOAT(float) => float.duplicate(mark),
+            Variant::STRAND(strand) => strand.duplicate(mark),
+            Variant::LIST(list) => list.duplicate(mark),
+            Variant::TABLE(table) => table.duplicate(mark),
+            Variant::COMMAND(command) => command.duplicate(mark),
+            Variant::CLOSURE(closure) => closure.duplicate(mark),
         }
     }
 }

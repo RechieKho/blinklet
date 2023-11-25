@@ -131,45 +131,45 @@ div {left-hand-side} {...right-hand-sides}
 
 Divide `left-hand-side` with `right-hand-sides`, return the result.
 
-#### `=`
+#### `eq`
 
 ```
-= {left-hand-side} {right-hand-side}
+eq {left-hand-side} {...right-hand-sides}
 ```
 
-Check if `left-hand-side` is equal with `right-hand-side`, return `true` if true.
+Check if `left-hand-side` is equal with `right-hand-sides`, return `true` if true.
 
-#### `>`
-
-```
-> {left-hand-side} {right-hand-side}
-```
-
-Check if `left-hand-side` is greater than `right-hand-side`, return `true` if true.
-
-#### `>=`
+#### `g`
 
 ```
->= {left-hand-side} {right-hand-side}
+g {left-hand-side} {...right-hand-sides}
 ```
 
-Check if `left-hand-side` is greater or equal to `right-hand-side`, return `true` if true.
+Check if `left-hand-side` is greater than `right-hand-sides`, return `true` if true.
 
-#### `<`
-
-```
-< {left-hand-side} {right-hand-side}
-```
-
-Check if `left-hand-side` is less than `right-hand-side`, return `true` if true.
-
-#### `<=`
+#### `ge`
 
 ```
-<= {left-hand-side} {right-hand-side}
+ge {left-hand-side} {...right-hand-sides}
 ```
 
-Check if `left-hand-side` is less or equal to `right-hand-side`, return `true` if true.
+Check if `left-hand-side` is greater or equal to `right-hand-sides`, return `true` if true.
+
+#### `l`
+
+```
+l {left-hand-side} {...right-hand-sides}
+```
+
+Check if `left-hand-side` is less than `right-hand-sides`, return `true` if true.
+
+#### `le`
+
+```
+le {left-hand-side} {...right-hand-sides}
+```
+
+Check if `left-hand-side` is less or equal to `right-hand-sides`, return `true` if true.
 
 #### `list`
 

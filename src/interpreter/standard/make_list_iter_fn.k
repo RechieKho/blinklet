@@ -7,7 +7,7 @@ return
         return
             closure
                 when
-                    >= index length
+                    ge index length
                     return null
                 var element
                     list-get ls index

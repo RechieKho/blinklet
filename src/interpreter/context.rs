@@ -77,11 +77,11 @@ lazy_static::lazy_static! {
             ("break", Variant::COMMAND(Command::new(break_fn))),
             ("continue", Variant::COMMAND(Command::new(continue_fn))),
             ("import", Variant::COMMAND(Command::new(import_fn))),
-            ("=", Variant::COMMAND(Command::new(eq_fn))),
-            (">=", Variant::COMMAND(Command::new(ge_fn))),
-            (">", Variant::COMMAND(Command::new(g_fn))),
-            ("<=", Variant::COMMAND(Command::new(le_fn))),
-            ("<", Variant::COMMAND(Command::new(l_fn))),
+            ("eq", Variant::COMMAND(Command::new(eq_fn))),
+            ("ge", Variant::COMMAND(Command::new(ge_fn))),
+            ("g", Variant::COMMAND(Command::new(g_fn))),
+            ("le", Variant::COMMAND(Command::new(le_fn))),
+            ("l", Variant::COMMAND(Command::new(l_fn))),
             ("console", Variant::COMMAND(Command::new(console_fn))),
         ]);
         standard

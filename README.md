@@ -333,3 +333,11 @@ console @commands
 ```
 
 Execute commands in system console. The values passed into the system commands are evaluated.
+
+#### `duplicate`
+
+```
+duplicate {value}
+```
+
+Deep clone the value and return the clone.

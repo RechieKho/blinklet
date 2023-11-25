@@ -22,12 +22,12 @@ macro_rules! atom_as_identifier {
 }
 
 #[macro_export]
-macro_rules! atom_as_command {
+macro_rules! atom_as_statement {
     ($atom: expr) => {
-        if let crate::parser::atom::AtomValue::STATEMENT(ref command) = $atom.value {
-            command
+        if let crate::parser::atom::AtomValue::STATEMENT(ref statement) = $atom.value {
+            statement
         } else {
-            crate::raise_error!(Some($atom.mark.clone()), "Expecting a command.");
+            crate::raise_error!(Some($atom.mark.clone()), "Expecting a statement.");
         }
     };
 }
@@ -84,9 +84,9 @@ impl Atom {
         }
     }
 
-    pub fn new_command(command: Vec<Atom>, mark: Mark) -> Self {
+    pub fn new_statement(statement: Vec<Atom>, mark: Mark) -> Self {
         Atom {
-            value: AtomValue::STATEMENT(command),
+            value: AtomValue::STATEMENT(statement),
             mark,
         }
     }
@@ -111,7 +111,7 @@ impl Atom {
     }
 }
 
-pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace> {
+pub fn generate_statements(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace> {
     let mut result: Vec<Atom> = Vec::new();
     let mut current_indent_count = 0usize;
 
@@ -124,8 +124,8 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
             };
         }
 
-        if let AtomValue::STATEMENT(ref mut command) = atom.value {
-            let last = command.last_mut()?;
+        if let AtomValue::STATEMENT(ref mut statement) = atom.value {
+            let last = statement.last_mut()?;
             return get_subatom_mut(last, nesting - 1);
         } else {
             return None;
@@ -153,7 +153,7 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
             continue;
         }
 
-        // Indentation at the very first command, this is a sin.
+        // Indentation at the very first statement, this is a sin.
         if result.len() == 0 && token_line.indent_count != 0 {
             raise_error!(
                 Some(Mark::new(token_line.mark_line, 0..=0)),
@@ -163,7 +163,7 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
 
         // Just append to the result since there is no indentation.
         if token_line.indent_count == 0 {
-            result.push(Atom::new_command(
+            result.push(Atom::new_statement(
                 atoms,
                 Mark::new(
                     token_line.mark_line.clone(),
@@ -174,14 +174,14 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
             continue;
         }
 
-        // There is indentation, get the parent command and push the subcommand.
+        // There is indentation, get the parent statement and push the substatement.
         let parent_atom =
             get_subatom_mut(result.last_mut().unwrap(), token_line.indent_count - 1).unwrap();
 
-        let parent_command = if let AtomValue::STATEMENT(ref mut command) = parent_atom.value {
-            command
+        let parent_statement = if let AtomValue::STATEMENT(ref mut statement) = parent_atom.value {
+            statement
         } else {
-            raise_error!(Some(parent_atom.mark.clone()), "Expecting a command.");
+            raise_error!(Some(parent_atom.mark.clone()), "Expecting a statement.");
         };
 
         {
@@ -191,7 +191,7 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
                 AtomValue::IDENTIFIER(ref identifier) => {
                     if identifier == "|" {
                         atoms.remove(0); // Remove the "|".
-                        parent_command.append(&mut atoms);
+                        parent_statement.append(&mut atoms);
                         current_indent_count = token_line.indent_count;
                         continue;
                     }
@@ -199,36 +199,36 @@ pub fn generate_commands(mut lot: Vec<TokenLine>) -> Result<Vec<Atom>, Backtrace
                 AtomValue::STRING(_) => {
                     raise_error!(
                         Some(first_atom.mark.clone()),
-                        "String as the head of a command is forbidden."
+                        "String as the head of a statement is forbidden."
                     );
                 }
                 AtomValue::FLOAT(_) => {
                     raise_error!(
                         Some(first_atom.mark.clone()),
-                        "FLOAT as the head of a command is forbidden."
+                        "FLOAT as the head of a statement is forbidden."
                     );
                 }
                 AtomValue::BOOL(_) => {
                     raise_error!(
                         Some(first_atom.mark.clone()),
-                        "Bool as the head of a command is forbidden."
+                        "Bool as the head of a statement is forbidden."
                     );
                 }
                 AtomValue::NULL => {
                     raise_error!(
                         Some(first_atom.mark.clone()),
-                        "Null as the head of a command is forbidden."
+                        "Null as the head of a statement is forbidden."
                     );
                 }
                 AtomValue::STATEMENT(_) => {
                     raise_bug!(
                         Some(first_atom.mark.clone()),
-                        "Command as the head of a command should be unreachable."
+                        "Statement as the head of a statement should be unreachable."
                     );
                 }
             }
         }
-        parent_command.push(Atom::new_command(
+        parent_statement.push(Atom::new_statement(
             atoms,
             Mark::new(
                 token_line.mark_line.clone(),

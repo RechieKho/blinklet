@@ -42,7 +42,7 @@ use super::variant::table::Table;
 use super::variant::Variant;
 use crate::backtrace::Backtrace;
 use crate::log::Log;
-use crate::parser::atom::generate_commands;
+use crate::parser::atom::generate_statements;
 use crate::parser::atom::Atom;
 use crate::parser::atom::AtomValue;
 use crate::parser::token::tokenize;
@@ -329,7 +329,7 @@ impl Context {
 
     pub fn run_code(&mut self, name: String, code: String) -> Result<Signal, Backtrace> {
         let result = tokenize(name, code)?;
-        let result = generate_commands(result)?;
+        let result = generate_statements(result)?;
         self.run_statements(result.as_slice(), Table::default())
     }
 

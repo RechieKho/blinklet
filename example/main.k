@@ -83,3 +83,6 @@ var console_output
         echo 'Hello, this is from a console.'
 
 println 'console output: `console_output`'
+
+# Assertion
+assert false 'Assertion works!'

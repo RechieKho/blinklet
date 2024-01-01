@@ -1,4 +1,5 @@
 pub mod add_fn;
+pub mod assert_fn;
 pub mod break_fn;
 pub mod closure_fn;
 pub mod console_fn;

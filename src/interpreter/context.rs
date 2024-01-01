@@ -2,6 +2,7 @@ use super::resource::system_resource::SystemResource;
 use super::resource::Resource;
 use super::resource::ResourcePath;
 use super::standard::add_fn::add_fn;
+use super::standard::assert_fn::assert_fn;
 use super::standard::break_fn::break_fn;
 use super::standard::closure_fn::closure_fn;
 use super::standard::console_fn::console_fn;
@@ -85,6 +86,7 @@ lazy_static::lazy_static! {
             ("l", Variant::COMMAND(Command::new(l_fn))),
             ("console", Variant::COMMAND(Command::new(console_fn))),
             ("duplicate", Variant::COMMAND(Command::new(duplicate_fn))),
+            ("assert", Variant::COMMAND(Command::new(assert_fn))),
         ]);
         standard
     };

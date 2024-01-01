@@ -8,7 +8,7 @@ A simple interpreted language written in Rust.
 
 ## Example
 
-Here is an example for Blinklet script, you can also find it in [`example/main.k`](./example/main.k):
+Here is an example for Blinklet script, full example is in [`example/main.k`](./example/main.k):
 
 ```bash
 # This is a comment.

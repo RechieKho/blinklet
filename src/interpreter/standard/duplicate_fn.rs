@@ -13,6 +13,6 @@ pub fn duplicate_fn(
     assert_atoms_count!(body, 1);
     let variant = context.resolve_variant(&body[0])?;
     Ok(Signal::COMPLETE(
-        variant.duplicate(Some(head.mark.clone()))?,
+        variant.duplicate(Some(head.mark.clone()), context)?,
     ))
 }

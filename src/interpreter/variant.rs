@@ -25,6 +25,8 @@ use variant_ops::{VariantAdd, VariantDiv, VariantMul, VariantSub};
 
 use self::variant_ops::{VariantDuplicate, VariantEq, VariantG, VariantGe, VariantL, VariantLe};
 
+use super::context::Context;
+
 #[macro_export]
 macro_rules! mutex_lock_unwrap {
     ($mutex:expr, $mark:expr) => {
@@ -185,16 +187,16 @@ impl VariantL for Variant {
 }
 
 impl VariantDuplicate for Variant {
-    fn duplicate(&self, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn duplicate(&self, mark: Option<Mark>, context: &mut Context) -> Result<Variant, Backtrace> {
         match self {
-            Variant::NULL(null) => null.duplicate(mark),
-            Variant::BOOL(boolean) => boolean.duplicate(mark),
-            Variant::FLOAT(float) => float.duplicate(mark),
-            Variant::STRAND(strand) => strand.duplicate(mark),
-            Variant::LIST(list) => list.duplicate(mark),
-            Variant::TABLE(table) => table.duplicate(mark),
-            Variant::COMMAND(command) => command.duplicate(mark),
-            Variant::CLOSURE(closure) => closure.duplicate(mark),
+            Variant::NULL(null) => null.duplicate(mark, context),
+            Variant::BOOL(boolean) => boolean.duplicate(mark, context),
+            Variant::FLOAT(float) => float.duplicate(mark, context),
+            Variant::STRAND(strand) => strand.duplicate(mark, context),
+            Variant::LIST(list) => list.duplicate(mark, context),
+            Variant::TABLE(table) => table.duplicate(mark, context),
+            Variant::COMMAND(command) => command.duplicate(mark, context),
+            Variant::CLOSURE(closure) => closure.duplicate(mark, context),
         }
     }
 }

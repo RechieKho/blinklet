@@ -3,6 +3,7 @@ use super::variant_ops::{
     VariantMul, VariantSub,
 };
 use super::{represent::Represent, Variant};
+use crate::interpreter::context::Context;
 use crate::mark::Mark;
 use crate::{backtrace::Backtrace, raise_error};
 use std::fmt::Debug;
@@ -114,7 +115,7 @@ impl VariantL for Boolean {
 }
 
 impl VariantDuplicate for Boolean {
-    fn duplicate(&self, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn duplicate(&self, _mark: Option<Mark>, _context: &mut Context) -> Result<Variant, Backtrace> {
         Ok(Variant::BOOL(self.clone()))
     }
 }

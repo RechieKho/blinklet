@@ -4,6 +4,7 @@ use super::variant_ops::{
     VariantMul, VariantSub,
 };
 use super::{represent::Represent, Variant};
+use crate::interpreter::context::Context;
 use crate::mark::Mark;
 use crate::mutex_lock_unwrap;
 use crate::{backtrace::Backtrace, raise_error};
@@ -204,9 +205,13 @@ impl VariantL for List {
 }
 
 impl VariantDuplicate for List {
-    fn duplicate(&self, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn duplicate(&self, mark: Option<Mark>, context: &mut Context) -> Result<Variant, Backtrace> {
         let guard = mutex_lock_unwrap!(self.0, mark);
-        Ok(Variant::LIST(List::from(guard.clone())))
+        let mut data: Vec<Variant> = Vec::new();
+        for variant in guard.iter() {
+            data.push(variant.duplicate(mark.clone(), context)?);
+        }
+        Ok(Variant::LIST(List::from(data)))
     }
 }
 

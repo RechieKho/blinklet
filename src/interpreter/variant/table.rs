@@ -4,6 +4,7 @@ use super::variant_ops::{
     VariantMul, VariantSub,
 };
 use crate::backtrace::Backtrace;
+use crate::interpreter::context::Context;
 use crate::interpreter::variant::Variant;
 use crate::mark::Mark;
 use crate::{mutex_lock_unwrap, raise_error};
@@ -208,9 +209,19 @@ impl VariantL for Table {
 }
 
 impl VariantDuplicate for Table {
-    fn duplicate(&self, mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn duplicate(&self, mark: Option<Mark>, context: &mut Context) -> Result<Variant, Backtrace> {
         let guard = mutex_lock_unwrap!(self.0, mark);
-        Ok(Variant::TABLE(Table::from(guard.clone())))
+        let data: Table = Table::default();
+        context.scopes.push(data.clone());
+        {
+            let mut data_guard = mutex_lock_unwrap!(data.0, mark);
+            for (key, value) in guard.iter() {
+                let duplicated = value.duplicate(mark.clone(), context)?;
+                data_guard.insert(key.clone(), duplicated);
+            }
+        }
+        context.scopes.pop();
+        Ok(Variant::TABLE(data))
     }
 }
 

@@ -64,13 +64,15 @@ say-hello
 
 # Extending table
 var better-person
-    person
-        set name 'Better Mr. Krab'
-        set age 30
+    duplicate person
 
-        var be-good
-            closure
-                println 'I am definitely a good guy!'
+better-person
+    set name 'Better Mr. Krab'
+    set age 30
+
+    var be-good
+        closure
+            println 'I am definitely a good guy!'
 
 better-person
     be-good

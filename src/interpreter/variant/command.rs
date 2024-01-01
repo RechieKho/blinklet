@@ -125,7 +125,7 @@ impl VariantL for Command {
 }
 
 impl VariantDuplicate for Command {
-    fn duplicate(&self, _mark: Option<Mark>) -> Result<Variant, Backtrace> {
+    fn duplicate(&self, _mark: Option<Mark>, _context: &mut Context) -> Result<Variant, Backtrace> {
         Ok(Variant::COMMAND(self.clone()))
     }
 }

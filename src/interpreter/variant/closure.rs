@@ -10,7 +10,7 @@ use crate::interpreter::context::Context;
 use crate::interpreter::signal::Signal;
 use crate::mark::Mark;
 use crate::parser::atom::Atom;
-use crate::{raise_bug, raise_error};
+use crate::raise_error;
 use std::fmt::Debug;
 use std::mem;
 
@@ -125,16 +125,12 @@ impl VariantL for Closure {
 }
 
 impl VariantDuplicate for Closure {
-    fn duplicate(&self, mark: Option<Mark>) -> Result<Variant, Backtrace> {
-        let mut new_scopes: Vec<Table> = Vec::new();
-        for scope in self.parent_scopes.iter() {
-            if let Variant::TABLE(table) = scope.duplicate(mark.clone())? {
-                new_scopes.push(table);
-            } else {
-                raise_bug!(mark, "Duplicating `Table` should result a `Table`.");
-            }
-        }
-        let new_closure = Closure::new(self.mark.clone(), self.commands.clone(), new_scopes);
+    fn duplicate(&self, _mark: Option<Mark>, context: &mut Context) -> Result<Variant, Backtrace> {
+        let new_closure = Closure::new(
+            self.mark.clone(),
+            self.commands.clone(),
+            context.scopes.clone(),
+        );
         Ok(Variant::CLOSURE(new_closure))
     }
 }

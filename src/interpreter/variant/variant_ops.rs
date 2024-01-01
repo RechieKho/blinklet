@@ -1,5 +1,6 @@
 use super::Variant;
 use crate::backtrace::Backtrace;
+use crate::interpreter::context::Context;
 use crate::mark::Mark;
 
 pub trait VariantAdd {
@@ -39,5 +40,5 @@ pub trait VariantL {
 }
 
 pub trait VariantDuplicate {
-    fn duplicate(&self, mark: Option<Mark>) -> Result<Variant, Backtrace>;
+    fn duplicate(&self, mark: Option<Mark>, context: &mut Context) -> Result<Variant, Backtrace>;
 }

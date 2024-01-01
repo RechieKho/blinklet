@@ -341,3 +341,11 @@ duplicate {value}
 ```
 
 Deep clone the value and return the clone.
+
+#### `assert`
+
+```
+assert {success} {message}
+```
+
+If `success` is `false`, raise error with `message` as error message.
